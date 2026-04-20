@@ -1,207 +1,247 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="en">
     <head>
         <meta charset="utf-8" />
-        <!-- penting untuk responsive di HP -->
         <meta name="viewport" content="width=device-width, initial-scale=1" />
 
         <title>
             {{ if .Title }}
                 {{ .Title }}
             {{ else }}
-                Stock Hadiah App
+                Stock Opname Tracker
             {{ end }}
         </title>
 
         <link rel="stylesheet" href="/assets/fonts/google/plus-jakarta-sans.css">
-
         <link rel="stylesheet" href="/assets/css/tailwind.css">
-
-        <link href="/assets/vendor/sweetalert2/sweetalert2.min.css" rel="stylesheet" />
         <link href="/assets/vendor/boxicons/css/boxicons.min.css" rel="stylesheet" />
-
-        <style>
-            .dash-surface {
-                background: radial-gradient(120% 120% at 10% 0%, #fff7ed 0%, #ffedd5 38%, #f8fafc 100%);
-            }
-            main a {
-                color: #f26419;
-            }
-            main a:hover {
-                color: #dc5a15;
-            }
-        </style>
-
     </head>
-    <body class="bg-slate-100 font-display text-slate-900">
+
+    <body class="bg-[#f5f7fb] font-display text-[#07142f]">
         <div class="flex min-h-screen">
             {{ template "sidebar" . }}
 
             <div class="flex min-h-screen min-w-0 flex-1 flex-col">
                 {{ template "header" . }}
 
-                <main class="flex-1 px-4 py-6 lg:px-8">
-                    <div class="mx-auto w-full max-w-7xl">
-                        <div class="dash-surface rounded-[28px] border border-slate-200/80 bg-white/80 p-5 shadow-card sm:p-7 lg:p-8">
-                            <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-                                <div>
-                                    <p class="text-xs font-semibold uppercase tracking-[0.25em] text-slate-400">Admin / Dashboard</p>
-                                    <h2 class="mt-2 text-2xl font-semibold text-slate-900 sm:text-3xl">System Overview</h2>
-                                </div>
-                                <div class="flex flex-wrap gap-2">
-                                    <button class="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-600 shadow-sm transition hover:border-brand-300 hover:text-[#f26419]">Download Report</button>
-                                    <button class="rounded-xl bg-[#f26419] px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-[#dc5a15]">New Submission</button>
-                                </div>
+                <main class="min-w-0 flex-1 px-4 py-5 sm:px-6 lg:px-8">
+                    <div class="mx-auto flex w-full max-w-7xl flex-col gap-5">
+                        <section class="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+                            <div>
+                                <h1 class="text-xl font-extrabold leading-tight text-[#001e62] sm:text-2xl">Good Morning, Admin</h1>
+                                <p class="mt-1 text-sm font-medium text-[#566173]">Here is what's happening with your inventory today.</p>
                             </div>
 
-                            <div class="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-                                <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-                                    <div class="flex items-start justify-between">
-                                        <div class="flex h-11 w-11 items-center justify-center rounded-2xl bg-brand-50 text-[#f26419]">
-                                            <i class="bx bx-file text-lg"></i>
-                                        </div>
-                                        <span class="inline-flex items-center rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-600">+12%</span>
-                                    </div>
-                                    <p class="mt-4 text-sm text-slate-500">Total Submissions</p>
-                                    <p class="mt-1 text-2xl font-semibold text-slate-900">1,284</p>
-                                </div>
-                                <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-                                    <div class="flex items-start justify-between">
-                                        <div class="flex h-11 w-11 items-center justify-center rounded-2xl bg-amber-50 text-amber-500">
-                                            <i class="bx bx-folder-open text-lg"></i>
-                                        </div>
-                                        <span class="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-500">Active</span>
-                                    </div>
-                                    <p class="mt-4 text-sm text-slate-500">Pending Approval</p>
-                                    <p class="mt-1 text-2xl font-semibold text-slate-900">45</p>
-                                </div>
-                                <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-                                    <div class="flex items-start justify-between">
-                                        <div class="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-500">
-                                            <i class="bx bx-check-circle text-lg"></i>
-                                        </div>
-                                        <span class="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-500">This Month</span>
-                                    </div>
-                                    <p class="mt-4 text-sm text-slate-500">Approved</p>
-                                    <p class="mt-1 text-2xl font-semibold text-slate-900">1,120</p>
-                                </div>
-                                <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-                                    <div class="flex items-start justify-between">
-                                        <div class="flex h-11 w-11 items-center justify-center rounded-2xl bg-rose-50 text-rose-500">
-                                            <i class="bx bx-x-circle text-lg"></i>
-                                        </div>
-                                        <span class="inline-flex items-center rounded-full bg-rose-50 px-2.5 py-1 text-xs font-semibold text-rose-500">-3%</span>
-                                    </div>
-                                    <p class="mt-4 text-sm text-slate-500">Rejected</p>
-                                    <p class="mt-1 text-2xl font-semibold text-slate-900">119</p>
-                                </div>
-                            </div>
+                    <div class="flex flex-wrap items-center gap-3">
+                        <button type="button" class="inline-flex items-center justify-center gap-2 rounded-md bg-white px-5 py-3 text-sm font-extrabold text-[#001e62] shadow-sm transition hover:bg-[#eef3ff]">
+                            <i class="bx bx-book-open text-base"></i>
+                            Run Buyer Review
+                        </button>
+                        <button type="button" class="inline-flex items-center justify-center gap-2 rounded-md bg-[#001e62] px-5 py-3 text-sm font-extrabold text-white shadow-md shadow-[#001e62]/20 transition hover:bg-[#002f95]">
+                            <i class="bx bx-plus-circle text-base"></i>
+                            Create New Session
+                        </button>
+                    </div>
+                </section>
 
-                            <div class="mt-6 rounded-2xl border border-slate-200 bg-white shadow-sm">
-                                <div class="flex flex-col gap-3 border-b border-slate-100 px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
-                                    <h3 class="text-base font-semibold text-slate-900">Recent Activity</h3>
-                                    <a href="#" class="text-sm font-semibold text-[#f26419] hover:text-[#dc5a15]">View All</a>
-                                </div>
-                                <div class="overflow-x-auto">
-                                    <table class="w-full min-w-[720px] text-sm">
-                                        <thead class="bg-slate-50 text-xs uppercase tracking-wider text-slate-500 whitespace-nowrap">
-                                            <tr>
-                                                <th class="px-4 py-3 text-left font-semibold">Document ID</th>
-                                                <th class="px-4 py-3 text-left font-semibold">Document Type</th>
-                                                <th class="px-4 py-3 text-left font-semibold">Submitted By</th>
-                                                <th class="px-4 py-3 text-left font-semibold">Current Step</th>
-                                                <th class="px-4 py-3 text-left font-semibold">Status</th>
-                                                <th class="px-4 py-3 text-right font-semibold">Actions</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody class="divide-y divide-slate-100">
-                                            <tr class="hover:bg-slate-50/60">
-                                                <td class="px-4 py-3 font-semibold text-slate-700">#ST-2023-001</td>
-                                                <td class="px-4 py-3 text-slate-600">Surat Tugas</td>
-                                                <td class="px-4 py-3 text-slate-600">
-                                                    <span class="mr-2 inline-flex h-7 w-7 items-center justify-center rounded-full bg-slate-100 text-[11px] font-semibold text-slate-500">JD</span>
-                                                    John Doe
-                                                </td>
-                                                <td class="px-4 py-3 text-slate-600">Finance Verification</td>
-                                                <td class="px-4 py-3">
-                                                    <span class="inline-flex items-center rounded-full bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-600">Pending</span>
-                                                </td>
-                                                <td class="px-4 py-3 text-right">
-                                                    <a href="#" class="text-slate-400 transition hover:text-[#dc5a15]"><i class="bx bx-show text-lg"></i></a>
-                                                </td>
-                                            </tr>
-                                            <tr class="hover:bg-slate-50/60">
-                                                <td class="px-4 py-3 font-semibold text-slate-700">#ST-2023-002</td>
-                                                <td class="px-4 py-3 text-slate-600">Leave Request</td>
-                                                <td class="px-4 py-3 text-slate-600">
-                                                    <span class="mr-2 inline-flex h-7 w-7 items-center justify-center rounded-full bg-slate-100 text-[11px] font-semibold text-slate-500">AS</span>
-                                                    Alice Smith
-                                                </td>
-                                                <td class="px-4 py-3 text-slate-600">Completed</td>
-                                                <td class="px-4 py-3">
-                                                    <span class="inline-flex items-center rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-600">Approved</span>
-                                                </td>
-                                                <td class="px-4 py-3 text-right">
-                                                    <a href="#" class="text-slate-400 transition hover:text-[#dc5a15]"><i class="bx bx-show text-lg"></i></a>
-                                                </td>
-                                            </tr>
-                                            <tr class="hover:bg-slate-50/60">
-                                                <td class="px-4 py-3 font-semibold text-slate-700">#ST-2023-003</td>
-                                                <td class="px-4 py-3 text-slate-600">Surat Tugas</td>
-                                                <td class="px-4 py-3 text-slate-600">
-                                                    <span class="mr-2 inline-flex h-7 w-7 items-center justify-center rounded-full bg-slate-100 text-[11px] font-semibold text-slate-500">MB</span>
-                                                    Michael Brown
-                                                </td>
-                                                <td class="px-4 py-3 text-slate-600">Unit Head Approval</td>
-                                                <td class="px-4 py-3">
-                                                    <span class="inline-flex items-center rounded-full bg-rose-50 px-2.5 py-1 text-xs font-semibold text-rose-600">Rejected</span>
-                                                </td>
-                                                <td class="px-4 py-3 text-right">
-                                                    <a href="#" class="text-slate-400 transition hover:text-[#dc5a15]"><i class="bx bx-show text-lg"></i></a>
-                                                </td>
-                                            </tr>
-                                            <tr class="hover:bg-slate-50/60">
-                                                <td class="px-4 py-3 font-semibold text-slate-700">#ST-2023-004</td>
-                                                <td class="px-4 py-3 text-slate-600">Procurement</td>
-                                                <td class="px-4 py-3 text-slate-600">
-                                                    <span class="mr-2 inline-flex h-7 w-7 items-center justify-center rounded-full bg-slate-100 text-[11px] font-semibold text-slate-500">SW</span>
-                                                    Sarah White
-                                                </td>
-                                                <td class="px-4 py-3 text-slate-600">Final Signature</td>
-                                                <td class="px-4 py-3">
-                                                    <span class="inline-flex items-center rounded-full bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-600">Pending</span>
-                                                </td>
-                                                <td class="px-4 py-3 text-right">
-                                                    <a href="#" class="text-slate-400 transition hover:text-[#dc5a15]"><i class="bx bx-show text-lg"></i></a>
-                                                </td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </div>
-                                <div class="flex flex-col gap-3 border-t border-slate-100 px-4 py-4 text-xs text-slate-500 sm:flex-row sm:items-center sm:justify-between">
-                                    <div>Showing 4 of 1,284 entries</div>
-                                    <div class="flex items-center gap-2">
-                                        <button class="rounded-lg border border-slate-200 bg-white p-2 text-slate-500 transition hover:border-brand-300 hover:text-[#dc5a15]">
-                                            <i class="bx bx-chevron-left text-base"></i>
-                                        </button>
-                                        <button class="rounded-lg border border-slate-200 bg-white p-2 text-slate-500 transition hover:border-brand-300 hover:text-[#dc5a15]">
-                                            <i class="bx bx-chevron-right text-base"></i>
-                                        </button>
-                                    </div>
-                                </div>
+                <section class="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+                    <article class="rounded-lg bg-white p-5 shadow-sm">
+                        <div class="flex items-start justify-between">
+                            <span class="inline-flex h-9 w-9 items-center justify-center rounded-md bg-[#eef3ff] text-[#001e62]">
+                                <i class="bx bx-stopwatch text-lg"></i>
+                            </span>
+                            <span class="text-[10px] font-extrabold uppercase tracking-wide text-[#1e2b42]">Today</span>
+                        </div>
+                        <p class="mt-5 text-3xl font-extrabold leading-none text-black">12</p>
+                        <p class="mt-2 text-sm font-semibold text-[#111827]">Active Sessions</p>
+                    </article>
+
+                    <article class="rounded-lg bg-white p-5 shadow-sm">
+                        <div class="flex items-start justify-between">
+                            <span class="inline-flex h-9 w-9 items-center justify-center rounded-md bg-[#eef3f8] text-[#617489]">
+                                <i class="bx bx-truck text-lg"></i>
+                            </span>
+                            <span class="text-[10px] font-extrabold uppercase tracking-wide text-[#1e2b42]">Live</span>
+                        </div>
+                        <p class="mt-5 text-3xl font-extrabold leading-none text-black">48</p>
+                        <p class="mt-2 text-sm font-semibold text-[#111827]">Suppliers Checked</p>
+                    </article>
+
+                    <article class="rounded-lg bg-white p-5 shadow-sm">
+                        <div class="flex items-start justify-between">
+                            <span class="inline-flex h-9 w-9 items-center justify-center rounded-md bg-[#fff0e8] text-[#f37a4a]">
+                                <i class="bx bx-list-check text-lg"></i>
+                            </span>
+                            <span class="text-[10px] font-extrabold uppercase tracking-wide text-[#1e2b42]">Waiting</span>
+                        </div>
+                        <p class="mt-5 text-3xl font-extrabold leading-none text-black">156</p>
+                        <p class="mt-2 text-sm font-semibold text-[#111827]">Pending Inputs</p>
+                    </article>
+
+                    <article class="rounded-lg bg-white p-5 shadow-sm">
+                        <div class="flex items-start justify-between">
+                            <span class="inline-flex h-9 w-9 items-center justify-center rounded-md bg-[#fff1e6] text-[#d5793c]">
+                                <i class="bx bx-clipboard text-lg"></i>
+                            </span>
+                            <span class="text-[10px] font-extrabold uppercase tracking-wide text-[#1e2b42]">Critical</span>
+                        </div>
+                        <p class="mt-5 text-3xl font-extrabold leading-none text-black">84</p>
+                        <p class="mt-2 text-sm font-semibold text-[#111827]">Buyer Reviews</p>
+                    </article>
+
+                    <article class="rounded-lg bg-white p-5 shadow-sm">
+                        <div class="flex items-start justify-between">
+                            <span class="inline-flex h-9 w-9 items-center justify-center rounded-md bg-[#eff2ff] text-[#98a9ff]">
+                                <i class="bx bx-badge-check text-lg"></i>
+                            </span>
+                            <span class="text-[10px] font-extrabold uppercase tracking-wide text-[#1e2b42]">Ready</span>
+                        </div>
+                        <p class="mt-5 text-3xl font-extrabold leading-none text-black">312</p>
+                        <p class="mt-2 text-sm font-semibold text-[#111827]">Approved for PO</p>
+                    </article>
+                </section>
+
+                <section class="grid gap-5 lg:grid-cols-[minmax(0,2.15fr)_minmax(18rem,1fr)]">
+                    <article class="rounded-lg bg-white p-5 shadow-sm">
+                        <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                            <div>
+                                <h2 class="text-base font-extrabold text-[#001e62]">Daily Progress</h2>
+                                <p class="mt-1 text-sm font-medium text-[#566173]">Stock opname completion rate by hour</p>
+                            </div>
+                            <div class="flex items-center gap-4 text-[11px] font-bold text-[#1e2b42]">
+                                <span class="inline-flex items-center gap-1.5">
+                                    <span class="h-2 w-2 rounded-full bg-[#001e62]"></span>
+                                    Completed
+                                </span>
+                                <span class="inline-flex items-center gap-1.5">
+                                    <span class="h-2 w-2 rounded-full bg-[#d1d5db]"></span>
+                                    Target
+                                </span>
                             </div>
                         </div>
+
+                        <div class="relative mt-7 h-[19rem] overflow-hidden rounded-md bg-white sm:h-[22rem] lg:h-[26rem]">
+                            <div class="absolute inset-x-8 top-3 bottom-8 border-b border-[#edf1f7]">
+                                <div class="h-full w-full bg-[linear-gradient(to_bottom,#f5f7fb_1px,transparent_1px)] bg-[length:100%_25%]"></div>
+                            </div>
+
+                            <svg class="absolute inset-x-8 bottom-8 top-3 h-[calc(100%-2.75rem)] w-[calc(100%-4rem)] overflow-visible" viewBox="0 0 640 260" preserveAspectRatio="none" aria-hidden="true">
+                                <polyline points="0,210 128,190 256,150 384,120 512,82 640,55" fill="none" stroke="#d1d5db" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" opacity="0.85" />
+                                <polyline points="0,224 128,206 256,172 384,128 512,92 640,38" fill="none" stroke="#001e62" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" />
+                                <circle cx="0" cy="224" r="5" fill="#001e62" />
+                                <circle cx="128" cy="206" r="5" fill="#001e62" />
+                                <circle cx="256" cy="172" r="5" fill="#001e62" />
+                                <circle cx="384" cy="128" r="5" fill="#001e62" />
+                                <circle cx="512" cy="92" r="5" fill="#001e62" />
+                                <circle cx="640" cy="38" r="5" fill="#001e62" />
+                            </svg>
+
+                            <div class="absolute inset-x-8 bottom-0 grid grid-cols-6 text-[10px] font-extrabold text-[#1e2b42]">
+                                <span>08:00</span>
+                                <span class="text-center">10:00</span>
+                                <span class="text-center">12:00</span>
+                                <span class="text-center">14:00</span>
+                                <span class="text-center">16:00</span>
+                                <span class="text-right">18:00</span>
+                            </div>
+                        </div>
+                    </article>
+
+                    <article class="rounded-lg bg-white shadow-sm">
+                        <div class="border-b border-[#edf1f7] px-5 py-5">
+                            <h2 class="text-base font-extrabold text-[#001e62]">Recent Activity</h2>
+                        </div>
+
+                        <div class="px-5 py-4">
+                            <div class="space-y-5">
+                                <div class="flex gap-4">
+                                    <span class="inline-flex h-10 w-10 flex-none items-center justify-center rounded-lg bg-[#dcfae7] text-[#19a856]">
+                                        <i class="bx bx-check-circle text-xl"></i>
+                                    </span>
+                                    <div class="min-w-0">
+                                        <p class="text-sm font-extrabold text-[#07142f]">Fresh PO Stocked</p>
+                                        <p class="mt-1 text-xs font-semibold leading-relaxed text-[#566173]">Session <span class="font-extrabold text-[#001e62]">A492</span> completed by <span class="font-extrabold text-[#001e62]">John Doe</span>. 42 items updated.</p>
+                                        <p class="mt-1 text-[11px] font-medium text-[#8b95a5]">2 minutes ago</p>
+                                    </div>
+                                </div>
+
+                                <div class="flex gap-4">
+                                    <span class="inline-flex h-10 w-10 flex-none items-center justify-center rounded-lg bg-[#fff2c9] text-[#f4a51c]">
+                                        <i class="bx bx-error text-xl"></i>
+                                    </span>
+                                    <div class="min-w-0">
+                                        <p class="text-sm font-extrabold text-[#07142f]">Variance Detected</p>
+                                        <p class="mt-1 text-xs font-semibold leading-relaxed text-[#566173]">Major discrepancy in <span class="font-extrabold text-[#001e62]">Electronics Aisle 4</span>. Manual review required.</p>
+                                        <p class="mt-1 text-[11px] font-medium text-[#8b95a5]">14 minutes ago</p>
+                                    </div>
+                                </div>
+
+                                <div class="flex gap-4">
+                                    <span class="inline-flex h-10 w-10 flex-none items-center justify-center rounded-lg bg-[#e0ebff] text-[#2766e3]">
+                                        <i class="bx bx-calendar-plus text-xl"></i>
+                                    </span>
+                                    <div class="min-w-0">
+                                        <p class="text-sm font-extrabold text-[#07142f]">New Session Started</p>
+                                        <p class="mt-1 text-xs font-semibold leading-relaxed text-[#566173]">System initialized <span class="font-extrabold text-[#001e62]">Monthly Full Audit</span> for Warehouse 2.</p>
+                                        <p class="mt-1 text-[11px] font-medium text-[#8b95a5]">45 minutes ago</p>
+                                    </div>
+                                </div>
+
+                                <div class="flex gap-4">
+                                    <span class="inline-flex h-10 w-10 flex-none items-center justify-center rounded-lg bg-[#edf1f7] text-[#617489]">
+                                        <i class="bx bx-truck text-xl"></i>
+                                    </span>
+                                    <div class="min-w-0">
+                                        <p class="text-sm font-extrabold text-[#07142f]">Supplier Check-in</p>
+                                        <p class="mt-1 text-xs font-semibold leading-relaxed text-[#566173]"><span class="font-extrabold text-[#001e62]">Global Logistics Co.</span> delivery verified at Dock 3.</p>
+                                        <p class="mt-1 text-[11px] font-medium text-[#8b95a5]">1 hour ago</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <a href="#" class="mt-6 inline-flex w-full items-center justify-center rounded-md px-4 py-2 text-sm font-extrabold text-[#001e62] transition hover:bg-[#eef3ff]">View Full Audit Log</a>
+                        </div>
+                    </article>
+                </section>
+
+                <section class="grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(18rem,0.95fr)]">
+                    <article class="rounded-lg bg-[#24408f] p-6 text-white shadow-sm">
+                        <div class="flex items-start justify-between gap-4">
+                            <div>
+                                <h2 class="text-base font-extrabold">Warehouse Efficiency</h2>
+                                <div class="mt-3 flex flex-wrap items-end gap-3">
+                                    <p class="text-4xl font-extrabold leading-none">94.2%</p>
+                                    <p class="pb-1 text-sm font-semibold text-[#a9b9e9]">+2.4% from last week</p>
+                                </div>
+                            </div>
+                            <i class="bx bx-trending-up text-5xl text-white/25"></i>
+                        </div>
+                        <div class="mt-5 h-2 w-full max-w-xs rounded-full bg-white/20">
+                            <div class="h-2 w-[94%] rounded-full bg-white"></div>
+                        </div>
+                    </article>
+
+                    <article class="rounded-lg bg-white p-6 shadow-sm">
+                        <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                            <div class="flex items-center gap-4">
+                                <span class="inline-flex h-12 w-12 flex-none items-center justify-center rounded-lg bg-[#fff0e8] text-[#f37a4a]">
+                                    <i class="bx bx-package text-2xl"></i>
+                                </span>
+                                <div>
+                                    <h2 class="text-base font-extrabold text-[#07142f]">Auto-Procurement Status</h2>
+                                    <p class="mt-1 max-w-xs text-sm font-medium leading-relaxed text-[#566173]">System is ready to generate 14 purchase orders.</p>
+                                </div>
+                            </div>
+                            <button type="button" class="inline-flex min-w-[7rem] items-center justify-center rounded-md border-2 border-[#24408f] bg-white px-5 py-3 text-sm font-extrabold text-[#001e62] transition hover:bg-[#eef3ff]">Run Auto-PO</button>
+                        </div>
+                    </article>
+                </section>
                     </div>
                 </main>
-
-                {{ template "footer" . }}
             </div>
         </div>
 
         <div id="sidebar-overlay" class="fixed inset-0 z-40 hidden bg-slate-900/50 lg:hidden"></div>
-
-        <!-- Sweet Alerts js -->
-        <script src="/assets/vendor/sweetalert2/sweetalert2.all.min.js"></script>
 
         <script>
             document.addEventListener('DOMContentLoaded', function () {
@@ -213,9 +253,7 @@
                     if (!sidebar) return;
                     sidebar.classList.add('-translate-x-full');
                     if (overlay) overlay.classList.add('hidden');
-                    if (!document.querySelector('[data-modal].flex')) {
-                        document.body.classList.remove('overflow-hidden');
-                    }
+                    document.body.classList.remove('overflow-hidden');
                 }
 
                 function openSidebar() {
@@ -243,5 +281,3 @@
         </script>
     </body>
 </html>
-
-

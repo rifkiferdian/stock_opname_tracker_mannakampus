@@ -25,6 +25,8 @@ func RegisterWebRoutes(r *gin.Engine) {
 		auth.POST("/stores", controllers.StoreStore)
 		auth.POST("/stores/update", controllers.StoreUpdate)
 		auth.GET("/stores/delete/:id", controllers.StoreDelete)
+		auth.GET("/suppliers", controllers.SupplierIndex)
+		auth.GET("/suppliers/:id", controllers.SupplierDetail)
 		auth.GET("/users", middleware.RequirePermission("user_management_access"), controllers.UserIndex)
 		auth.POST("/users", middleware.RequirePermission("user_create"), controllers.UserStore)
 		auth.POST("/users/update", middleware.RequirePermission("user_edit"), controllers.UserUpdate)

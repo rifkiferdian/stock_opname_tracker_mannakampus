@@ -1,0 +1,336 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+        <title>
+            {{ if .Title }}
+                {{ .Title }}
+            {{ else }}
+                Stock Opname Tracker
+            {{ end }}
+        </title>
+
+        <link rel="stylesheet" href="/assets/fonts/google/plus-jakarta-sans.css">
+        <link rel="stylesheet" href="/assets/css/tailwind.css">
+        <link href="/assets/vendor/boxicons/css/boxicons.min.css" rel="stylesheet" />
+    </head>
+
+    <body class="bg-[#f5f7fb] font-display text-[#07142f]">
+        <div class="flex min-h-screen">
+            {{ template "sidebar" . }}
+
+            <div class="flex min-h-screen min-w-0 flex-1 flex-col">
+                {{ template "header" . }}
+
+                <main class="min-w-0 flex-1 px-4 py-5 sm:px-6 lg:px-8">
+                    <div class="mx-auto flex w-full max-w-7xl flex-col gap-5">
+                        <section class="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+                            <div>
+                                <h1 class="text-xl font-extrabold leading-tight text-[#001e62] sm:text-2xl">Supplier Directory</h1>
+                                <p class="mt-1 text-sm font-medium text-[#566173]">Manage global partnerships and inventory supply chains.</p>
+                            </div>
+
+                            <div class="flex flex-wrap items-center gap-3">
+                                <button type="button" class="inline-flex items-center justify-center gap-2 rounded-md bg-white px-5 py-3 text-sm font-extrabold text-[#001e62] shadow-sm transition hover:bg-[#eef3ff]">
+                                    <i class="bx bx-download text-base"></i>
+                                    Export Data
+                                </button>
+                                <button type="button" class="inline-flex items-center justify-center gap-2 rounded-md bg-[#001e62] px-5 py-3 text-sm font-extrabold text-white shadow-md shadow-[#001e62]/20 transition hover:bg-[#002f95]">
+                                    <i class="bx bxs-user-plus text-base"></i>
+                                    Add Supplier
+                                </button>
+                            </div>
+                        </section>
+
+                        <section class="grid gap-4" style="grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));">
+                            <article class="rounded-lg bg-white p-5 shadow-sm">
+                                <p class="text-[10px] font-extrabold uppercase text-[#566173]">Total Suppliers</p>
+                                <div class="mt-3 flex items-end justify-between gap-3">
+                                    <p class="text-3xl font-extrabold leading-none text-[#001e62]">1,284</p>
+                                    <span class="inline-flex items-center gap-1 text-[11px] font-extrabold text-[#19a856]">
+                                        +12%
+                                        <i class="bx bx-trending-up text-sm"></i>
+                                    </span>
+                                </div>
+                            </article>
+
+                            <article class="rounded-lg bg-white p-5 shadow-sm">
+                                <p class="text-[10px] font-extrabold uppercase text-[#566173]">Active Orders</p>
+                                <div class="mt-3 flex items-end justify-between gap-3">
+                                    <p class="text-3xl font-extrabold leading-none text-[#001e62]">42</p>
+                                    <span class="text-[11px] font-extrabold text-[#566173]">Currently Pending</span>
+                                </div>
+                            </article>
+
+                            <article class="rounded-lg bg-white p-5 shadow-sm">
+                                <p class="text-[10px] font-extrabold uppercase text-[#566173]">Critical Supply</p>
+                                <div class="mt-3 flex items-end justify-between gap-3">
+                                    <p class="text-3xl font-extrabold leading-none text-rose-600">08</p>
+                                    <span class="text-[11px] font-extrabold text-rose-600">Action Required</span>
+                                </div>
+                            </article>
+
+                            <article class="rounded-lg bg-white p-5 shadow-sm">
+                                <p class="text-[10px] font-extrabold uppercase text-[#566173]">Avg Fulfillment</p>
+                                <div class="mt-3 flex items-end justify-between gap-3">
+                                    <p class="text-3xl font-extrabold leading-none text-[#001e62]">4.2d</p>
+                                    <span class="inline-flex items-center gap-1 text-[11px] font-extrabold text-[#19a856]">
+                                        -0.5w
+                                        <i class="bx bx-trending-down text-sm"></i>
+                                    </span>
+                                </div>
+                            </article>
+                        </section>
+
+                        <section class="rounded-lg bg-white p-4 shadow-sm">
+                            <div class="flex flex-col gap-3 lg:flex-row lg:items-center">
+                                <label class="relative block min-w-0 flex-1">
+                                    <i class="bx bx-filter-alt pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                                    <input type="text" class="w-full rounded-md border border-slate-200 bg-slate-50 py-3 pl-10 pr-4 text-sm font-semibold text-slate-600 outline-none transition focus:border-brand-500 focus:bg-white" placeholder="Filter by Name or Contact...">
+                                </label>
+
+                                <select class="rounded-md border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-extrabold text-[#1e2b42] outline-none transition focus:border-brand-500 focus:bg-white">
+                                    <option>Status: All</option>
+                                    <option>Active</option>
+                                    <option>Pending</option>
+                                    <option>Inactive</option>
+                                </select>
+
+                                <select class="rounded-md border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-extrabold text-[#1e2b42] outline-none transition focus:border-brand-500 focus:bg-white">
+                                    <option>Category: All</option>
+                                    <option>Electronics</option>
+                                    <option>Apparel</option>
+                                    <option>Furniture</option>
+                                </select>
+
+                                <select class="rounded-md border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-extrabold text-[#001e62] outline-none transition focus:border-brand-500 focus:bg-white">
+                                    <option>Recently Added</option>
+                                    <option>Supplier Name</option>
+                                    <option>Last Order</option>
+                                </select>
+                            </div>
+                        </section>
+
+                        <section class="overflow-hidden rounded-lg bg-white shadow-sm">
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-sm" style="min-width: 980px;">
+                                    <thead class="bg-slate-50 text-[10px] font-extrabold uppercase text-[#001e62]">
+                                        <tr>
+                                            <th class="px-5 py-4 text-left">Supplier Name</th>
+                                            <th class="px-5 py-4 text-left">Primary Contact</th>
+                                            <th class="px-5 py-4 text-left">Contact Number</th>
+                                            <th class="px-5 py-4 text-left">Category</th>
+                                            <th class="px-5 py-4 text-left">Item Count</th>
+                                            <th class="px-5 py-4 text-left">Status</th>
+                                            <th class="px-5 py-4 text-left">Last Order</th>
+                                            <th class="px-5 py-4 text-left">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-slate-100">
+                                        <tr class="hover:bg-slate-50/70">
+                                            <td class="px-5 py-4">
+                                                <div class="flex items-center gap-3">
+                                                    <span class="inline-flex h-9 w-9 flex-none items-center justify-center rounded-md bg-[#eef3ff] text-xs font-extrabold text-[#001e62]">NE</span>
+                                                    <div>
+                                                        <p class="font-extrabold text-[#07142f]">NextGen Electronics</p>
+                                                        <p class="mt-1 text-[10px] font-extrabold uppercase text-[#8b95a5]">SUP-2024-001</p>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td class="px-5 py-4 font-semibold text-[#1e2b42]">Sarah Jenkins</td>
+                                            <td class="px-5 py-4 font-semibold text-[#566173]">+1 (555) 012-4455</td>
+                                            <td class="px-5 py-4">
+                                                <span class="inline-flex rounded-full bg-[#eef3ff] px-3 py-1 text-[10px] font-extrabold uppercase text-[#001e62]">Electronics</span>
+                                            </td>
+                                            <td class="px-5 py-4 font-extrabold text-[#1e2b42]">1,420</td>
+                                            <td class="px-5 py-4">
+                                                <span class="inline-flex items-center gap-1.5 rounded-full bg-[#dcfae7] px-3 py-1 text-[10px] font-extrabold uppercase text-[#19a856]">
+                                                    <span class="h-2 w-2 rounded-full bg-[#19a856]"></span>
+                                                    Active
+                                                </span>
+                                            </td>
+                                            <td class="px-5 py-4 font-semibold text-[#566173]">Oct 12, 2023</td>
+                                            <td class="px-5 py-4">
+                                                <a href="{{ baseURL "/suppliers/global-logistics" }}" class="inline-flex rounded-md px-3 py-2 text-sm font-extrabold text-[#001e62] transition hover:bg-[#eef3ff]">View</a>
+                                            </td>
+                                        </tr>
+
+                                        <tr class="hover:bg-slate-50/70">
+                                            <td class="px-5 py-4">
+                                                <div class="flex items-center gap-3">
+                                                    <span class="inline-flex h-9 w-9 flex-none items-center justify-center rounded-md bg-slate-100 text-xs font-extrabold text-[#24408f]">AV</span>
+                                                    <div>
+                                                        <p class="font-extrabold text-[#07142f]">Apex Velvets Co.</p>
+                                                        <p class="mt-1 text-[10px] font-extrabold uppercase text-[#8b95a5]">SUP-2024-042</p>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td class="px-5 py-4 font-semibold text-[#1e2b42]">Marco Rossi</td>
+                                            <td class="px-5 py-4 font-semibold text-[#566173]">+44 20 7946 0123</td>
+                                            <td class="px-5 py-4">
+                                                <span class="inline-flex rounded-full bg-[#fff0e8] px-3 py-1 text-[10px] font-extrabold uppercase text-[#f37a4a]">Apparel</span>
+                                            </td>
+                                            <td class="px-5 py-4 font-extrabold text-[#1e2b42]">3,890</td>
+                                            <td class="px-5 py-4">
+                                                <span class="inline-flex items-center gap-1.5 rounded-full bg-[#dcfae7] px-3 py-1 text-[10px] font-extrabold uppercase text-[#19a856]">
+                                                    <span class="h-2 w-2 rounded-full bg-[#19a856]"></span>
+                                                    Active
+                                                </span>
+                                            </td>
+                                            <td class="px-5 py-4 font-semibold text-[#566173]">Oct 28, 2023</td>
+                                            <td class="px-5 py-4">
+                                                <a href="{{ baseURL "/suppliers/apex-velvets" }}" class="inline-flex rounded-md px-3 py-2 text-sm font-extrabold text-[#001e62] transition hover:bg-[#eef3ff]">View</a>
+                                            </td>
+                                        </tr>
+
+                                        <tr class="hover:bg-slate-50/70">
+                                            <td class="px-5 py-4">
+                                                <div class="flex items-center gap-3">
+                                                    <span class="inline-flex h-9 w-9 flex-none items-center justify-center rounded-md bg-[#eef3ff] text-xs font-extrabold text-[#001e62]">LS</span>
+                                                    <div>
+                                                        <p class="font-extrabold text-[#07142f]">Lumina Smart Systems</p>
+                                                        <p class="mt-1 text-[10px] font-extrabold uppercase text-[#8b95a5]">SUP-2024-089</p>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td class="px-5 py-4 font-semibold text-[#1e2b42]">Elena Vance</td>
+                                            <td class="px-5 py-4 font-semibold text-[#566173]">+1 (555) 098-7711</td>
+                                            <td class="px-5 py-4">
+                                                <span class="inline-flex rounded-full bg-[#eef3ff] px-3 py-1 text-[10px] font-extrabold uppercase text-[#001e62]">Electronics</span>
+                                            </td>
+                                            <td class="px-5 py-4 font-extrabold text-[#1e2b42]">542</td>
+                                            <td class="px-5 py-4">
+                                                <span class="inline-flex items-center gap-1.5 rounded-full bg-rose-50 px-3 py-1 text-[10px] font-extrabold uppercase text-rose-600">
+                                                    <span class="h-2 w-2 rounded-full bg-rose-500"></span>
+                                                    Inactive
+                                                </span>
+                                            </td>
+                                            <td class="px-5 py-4 font-semibold text-[#566173]">Sep 15, 2023</td>
+                                            <td class="px-5 py-4">
+                                                <a href="{{ baseURL "/suppliers/lumina-smart" }}" class="inline-flex rounded-md px-3 py-2 text-sm font-extrabold text-[#001e62] transition hover:bg-[#eef3ff]">View</a>
+                                            </td>
+                                        </tr>
+
+                                        <tr class="hover:bg-slate-50/70">
+                                            <td class="px-5 py-4">
+                                                <div class="flex items-center gap-3">
+                                                    <span class="inline-flex h-9 w-9 flex-none items-center justify-center rounded-md bg-slate-100 text-xs font-extrabold text-[#24408f]">ZC</span>
+                                                    <div>
+                                                        <p class="font-extrabold text-[#07142f]">Zenith Crafts Ltd</p>
+                                                        <p class="mt-1 text-[10px] font-extrabold uppercase text-[#8b95a5]">SUP-2024-115</p>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td class="px-5 py-4 font-semibold text-[#1e2b42]">Jonathan Wick</td>
+                                            <td class="px-5 py-4 font-semibold text-[#566173]">+1 (555) 234-8899</td>
+                                            <td class="px-5 py-4">
+                                                <span class="inline-flex rounded-full bg-slate-100 px-3 py-1 text-[10px] font-extrabold uppercase text-[#566173]">Furniture</span>
+                                            </td>
+                                            <td class="px-5 py-4 font-extrabold text-[#1e2b42]">892</td>
+                                            <td class="px-5 py-4">
+                                                <span class="inline-flex items-center gap-1.5 rounded-full bg-[#dcfae7] px-3 py-1 text-[10px] font-extrabold uppercase text-[#19a856]">
+                                                    <span class="h-2 w-2 rounded-full bg-[#19a856]"></span>
+                                                    Active
+                                                </span>
+                                            </td>
+                                            <td class="px-5 py-4 font-semibold text-[#566173]">Nov 01, 2023</td>
+                                            <td class="px-5 py-4">
+                                                <a href="{{ baseURL "/suppliers/zenith-crafts" }}" class="inline-flex rounded-md px-3 py-2 text-sm font-extrabold text-[#001e62] transition hover:bg-[#eef3ff]">View</a>
+                                            </td>
+                                        </tr>
+
+                                        <tr class="hover:bg-slate-50/70">
+                                            <td class="px-5 py-4">
+                                                <div class="flex items-center gap-3">
+                                                    <span class="inline-flex h-9 w-9 flex-none items-center justify-center rounded-md bg-slate-100 text-xs font-extrabold text-[#24408f]">OB</span>
+                                                    <div>
+                                                        <p class="font-extrabold text-[#07142f]">Oceanic Boutique</p>
+                                                        <p class="mt-1 text-[10px] font-extrabold uppercase text-[#8b95a5]">SUP-2024-156</p>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td class="px-5 py-4 font-semibold text-[#1e2b42]">Amara Gupta</td>
+                                            <td class="px-5 py-4 font-semibold text-[#566173]">+91 22 4567 8901</td>
+                                            <td class="px-5 py-4">
+                                                <span class="inline-flex rounded-full bg-[#fff0e8] px-3 py-1 text-[10px] font-extrabold uppercase text-[#f37a4a]">Apparel</span>
+                                            </td>
+                                            <td class="px-5 py-4 font-extrabold text-[#1e2b42]">2,110</td>
+                                            <td class="px-5 py-4">
+                                                <span class="inline-flex items-center gap-1.5 rounded-full bg-[#fff0e8] px-3 py-1 text-[10px] font-extrabold uppercase text-[#f37a4a]">
+                                                    <span class="h-2 w-2 rounded-full bg-[#f37a4a]"></span>
+                                                    Pending
+                                                </span>
+                                            </td>
+                                            <td class="px-5 py-4 font-semibold text-[#566173]">---</td>
+                                            <td class="px-5 py-4">
+                                                <a href="{{ baseURL "/suppliers/oceanic-boutique" }}" class="inline-flex rounded-md px-3 py-2 text-sm font-extrabold text-[#001e62] transition hover:bg-[#eef3ff]">View</a>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <div class="flex flex-col gap-3 border-t border-slate-100 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+                                <p class="text-xs font-extrabold uppercase text-[#566173]">Showing 1-10 of 1,284 suppliers</p>
+                                <div class="flex items-center gap-2">
+                                    <button type="button" class="inline-flex h-8 w-8 items-center justify-center rounded-md bg-slate-100 text-sm font-extrabold text-slate-400">
+                                        <i class="bx bx-chevron-left"></i>
+                                    </button>
+                                    <button type="button" class="inline-flex h-8 w-8 items-center justify-center rounded-md bg-[#001e62] text-sm font-extrabold text-white">1</button>
+                                    <button type="button" class="inline-flex h-8 w-8 items-center justify-center rounded-md bg-slate-50 text-sm font-extrabold text-[#566173]">2</button>
+                                    <button type="button" class="inline-flex h-8 w-8 items-center justify-center rounded-md bg-slate-50 text-sm font-extrabold text-[#566173]">3</button>
+                                    <span class="px-2 text-sm font-extrabold text-[#8b95a5]">...</span>
+                                    <button type="button" class="inline-flex h-8 items-center justify-center rounded-md bg-slate-50 px-3 text-sm font-extrabold text-[#566173]">128</button>
+                                    <button type="button" class="inline-flex h-8 w-8 items-center justify-center rounded-md bg-slate-100 text-sm font-extrabold text-[#566173]">
+                                        <i class="bx bx-chevron-right"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+                </main>
+            </div>
+        </div>
+
+        <div id="sidebar-overlay" class="fixed inset-0 z-40 hidden bg-slate-900/50 lg:hidden"></div>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                var sidebar = document.getElementById('app-sidebar');
+                var overlay = document.getElementById('sidebar-overlay');
+                var toggleButtons = document.querySelectorAll('[data-sidebar-toggle]');
+
+                function closeSidebar() {
+                    if (!sidebar) return;
+                    sidebar.classList.add('-translate-x-full');
+                    if (overlay) overlay.classList.add('hidden');
+                    document.body.classList.remove('overflow-hidden');
+                }
+
+                function openSidebar() {
+                    if (!sidebar) return;
+                    sidebar.classList.remove('-translate-x-full');
+                    if (overlay) overlay.classList.remove('hidden');
+                    document.body.classList.add('overflow-hidden');
+                }
+
+                toggleButtons.forEach(function (button) {
+                    button.addEventListener('click', function () {
+                        if (!sidebar) return;
+                        if (sidebar.classList.contains('-translate-x-full')) {
+                            openSidebar();
+                        } else {
+                            closeSidebar();
+                        }
+                    });
+                });
+
+                if (overlay) {
+                    overlay.addEventListener('click', closeSidebar);
+                }
+            });
+        </script>
+    </body>
+</html>
