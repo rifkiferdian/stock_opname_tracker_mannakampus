@@ -12,8 +12,16 @@ type UnitService struct {
 	Repo *repositories.UnitRepository
 }
 
-func (s *UnitService) GetUnits() ([]models.Unit, error) {
-	return s.Repo.GetAll()
+func (s *UnitService) GetUnits(filter models.UnitListFilter) ([]models.Unit, error) {
+	filter.Search = strings.TrimSpace(filter.Search)
+
+	switch filter.Sort {
+	case "code", "name", "recent":
+	default:
+		filter.Sort = "recent"
+	}
+
+	return s.Repo.GetAll(filter)
 }
 
 func (s *UnitService) CreateUnit(input models.UnitCreateInput) error {

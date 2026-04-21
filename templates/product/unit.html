@@ -45,29 +45,41 @@
                             </div>
                         </section>
 
-                        <section class="grid gap-4 rounded-lg bg-white p-5 shadow-sm lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] lg:items-end">
+                        <form action="/units" method="get" class="grid gap-4 rounded-lg bg-white p-5 shadow-sm lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] lg:items-end">
                             <label class="block">
                                 <span class="text-[10px] font-extrabold uppercase text-[#566173]">Search</span>
                                 <div class="relative mt-2">
                                     <i class="bx bx-search pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                                    <input type="text" class="w-full rounded-md border border-slate-200 bg-slate-50 py-3 pl-10 pr-4 text-sm font-semibold text-slate-600 outline-none transition focus:border-brand-500 focus:bg-white" placeholder="Search unit code or name...">
+                                    <input
+                                        type="text"
+                                        name="search"
+                                        value="{{ .Filters.Search }}"
+                                        class="w-full rounded-md border border-slate-200 bg-slate-50 py-3 pl-10 pr-4 text-sm font-semibold text-slate-600 outline-none transition focus:border-brand-500 focus:bg-white"
+                                        placeholder="Search unit code or name...">
                                 </div>
                             </label>
 
                             <label class="block">
                                 <span class="text-[10px] font-extrabold uppercase text-[#566173]">Sort</span>
-                                <select class="mt-2 w-full rounded-md border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-[#1e2b42] outline-none transition focus:border-brand-500 focus:bg-white">
-                                    <option>Recently Updated</option>
-                                    <option>Unit Code</option>
-                                    <option>Unit Name</option>
+                                <select name="sort" class="mt-2 w-full rounded-md border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-[#1e2b42] outline-none transition focus:border-brand-500 focus:bg-white">
+                                    <option value="recent" {{ if eq .Filters.Sort "recent" }}selected{{ end }}>Recently Updated</option>
+                                    <option value="code" {{ if eq .Filters.Sort "code" }}selected{{ end }}>Unit Code</option>
+                                    <option value="name" {{ if eq .Filters.Sort "name" }}selected{{ end }}>Unit Name</option>
                                 </select>
                             </label>
 
-                            <button type="button" class="inline-flex items-center justify-center gap-2 rounded-md bg-slate-50 px-6 py-3 text-sm font-extrabold text-[#001e62] transition hover:bg-[#eef3ff]">
-                                <i class="bx bx-filter-alt text-base"></i>
-                                Apply Filters
-                            </button>
-                        </section>
+                            <div class="flex flex-wrap items-center gap-3">
+                                <button type="submit" class="inline-flex items-center justify-center gap-2 rounded-md bg-slate-50 px-6 py-3 text-sm font-extrabold text-[#001e62] transition hover:bg-[#eef3ff]">
+                                    <i class="bx bx-filter-alt text-base"></i>
+                                    Apply Filters
+                                </button>
+                                {{ if or .Filters.Search (ne .Filters.Sort "recent") }}
+                                <a href="/units" class="inline-flex items-center justify-center gap-2 rounded-md border border-slate-200 bg-white px-6 py-3 text-sm font-extrabold text-[#566173] transition hover:bg-slate-50">
+                                    Reset
+                                </a>
+                                {{ end }}
+                            </div>
+                        </form>
 
                         {{ if .Error }}
                         <div class="rounded-lg border border-rose-200 bg-rose-50 px-5 py-4 text-sm font-semibold text-rose-600">
@@ -139,7 +151,13 @@
                                         </tr>
                                         {{ else }}
                                         <tr>
-                                            <td colspan="7" class="px-5 py-10 text-center text-sm font-semibold text-[#566173]">Belum ada data unit</td>
+                                            <td colspan="7" class="px-5 py-10 text-center text-sm font-semibold text-[#566173]">
+                                                {{ if $.Filters.Search }}
+                                                    Tidak ada unit yang cocok dengan pencarian "{{ $.Filters.Search }}"
+                                                {{ else }}
+                                                    Belum ada data unit
+                                                {{ end }}
+                                            </td>
                                         </tr>
                                         {{ end }}
                                     </tbody>
@@ -147,7 +165,7 @@
                             </div>
 
                             <div class="flex flex-col gap-3 border-t border-slate-100 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
-                                <p class="text-xs font-semibold text-[#1e2b42]">Showing {{ len .units }} units from database</p>
+                                <p class="text-xs font-semibold text-[#1e2b42]">Showing {{ len .units }} units{{ if or .Filters.Search (ne .Filters.Sort "recent") }} with active filters{{ end }}</p>
                                 <div class="flex items-center gap-2">
                                     <button type="button" class="inline-flex h-9 items-center justify-center rounded-md bg-white px-4 text-sm font-semibold text-[#1e2b42] shadow-sm transition hover:bg-[#eef3ff]">Previous</button>
                                     <button type="button" class="inline-flex h-9 w-9 items-center justify-center rounded-md bg-[#001e62] text-sm font-extrabold text-white">1</button>

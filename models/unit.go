@@ -17,6 +17,11 @@ type UnitCreateInput struct {
 	Description string
 }
 
+type UnitListFilter struct {
+	Search string
+	Sort   string
+}
+
 type UnitUpdateInput struct {
 	ID          int
 	UnitCode    string

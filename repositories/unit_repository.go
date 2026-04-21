@@ -3,18 +3,42 @@ package repositories
 import (
 	"database/sql"
 	"gobase-app/models"
+	"strings"
 )
 
 type UnitRepository struct {
 	DB *sql.DB
 }
 
-func (r *UnitRepository) GetAll() ([]models.Unit, error) {
-	rows, err := r.DB.Query(`
+func (r *UnitRepository) GetAll(filter models.UnitListFilter) ([]models.Unit, error) {
+	query := `
 		SELECT id, unit_code, unit_name, description, created_at, updated_at
 		FROM units
-		ORDER BY id ASC
-	`)
+	`
+
+	args := make([]interface{}, 0, 2)
+	conditions := make([]string, 0, 1)
+
+	if filter.Search != "" {
+		keyword := "%" + strings.ToLower(filter.Search) + "%"
+		conditions = append(conditions, "(LOWER(unit_code) LIKE ? OR LOWER(unit_name) LIKE ?)")
+		args = append(args, keyword, keyword)
+	}
+
+	if len(conditions) > 0 {
+		query += " WHERE " + strings.Join(conditions, " AND ")
+	}
+
+	switch filter.Sort {
+	case "code":
+		query += " ORDER BY unit_code ASC, id ASC"
+	case "name":
+		query += " ORDER BY unit_name ASC, id ASC"
+	default:
+		query += " ORDER BY updated_at DESC, id DESC"
+	}
+
+	rows, err := r.DB.Query(query, args...)
 	if err != nil {
 		return nil, err
 	}
