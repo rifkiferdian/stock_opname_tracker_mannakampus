@@ -14,6 +14,7 @@
 
         <link rel="stylesheet" href="/assets/fonts/google/plus-jakarta-sans.css">
         <link rel="stylesheet" href="/assets/css/tailwind.css">
+        <link href="/assets/vendor/sweetalert2/sweetalert2.min.css" rel="stylesheet" />
         <link href="/assets/vendor/boxicons/css/boxicons.min.css" rel="stylesheet" />
     </head>
 
@@ -33,57 +34,115 @@
                             </div>
 
                             <div class="flex flex-wrap items-center gap-3">
-                                <button type="button" class="inline-flex items-center justify-center gap-2 rounded-md bg-white px-5 py-3 text-sm font-extrabold text-[#001e62] shadow-sm transition hover:bg-[#eef3ff]">
+                                <a href="/products" class="inline-flex items-center justify-center gap-2 rounded-md bg-white px-5 py-3 text-sm font-extrabold text-[#001e62] shadow-sm transition hover:bg-[#eef3ff]">
                                     <i class="bx bx-download text-base"></i>
                                     Export Items
-                                </button>
-                                <button type="button" class="inline-flex items-center justify-center gap-2 rounded-md bg-[#001e62] px-5 py-3 text-sm font-extrabold text-white shadow-md shadow-[#001e62]/20 transition hover:bg-[#002f95]">
+                                </a>
+                                <button type="button" class="inline-flex items-center justify-center gap-2 rounded-md bg-[#001e62] px-5 py-3 text-sm font-extrabold text-white shadow-md shadow-[#001e62]/20 transition hover:bg-[#002f95]" data-modal-open="productModal">
                                     <i class="bx bx-plus-circle text-base"></i>
                                     Add New Item
                                 </button>
                             </div>
                         </section>
 
-                        <section class="grid gap-4 rounded-lg bg-white p-5 shadow-sm lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_auto] lg:items-end">
-                            <label class="block">
-                                <span class="text-[10px] font-extrabold uppercase text-[#566173]">Category</span>
-                                <select class="mt-2 w-full rounded-md border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-[#1e2b42] outline-none transition focus:border-brand-500 focus:bg-white">
-                                    <option>All Categories</option>
-                                    <option>Footwear</option>
-                                    <option>Accessories</option>
-                                    <option>Electronics</option>
-                                </select>
-                            </label>
+                        <section class="grid gap-4" style="grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));">
+                            <article class="rounded-lg bg-white p-5 shadow-sm">
+                                <p class="text-[10px] font-extrabold uppercase text-[#566173]">Total Products</p>
+                                <div class="mt-3 flex items-end justify-between gap-3">
+                                    <p class="text-3xl font-extrabold leading-none text-[#001e62]">{{ .Stats.TotalProducts }}</p>
+                                    <span class="inline-flex items-center gap-1 text-[11px] font-extrabold text-[#19a856]">
+                                        Catalog
+                                        <i class="bx bx-package text-sm"></i>
+                                    </span>
+                                </div>
+                            </article>
 
-                            <label class="block">
-                                <span class="text-[10px] font-extrabold uppercase text-[#566173]">Status</span>
-                                <select class="mt-2 w-full rounded-md border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-[#1e2b42] outline-none transition focus:border-brand-500 focus:bg-white">
-                                    <option>All Statuses</option>
-                                    <option>In Stock</option>
-                                    <option>Low Stock</option>
-                                    <option>Out of Stock</option>
-                                </select>
-                            </label>
+                            <article class="rounded-lg bg-white p-5 shadow-sm">
+                                <p class="text-[10px] font-extrabold uppercase text-[#566173]">Active Products</p>
+                                <div class="mt-3 flex items-end justify-between gap-3">
+                                    <p class="text-3xl font-extrabold leading-none text-[#001e62]">{{ .Stats.ActiveProducts }}</p>
+                                    <span class="text-[11px] font-extrabold text-[#566173]">Ready to Sell</span>
+                                </div>
+                            </article>
 
-                            <label class="block">
-                                <span class="text-[10px] font-extrabold uppercase text-[#566173]">Brand</span>
-                                <select class="mt-2 w-full rounded-md border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-[#1e2b42] outline-none transition focus:border-brand-500 focus:bg-white">
-                                    <option>All Brands</option>
-                                    <option>Runneo</option>
-                                    <option>Zenith</option>
-                                    <option>Aether</option>
-                                </select>
-                            </label>
+                            <article class="rounded-lg bg-white p-5 shadow-sm">
+                                <p class="text-[10px] font-extrabold uppercase text-[#566173]">Inactive Products</p>
+                                <div class="mt-3 flex items-end justify-between gap-3">
+                                    <p class="text-3xl font-extrabold leading-none text-rose-600">{{ .Stats.InactiveProducts }}</p>
+                                    <span class="text-[11px] font-extrabold text-rose-600">Need Review</span>
+                                </div>
+                            </article>
 
-                            <button type="button" class="inline-flex items-center justify-center gap-2 rounded-md bg-slate-50 px-6 py-3 text-sm font-extrabold text-[#001e62] transition hover:bg-[#eef3ff]">
-                                <i class="bx bx-filter-alt text-base"></i>
-                                Apply Advanced Filters
-                            </button>
+                            <article class="rounded-lg bg-white p-5 shadow-sm">
+                                <p class="text-[10px] font-extrabold uppercase text-[#566173]">Linked Suppliers</p>
+                                <div class="mt-3 flex items-end justify-between gap-3">
+                                    <p class="text-3xl font-extrabold leading-none text-[#001e62]">{{ .Stats.LinkedSuppliers }}</p>
+                                    <span class="inline-flex items-center gap-1 text-[11px] font-extrabold text-[#19a856]">
+                                        Sourcing
+                                        <i class="bx bx-buildings text-sm"></i>
+                                    </span>
+                                </div>
+                            </article>
                         </section>
+
+                        <form action="/products" method="get" class="rounded-lg bg-white p-4 shadow-sm">
+                            <div class="flex flex-col gap-3 lg:flex-row lg:items-center">
+                                <label class="relative block min-w-0 flex-[1.5]">
+                                    <i class="bx bx-search pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                                    <input type="text" name="search" value="{{ .Filters.Search }}" class="w-full rounded-md border border-slate-200 bg-slate-50 py-3 pl-10 pr-4 text-sm font-semibold text-slate-600 outline-none transition focus:border-brand-500 focus:bg-white" placeholder="Search SKU, barcode, product name...">
+                                </label>
+
+                                <select name="category_id" class="rounded-md border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-extrabold text-[#1e2b42] outline-none transition focus:border-brand-500 focus:bg-white">
+                                    <option value="0">Category: All</option>
+                                    {{ range .Categories }}
+                                    <option value="{{ .ID }}" {{ if eq $.Filters.CategoryID .ID }}selected{{ end }}>{{ .CategoryName }}</option>
+                                    {{ end }}
+                                </select>
+
+                                <select name="status" class="rounded-md border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-extrabold text-[#1e2b42] outline-none transition focus:border-brand-500 focus:bg-white">
+                                    <option value="">Status: All</option>
+                                    <option value="active" {{ if eq .Filters.Status "active" }}selected{{ end }}>Active</option>
+                                    <option value="inactive" {{ if eq .Filters.Status "inactive" }}selected{{ end }}>Inactive</option>
+                                </select>
+
+                                <select name="brand" class="rounded-md border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-extrabold text-[#1e2b42] outline-none transition focus:border-brand-500 focus:bg-white">
+                                    <option value="">Brand: All</option>
+                                    {{ range .Brands }}
+                                    <option value="{{ . }}" {{ if eq $.Filters.Brand . }}selected{{ end }}>{{ . }}</option>
+                                    {{ end }}
+                                </select>
+
+                                <select name="sort" class="rounded-md border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-extrabold text-[#1e2b42] outline-none transition focus:border-brand-500 focus:bg-white">
+                                    <option value="recent" {{ if eq .Filters.Sort "recent" }}selected{{ end }}>Recent</option>
+                                    <option value="name" {{ if eq .Filters.Sort "name" }}selected{{ end }}>Name</option>
+                                    <option value="code" {{ if eq .Filters.Sort "code" }}selected{{ end }}>Code</option>
+                                    <option value="brand" {{ if eq .Filters.Sort "brand" }}selected{{ end }}>Brand</option>
+                                </select>
+
+                                <div class="flex flex-wrap items-center gap-2">
+                                    <button type="submit" class="inline-flex items-center justify-center gap-2 rounded-md bg-[#001e62] px-5 py-3 text-sm font-extrabold text-white transition hover:bg-[#002f95]">
+                                        <i class="bx bx-filter-alt text-base"></i>
+                                        Apply
+                                    </button>
+                                    {{ if or .Filters.Search (gt .Filters.CategoryID 0) .Filters.Status .Filters.Brand (ne .Filters.Sort "recent") }}
+                                    <a href="/products" class="inline-flex items-center justify-center gap-2 rounded-md bg-slate-50 px-5 py-3 text-sm font-extrabold text-[#566173] transition hover:bg-slate-100">
+                                        <i class="bx bx-reset text-base"></i>
+                                        Reset
+                                    </a>
+                                    {{ end }}
+                                </div>
+                            </div>
+                        </form>
+
+                        {{ if .Error }}
+                        <div class="rounded-lg border border-rose-200 bg-rose-50 px-5 py-4 text-sm font-semibold text-rose-600">
+                            {{ .Error }}
+                        </div>
+                        {{ end }}
 
                         <section class="overflow-hidden rounded-lg bg-white shadow-sm">
                             <div class="overflow-x-auto">
-                                <table class="w-full text-sm" style="min-width: 1080px;">
+                                <table class="w-full text-sm" style="min-width: 1120px;">
                                     <thead class="bg-slate-100 text-[10px] font-extrabold uppercase text-[#001e62]">
                                         <tr>
                                             <th class="px-5 py-5 text-left">Item Details</th>
@@ -97,220 +156,139 @@
                                         </tr>
                                     </thead>
                                     <tbody class="divide-y divide-slate-100">
+                                        {{ range $product := .products }}
                                         <tr class="hover:bg-slate-50/70">
                                             <td class="px-5 py-5">
                                                 <div class="flex items-center gap-4">
-                                                    <span class="inline-flex h-14 w-14 flex-none items-end justify-center overflow-hidden rounded-md bg-[#fff0e8]">
-                                                        <span class="mb-2 h-4 w-10 rounded-full bg-rose-600 shadow-sm"></span>
+                                                    <span class="inline-flex h-14 w-14 flex-none items-center justify-center overflow-hidden rounded-md bg-[#eef3ff] text-xs font-extrabold uppercase text-[#001e62]">
+                                                        {{ if ge (len $product.ProductName) 2 }}
+                                                            {{ printf "%.2s" $product.ProductName }}
+                                                        {{ else }}
+                                                            {{ $product.ProductCode }}
+                                                        {{ end }}
                                                     </span>
                                                     <div>
-                                                        <p class="font-extrabold leading-tight text-[#07142f]">Velocity X-9 Runner</p>
-                                                        <p class="mt-1 text-xs font-semibold text-[#566173]">Footwear / Men</p>
+                                                        <p class="font-extrabold leading-tight text-[#07142f]">{{ $product.ProductName }}</p>
+                                                        <p class="mt-1 text-xs font-semibold text-[#566173]">{{ if $product.CategoryName }}{{ $product.CategoryName }}{{ else }}Uncategorized{{ end }}</p>
                                                     </div>
                                                 </div>
                                             </td>
                                             <td class="px-5 py-5">
-                                                <p class="text-[11px] font-semibold text-[#8b95a5]">SKU-29384-VX</p>
+                                                <p class="text-[11px] font-semibold text-[#8b95a5]">{{ $product.ProductCode }}</p>
+                                                <p class="mt-1 text-[11px] font-semibold text-[#566173]">{{ if $product.Barcode }}{{ $product.Barcode }}{{ else }}-{{ end }}</p>
                                             </td>
                                             <td class="px-5 py-5">
-                                                <p class="font-extrabold text-[#07142f]">Athletic Wear</p>
-                                                <p class="mt-1 text-[11px] font-semibold text-[#566173]">Brand: Lumina Sports</p>
+                                                <p class="font-extrabold text-[#07142f]">{{ if $product.Brand }}{{ $product.Brand }}{{ else }}No brand{{ end }}</p>
+                                                <p class="mt-1 text-[11px] font-semibold text-[#566173]">Unit: {{ if $product.UnitName }}{{ $product.UnitName }}{{ else }}-{{ end }}</p>
                                             </td>
-                                            <td class="px-5 py-5 text-lg font-extrabold text-[#001e62]">$124.50</td>
+                                            <td class="px-5 py-5 text-lg font-extrabold text-[#001e62]">
+                                                {{ if gt $product.PrimarySupplierID 0 }}{{ $product.PrimarySupplierPriceDisplay }}{{ else }}-{{ end }}
+                                                <p class="mt-1 text-[11px] font-semibold text-[#566173]">Pack {{ $product.PackSizeDisplay }}</p>
+                                            </td>
                                             <td class="px-5 py-5">
                                                 <div class="flex items-center gap-4">
                                                     <div>
-                                                        <p class="font-extrabold text-[#07142f]">420</p>
-                                                        <p class="mt-1 text-[11px] font-semibold text-[#8b95a5]">120</p>
+                                                        <p class="font-extrabold text-[#07142f]">{{ $product.MaxStockDisplay }}</p>
+                                                        <p class="mt-1 text-[11px] font-semibold text-[#8b95a5]">{{ $product.ReorderPointDisplay }}</p>
                                                     </div>
                                                     <div class="h-1.5 w-20 rounded-full bg-slate-200">
-                                                        <div class="h-1.5 w-[80%] rounded-full bg-[#19a856]"></div>
+                                                        {{ if not $product.IsActive }}
+                                                        <div class="h-1.5 w-0 rounded-full bg-rose-500"></div>
+                                                        {{ else }}
+                                                        <div class="h-1.5 w-[72%] rounded-full bg-[#19a856]"></div>
+                                                        {{ end }}
                                                     </div>
                                                 </div>
+                                                <p class="mt-2 text-[11px] font-semibold text-[#566173]">Min {{ $product.MinStockDisplay }} / Max {{ $product.MaxStockDisplay }}</p>
                                             </td>
-                                            <td class="px-5 py-5 font-semibold text-[#1e2b42]">Global Logistics Inc.</td>
                                             <td class="px-5 py-5">
+                                                <p class="font-semibold text-[#1e2b42]">{{ if $product.PrimarySupplierName }}{{ $product.PrimarySupplierName }}{{ else }}-{{ end }}</p>
+                                                <p class="mt-1 text-[11px] font-semibold text-[#566173]">Lead time {{ $product.DefaultLeadTimeDays }} days</p>
+                                            </td>
+                                            <td class="px-5 py-5">
+                                                {{ if $product.IsActive }}
                                                 <span class="inline-flex items-center gap-1.5 rounded-lg bg-[#dcfae7] px-3 py-2 text-[10px] font-extrabold uppercase text-[#19a856]">
                                                     <span class="h-1.5 w-1.5 rounded-full bg-[#19a856]"></span>
-                                                    In Stock
+                                                    {{ $product.StatusLabel }}
                                                 </span>
-                                            </td>
-                                            <td class="px-5 py-5">
-                                                <div class="flex items-center gap-3">
-                                                    <button type="button" class="text-lg text-[#001e62] transition hover:text-[#002f95]">
-                                                        <i class="bx bx-pencil"></i>
-                                                    </button>
-                                                    <button type="button" class="text-lg text-rose-600 transition hover:text-rose-700">
-                                                        <i class="bx bx-trash"></i>
-                                                    </button>
-                                                </div>
-                                            </td>
-                                        </tr>
-
-                                        <tr class="hover:bg-slate-50/70">
-                                            <td class="px-5 py-5">
-                                                <div class="flex items-center gap-4">
-                                                    <span class="inline-flex h-14 w-14 flex-none items-center justify-center overflow-hidden rounded-md bg-slate-100">
-                                                        <span class="h-9 w-9 rounded-full bg-[#101820] shadow-inner"></span>
-                                                    </span>
-                                                    <div>
-                                                        <p class="font-extrabold leading-tight text-[#07142f]">Minimalist Era Watch</p>
-                                                        <p class="mt-1 text-xs font-semibold text-[#566173]">Accessories / Timepieces</p>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td class="px-5 py-5">
-                                                <p class="text-[11px] font-semibold text-[#8b95a5]">SKU-44122-ME</p>
-                                            </td>
-                                            <td class="px-5 py-5">
-                                                <p class="font-extrabold text-[#07142f]">Lifestyle</p>
-                                                <p class="mt-1 text-[11px] font-semibold text-[#566173]">Brand: Zenith</p>
-                                            </td>
-                                            <td class="px-5 py-5 text-lg font-extrabold text-[#001e62]">$89.00</td>
-                                            <td class="px-5 py-5">
-                                                <div class="flex items-center gap-4">
-                                                    <div>
-                                                        <p class="font-extrabold text-[#07142f]">18</p>
-                                                        <p class="mt-1 text-[11px] font-semibold text-[#8b95a5]">3.5</p>
-                                                    </div>
-                                                    <div class="h-1.5 w-20 rounded-full bg-slate-200">
-                                                        <div class="h-1.5 w-[16%] rounded-full bg-[#f4a51c]"></div>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td class="px-5 py-5 font-semibold text-[#1e2b42]">Zenith Distro Hub</td>
-                                            <td class="px-5 py-5">
-                                                <span class="inline-flex items-center gap-1.5 rounded-lg bg-[#fff2c9] px-3 py-2 text-[10px] font-extrabold uppercase text-[#b7791f]">
-                                                    <span class="h-1.5 w-1.5 rounded-full bg-[#f4a51c]"></span>
-                                                    Low Stock
-                                                </span>
-                                            </td>
-                                            <td class="px-5 py-5">
-                                                <div class="flex items-center gap-3">
-                                                    <button type="button" class="text-lg text-[#001e62] transition hover:text-[#002f95]">
-                                                        <i class="bx bx-pencil"></i>
-                                                    </button>
-                                                    <button type="button" class="text-lg text-rose-600 transition hover:text-rose-700">
-                                                        <i class="bx bx-trash"></i>
-                                                    </button>
-                                                </div>
-                                            </td>
-                                        </tr>
-
-                                        <tr class="hover:bg-slate-50/70">
-                                            <td class="px-5 py-5">
-                                                <div class="flex items-center gap-4">
-                                                    <span class="inline-flex h-14 w-14 flex-none items-center justify-center overflow-hidden rounded-md bg-[#e0ebff]">
-                                                        <span class="h-10 w-10 rounded-full bg-[#07142f] ring-4 ring-[#24408f]"></span>
-                                                    </span>
-                                                    <div>
-                                                        <p class="font-extrabold leading-tight text-[#07142f]">SonicFlow Noise Pro</p>
-                                                        <p class="mt-1 text-xs font-semibold text-[#566173]">Electronics / Audio</p>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td class="px-5 py-5">
-                                                <p class="text-[11px] font-semibold text-[#8b95a5]">SKU-99012-SF</p>
-                                            </td>
-                                            <td class="px-5 py-5">
-                                                <p class="font-extrabold text-[#07142f]">Tech Gadgets</p>
-                                                <p class="mt-1 text-[11px] font-semibold text-[#566173]">Brand: Aether</p>
-                                            </td>
-                                            <td class="px-5 py-5 text-lg font-extrabold text-[#001e62]">$299.99</td>
-                                            <td class="px-5 py-5">
-                                                <div class="flex items-center gap-4">
-                                                    <div>
-                                                        <p class="font-extrabold text-[#07142f]">0</p>
-                                                        <p class="mt-1 text-[11px] font-semibold text-[#8b95a5]">0.0</p>
-                                                    </div>
-                                                    <div class="h-1.5 w-20 rounded-full bg-slate-200">
-                                                        <div class="h-1.5 w-0 rounded-full bg-rose-500"></div>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td class="px-5 py-5 font-semibold text-[#1e2b42]">Precision Audio Ltd.</td>
-                                            <td class="px-5 py-5">
+                                                {{ else }}
                                                 <span class="inline-flex items-center gap-1.5 rounded-lg bg-rose-50 px-3 py-2 text-[10px] font-extrabold uppercase text-rose-600">
                                                     <span class="h-1.5 w-1.5 rounded-full bg-rose-500"></span>
-                                                    Out of Stock
+                                                    {{ $product.StatusLabel }}
                                                 </span>
+                                                {{ end }}
                                             </td>
                                             <td class="px-5 py-5">
                                                 <div class="flex items-center gap-3">
-                                                    <button type="button" class="text-lg text-[#001e62] transition hover:text-[#002f95]">
+                                                    <a href="/products/{{ $product.ID }}" class="text-lg text-[#24408f] transition hover:text-[#001e62]">
+                                                        <i class="bx bx-show-alt"></i>
+                                                    </a>
+                                                    <button
+                                                        type="button"
+                                                        class="btn-edit-product text-lg text-[#001e62] transition hover:text-[#002f95]"
+                                                        data-id="{{ $product.ID }}"
+                                                        data-product-code="{{ $product.ProductCode }}"
+                                                        data-barcode="{{ $product.Barcode }}"
+                                                        data-product-name="{{ $product.ProductName }}"
+                                                        data-category-id="{{ $product.CategoryID }}"
+                                                        data-unit-id="{{ $product.UnitID }}"
+                                                        data-brand="{{ $product.Brand }}"
+                                                        data-min-stock="{{ $product.MinStock }}"
+                                                        data-max-stock="{{ $product.MaxStock }}"
+                                                        data-reorder-point="{{ $product.ReorderPoint }}"
+                                                        data-default-lead-time-days="{{ $product.DefaultLeadTimeDays }}"
+                                                        data-pack-size="{{ $product.PackSize }}"
+                                                        data-is-active="{{ if $product.IsActive }}1{{ else }}0{{ end }}"
+                                                        data-supplier-id="{{ $product.PrimarySupplierID }}"
+                                                        data-last-price="{{ $product.PrimarySupplierPrice }}">
                                                         <i class="bx bx-pencil"></i>
                                                     </button>
-                                                    <button type="button" class="text-lg text-rose-600 transition hover:text-rose-700">
+                                                    <button type="button" class="btn-delete-product text-lg text-rose-600 transition hover:text-rose-700" data-url="/products/delete/{{ $product.ID }}" data-product-name="{{ $product.ProductName }}">
                                                         <i class="bx bx-trash"></i>
                                                     </button>
                                                 </div>
                                             </td>
                                         </tr>
-
-                                        <tr class="hover:bg-slate-50/70">
-                                            <td class="px-5 py-5">
-                                                <div class="flex items-center gap-4">
-                                                    <span class="inline-flex h-14 w-14 flex-none items-center justify-center overflow-hidden rounded-md bg-slate-100">
-                                                        <span class="flex gap-1">
-                                                            <span class="h-5 w-5 rounded-full bg-[#101820]"></span>
-                                                            <span class="h-5 w-5 rounded-full bg-[#24408f]"></span>
-                                                        </span>
-                                                    </span>
-                                                    <div>
-                                                        <p class="font-extrabold leading-tight text-[#07142f]">SunGazer Elite Gold</p>
-                                                        <p class="mt-1 text-xs font-semibold text-[#566173]">Accessories / Eyewear</p>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td class="px-5 py-5">
-                                                <p class="text-[11px] font-semibold text-[#8b95a5]">SKU-77215-SG</p>
-                                            </td>
-                                            <td class="px-5 py-5">
-                                                <p class="font-extrabold text-[#07142f]">Luxury</p>
-                                                <p class="mt-1 text-[11px] font-semibold text-[#566173]">Brand: Zenith</p>
-                                            </td>
-                                            <td class="px-5 py-5 text-lg font-extrabold text-[#001e62]">$185.00</td>
-                                            <td class="px-5 py-5">
-                                                <div class="flex items-center gap-4">
-                                                    <div>
-                                                        <p class="font-extrabold text-[#07142f]">85</p>
-                                                        <p class="mt-1 text-[11px] font-semibold text-[#8b95a5]">25.80</p>
-                                                    </div>
-                                                    <div class="h-1.5 w-20 rounded-full bg-slate-200">
-                                                        <div class="h-1.5 w-[42%] rounded-full bg-[#19a856]"></div>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td class="px-5 py-5 font-semibold text-[#1e2b42]">Global Logistics Inc.</td>
-                                            <td class="px-5 py-5">
-                                                <span class="inline-flex items-center gap-1.5 rounded-lg bg-[#dcfae7] px-3 py-2 text-[10px] font-extrabold uppercase text-[#19a856]">
-                                                    <span class="h-1.5 w-1.5 rounded-full bg-[#19a856]"></span>
-                                                    In Stock
-                                                </span>
-                                            </td>
-                                            <td class="px-5 py-5">
-                                                <div class="flex items-center gap-3">
-                                                    <button type="button" class="text-lg text-[#001e62] transition hover:text-[#002f95]">
-                                                        <i class="bx bx-pencil"></i>
-                                                    </button>
-                                                    <button type="button" class="text-lg text-rose-600 transition hover:text-rose-700">
-                                                        <i class="bx bx-trash"></i>
-                                                    </button>
-                                                </div>
+                                        {{ else }}
+                                        <tr>
+                                            <td colspan="8" class="px-5 py-10 text-center text-sm font-semibold text-[#566173]">
+                                                {{ if $.Filters.Search }}
+                                                    Tidak ada produk yang cocok dengan pencarian "{{ $.Filters.Search }}"
+                                                {{ else }}
+                                                    Belum ada data produk
+                                                {{ end }}
                                             </td>
                                         </tr>
+                                        {{ end }}
                                     </tbody>
                                 </table>
                             </div>
 
                             <div class="flex flex-col gap-3 border-t border-slate-100 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
-                                <p class="text-xs font-semibold text-[#1e2b42]">Showing 1 to 4 of 1,240 entries</p>
+                                <p class="text-xs font-semibold text-[#1e2b42]">
+                                    {{ if gt .Pagination.TotalItems 0 }}
+                                        Showing {{ .Pagination.StartItem }} to {{ .Pagination.EndItem }} of {{ .Pagination.TotalItems }} entries
+                                    {{ else }}
+                                        Showing 0 entries
+                                    {{ end }}
+                                    {{ if or .Filters.Search (gt .Filters.CategoryID 0) .Filters.Status .Filters.Brand (ne .Filters.Sort "recent") }} with active filters{{ end }}
+                                </p>
                                 <div class="flex items-center gap-2">
-                                    <button type="button" class="inline-flex h-9 items-center justify-center rounded-md bg-white px-4 text-sm font-semibold text-[#1e2b42] shadow-sm transition hover:bg-[#eef3ff]">Previous</button>
-                                    <button type="button" class="inline-flex h-9 w-9 items-center justify-center rounded-md bg-[#001e62] text-sm font-extrabold text-white">1</button>
-                                    <button type="button" class="inline-flex h-9 w-9 items-center justify-center rounded-md bg-white text-sm font-semibold text-[#1e2b42] shadow-sm transition hover:bg-[#eef3ff]">2</button>
-                                    <button type="button" class="inline-flex h-9 w-9 items-center justify-center rounded-md bg-white text-sm font-semibold text-[#1e2b42] shadow-sm transition hover:bg-[#eef3ff]">3</button>
-                                    <button type="button" class="inline-flex h-9 items-center justify-center rounded-md bg-white px-4 text-sm font-semibold text-[#1e2b42] shadow-sm transition hover:bg-[#eef3ff]">Next</button>
+                                    {{ if .Pagination.HasPrev }}
+                                    <a href="{{ .Pagination.PrevURL }}" class="inline-flex h-9 items-center justify-center rounded-md bg-white px-4 text-sm font-semibold text-[#1e2b42] shadow-sm transition hover:bg-[#eef3ff]">Previous</a>
+                                    {{ else }}
+                                    <span class="inline-flex h-9 items-center justify-center rounded-md bg-slate-100 px-4 text-sm font-semibold text-slate-400">Previous</span>
+                                    {{ end }}
+
+                                    {{ range .Pagination.Pages }}
+                                    <a href="{{ .URL }}" class="inline-flex h-9 w-9 items-center justify-center rounded-md text-sm font-extrabold transition {{ if .Active }}bg-[#001e62] text-white{{ else }}bg-white text-[#1e2b42] shadow-sm hover:bg-[#eef3ff]{{ end }}">{{ .Number }}</a>
+                                    {{ end }}
+
+                                    {{ if .Pagination.HasNext }}
+                                    <a href="{{ .Pagination.NextURL }}" class="inline-flex h-9 items-center justify-center rounded-md bg-white px-4 text-sm font-semibold text-[#1e2b42] shadow-sm transition hover:bg-[#eef3ff]">Next</a>
+                                    {{ else }}
+                                    <span class="inline-flex h-9 items-center justify-center rounded-md bg-slate-100 px-4 text-sm font-semibold text-slate-400">Next</span>
+                                    {{ end }}
                                 </div>
                             </div>
                         </section>
@@ -319,10 +297,10 @@
                             <article class="rounded-lg border border-[#dbe4f0] bg-white p-6 shadow-sm">
                                 <div class="flex items-center gap-3">
                                     <i class="bx bx-error text-2xl text-[#001e62]"></i>
-                                    <h2 class="text-sm font-extrabold uppercase text-[#001e62]">Low Stock Alert</h2>
+                                    <h2 class="text-sm font-extrabold uppercase text-[#001e62]">Catalog Health</h2>
                                 </div>
-                                <p class="mt-4 text-sm font-medium leading-relaxed text-[#1e2b42]">Current 24 items are below their safety threshold.</p>
-                                <p class="mt-2 text-sm font-medium leading-relaxed text-[#566173]">Automated replenishment drafts have been generated for 12 of them.</p>
+                                <p class="mt-4 text-sm font-medium leading-relaxed text-[#1e2b42]">{{ .Stats.InactiveProducts }} products are currently inactive and need review.</p>
+                                <p class="mt-2 text-sm font-medium leading-relaxed text-[#566173]">Update category, supplier, or stock policy directly from the product list.</p>
                             </article>
 
                             <article class="rounded-lg bg-white p-6 shadow-sm">
@@ -330,19 +308,20 @@
                                     <i class="bx bx-sync text-2xl text-[#001e62]"></i>
                                     <h2 class="text-sm font-extrabold uppercase text-[#001e62]">Catalog Sync</h2>
                                 </div>
-                                <p class="mt-4 text-sm font-medium leading-relaxed text-[#1e2b42]">Last SKU reconciliation completed 42 minutes ago.</p>
-                                <p class="mt-2 text-sm font-medium leading-relaxed text-[#566173]">All regional warehouses are currently synchronized with the master node.</p>
+                                <p class="mt-4 text-sm font-medium leading-relaxed text-[#1e2b42]">{{ .Stats.ActiveProducts }} active products are available in the current master catalog.</p>
+                                <p class="mt-2 text-sm font-medium leading-relaxed text-[#566173]">Filters and pagination stay in sync while you browse the product master.</p>
                             </article>
 
                             <article class="rounded-lg bg-white p-6 shadow-sm">
                                 <div class="flex items-center gap-3">
                                     <i class="bx bx-trending-up text-2xl text-[#001e62]"></i>
-                                    <h2 class="text-sm font-extrabold uppercase text-[#001e62]">Inventory Value</h2>
+                                    <h2 class="text-sm font-extrabold uppercase text-[#001e62]">Supplier Links</h2>
                                 </div>
                                 <div class="mt-4 flex flex-wrap items-end gap-3">
-                                    <p class="text-3xl font-extrabold leading-none text-[#001e62]">$4,281,950</p>
-                                    <span class="pb-1 text-xs font-extrabold text-[#19a856]">+2.4% MoM</span>
+                                    <p class="text-3xl font-extrabold leading-none text-[#001e62]">{{ .Stats.LinkedSuppliers }}</p>
+                                    <span class="pb-1 text-xs font-extrabold text-[#19a856]">connected suppliers</span>
                                 </div>
+                                <p class="mt-2 text-sm font-medium leading-relaxed text-[#566173]">Each product can keep a primary supplier and the latest known purchase price.</p>
                             </article>
                         </section>
                     </div>
@@ -352,6 +331,200 @@
 
         <div id="sidebar-overlay" class="fixed inset-0 z-40 hidden bg-slate-900/50 lg:hidden"></div>
 
+        <div data-modal class="fixed inset-0 z-50 hidden items-start justify-center overflow-y-auto p-4 sm:items-center sm:p-6" id="productModal">
+            <div class="absolute inset-0 bg-slate-900/50" data-modal-close></div>
+            <div class="relative w-full max-w-3xl rounded-lg bg-white p-5 shadow-xl sm:p-6">
+                <div class="flex items-center justify-between border-b border-slate-100 pb-4">
+                    <h2 class="text-lg font-extrabold text-[#001e62]">Add Product</h2>
+                    <button type="button" class="text-slate-400 transition hover:text-slate-600" data-modal-close>
+                        <i class="bx bx-x text-2xl"></i>
+                    </button>
+                </div>
+
+                <form action="/products" method="post" class="mt-6 max-h-[75vh] space-y-5 overflow-y-auto pr-1">
+                    <div class="grid gap-5 md:grid-cols-2">
+                        <div>
+                            <label for="product_code" class="text-[10px] font-extrabold uppercase text-[#566173]">Product Code</label>
+                            <input type="text" id="product_code" name="product_code" required class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold uppercase outline-none transition focus:border-brand-500" placeholder="BRG-0004">
+                        </div>
+                        <div>
+                            <label for="barcode" class="text-[10px] font-extrabold uppercase text-[#566173]">Barcode</label>
+                            <input type="text" id="barcode" name="barcode" class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500" placeholder="899999000004">
+                        </div>
+                        <div>
+                            <label for="product_name" class="text-[10px] font-extrabold uppercase text-[#566173]">Product Name</label>
+                            <input type="text" id="product_name" name="product_name" required class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500" placeholder="Nama Produk">
+                        </div>
+                        <div>
+                            <label for="brand" class="text-[10px] font-extrabold uppercase text-[#566173]">Brand</label>
+                            <input type="text" id="brand" name="brand" class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500" placeholder="Brand">
+                        </div>
+                        <div>
+                            <label for="category_id" class="text-[10px] font-extrabold uppercase text-[#566173]">Category</label>
+                            <select id="category_id" name="category_id" class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500">
+                                <option value="0">Pilih Category</option>
+                                {{ range .Categories }}
+                                <option value="{{ .ID }}">{{ .CategoryName }}</option>
+                                {{ end }}
+                            </select>
+                        </div>
+                        <div>
+                            <label for="unit_id" class="text-[10px] font-extrabold uppercase text-[#566173]">Unit</label>
+                            <select id="unit_id" name="unit_id" class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500">
+                                <option value="0">Pilih Unit</option>
+                                {{ range .Units }}
+                                <option value="{{ .ID }}">{{ .UnitName }}</option>
+                                {{ end }}
+                            </select>
+                        </div>
+                        <div>
+                            <label for="supplier_id" class="text-[10px] font-extrabold uppercase text-[#566173]">Primary Supplier</label>
+                            <select id="supplier_id" name="supplier_id" class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500">
+                                <option value="0">Pilih Supplier</option>
+                                {{ range .Suppliers }}
+                                <option value="{{ .ID }}">{{ .SupplierName }}</option>
+                                {{ end }}
+                            </select>
+                        </div>
+                        <div>
+                            <label for="last_price" class="text-[10px] font-extrabold uppercase text-[#566173]">Last Price</label>
+                            <input type="number" id="last_price" name="last_price" min="0" step="0.01" value="0" class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500">
+                        </div>
+                        <div>
+                            <label for="min_stock" class="text-[10px] font-extrabold uppercase text-[#566173]">Min Stock</label>
+                            <input type="number" id="min_stock" name="min_stock" min="0" step="0.01" value="0" class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500">
+                        </div>
+                        <div>
+                            <label for="max_stock" class="text-[10px] font-extrabold uppercase text-[#566173]">Max Stock</label>
+                            <input type="number" id="max_stock" name="max_stock" min="0" step="0.01" value="0" class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500">
+                        </div>
+                        <div>
+                            <label for="reorder_point" class="text-[10px] font-extrabold uppercase text-[#566173]">Reorder Point</label>
+                            <input type="number" id="reorder_point" name="reorder_point" min="0" step="0.01" value="0" class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500">
+                        </div>
+                        <div>
+                            <label for="default_lead_time_days" class="text-[10px] font-extrabold uppercase text-[#566173]">Lead Time Days</label>
+                            <input type="number" id="default_lead_time_days" name="default_lead_time_days" min="0" value="0" class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500">
+                        </div>
+                        <div>
+                            <label for="pack_size" class="text-[10px] font-extrabold uppercase text-[#566173]">Pack Size</label>
+                            <input type="number" id="pack_size" name="pack_size" min="0.01" step="0.01" value="1" class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500">
+                        </div>
+                        <div>
+                            <label for="is_active" class="text-[10px] font-extrabold uppercase text-[#566173]">Status</label>
+                            <select id="is_active" name="is_active" class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500">
+                                <option value="1" selected>Active</option>
+                                <option value="0">Inactive</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col gap-3 border-t border-slate-100 pt-4 sm:flex-row sm:justify-end">
+                        <button type="button" class="rounded-md border border-slate-200 bg-white px-5 py-3 text-sm font-extrabold text-[#1e2b42] transition hover:bg-slate-50" data-modal-close>Cancel</button>
+                        <button type="submit" class="rounded-md bg-[#001e62] px-5 py-3 text-sm font-extrabold text-white transition hover:bg-[#002f95]">Save Product</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div data-modal class="fixed inset-0 z-50 hidden items-start justify-center overflow-y-auto p-4 sm:items-center sm:p-6" id="productEditModal">
+            <div class="absolute inset-0 bg-slate-900/50" data-modal-close></div>
+            <div class="relative w-full max-w-3xl rounded-lg bg-white p-5 shadow-xl sm:p-6">
+                <div class="flex items-center justify-between border-b border-slate-100 pb-4">
+                    <h2 class="text-lg font-extrabold text-[#001e62]">Edit Product</h2>
+                    <button type="button" class="text-slate-400 transition hover:text-slate-600" data-modal-close>
+                        <i class="bx bx-x text-2xl"></i>
+                    </button>
+                </div>
+
+                <form action="/products/update" method="post" class="mt-6 max-h-[75vh] space-y-5 overflow-y-auto pr-1">
+                    <input type="hidden" id="edit_id" name="id">
+                    <div class="grid gap-5 md:grid-cols-2">
+                        <div>
+                            <label for="edit_product_code" class="text-[10px] font-extrabold uppercase text-[#566173]">Product Code</label>
+                            <input type="text" id="edit_product_code" name="product_code" required class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold uppercase outline-none transition focus:border-brand-500">
+                        </div>
+                        <div>
+                            <label for="edit_barcode" class="text-[10px] font-extrabold uppercase text-[#566173]">Barcode</label>
+                            <input type="text" id="edit_barcode" name="barcode" class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500">
+                        </div>
+                        <div>
+                            <label for="edit_product_name" class="text-[10px] font-extrabold uppercase text-[#566173]">Product Name</label>
+                            <input type="text" id="edit_product_name" name="product_name" required class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500">
+                        </div>
+                        <div>
+                            <label for="edit_brand" class="text-[10px] font-extrabold uppercase text-[#566173]">Brand</label>
+                            <input type="text" id="edit_brand" name="brand" class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500">
+                        </div>
+                        <div>
+                            <label for="edit_category_id" class="text-[10px] font-extrabold uppercase text-[#566173]">Category</label>
+                            <select id="edit_category_id" name="category_id" class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500">
+                                <option value="0">Pilih Category</option>
+                                {{ range .Categories }}
+                                <option value="{{ .ID }}">{{ .CategoryName }}</option>
+                                {{ end }}
+                            </select>
+                        </div>
+                        <div>
+                            <label for="edit_unit_id" class="text-[10px] font-extrabold uppercase text-[#566173]">Unit</label>
+                            <select id="edit_unit_id" name="unit_id" class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500">
+                                <option value="0">Pilih Unit</option>
+                                {{ range .Units }}
+                                <option value="{{ .ID }}">{{ .UnitName }}</option>
+                                {{ end }}
+                            </select>
+                        </div>
+                        <div>
+                            <label for="edit_supplier_id" class="text-[10px] font-extrabold uppercase text-[#566173]">Primary Supplier</label>
+                            <select id="edit_supplier_id" name="supplier_id" class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500">
+                                <option value="0">Pilih Supplier</option>
+                                {{ range .Suppliers }}
+                                <option value="{{ .ID }}">{{ .SupplierName }}</option>
+                                {{ end }}
+                            </select>
+                        </div>
+                        <div>
+                            <label for="edit_last_price" class="text-[10px] font-extrabold uppercase text-[#566173]">Last Price</label>
+                            <input type="number" id="edit_last_price" name="last_price" min="0" step="0.01" class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500">
+                        </div>
+                        <div>
+                            <label for="edit_min_stock" class="text-[10px] font-extrabold uppercase text-[#566173]">Min Stock</label>
+                            <input type="number" id="edit_min_stock" name="min_stock" min="0" step="0.01" class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500">
+                        </div>
+                        <div>
+                            <label for="edit_max_stock" class="text-[10px] font-extrabold uppercase text-[#566173]">Max Stock</label>
+                            <input type="number" id="edit_max_stock" name="max_stock" min="0" step="0.01" class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500">
+                        </div>
+                        <div>
+                            <label for="edit_reorder_point" class="text-[10px] font-extrabold uppercase text-[#566173]">Reorder Point</label>
+                            <input type="number" id="edit_reorder_point" name="reorder_point" min="0" step="0.01" class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500">
+                        </div>
+                        <div>
+                            <label for="edit_default_lead_time_days" class="text-[10px] font-extrabold uppercase text-[#566173]">Lead Time Days</label>
+                            <input type="number" id="edit_default_lead_time_days" name="default_lead_time_days" min="0" class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500">
+                        </div>
+                        <div>
+                            <label for="edit_pack_size" class="text-[10px] font-extrabold uppercase text-[#566173]">Pack Size</label>
+                            <input type="number" id="edit_pack_size" name="pack_size" min="0.01" step="0.01" class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500">
+                        </div>
+                        <div>
+                            <label for="edit_is_active" class="text-[10px] font-extrabold uppercase text-[#566173]">Status</label>
+                            <select id="edit_is_active" name="is_active" class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500">
+                                <option value="1">Active</option>
+                                <option value="0">Inactive</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col gap-3 border-t border-slate-100 pt-4 sm:flex-row sm:justify-end">
+                        <button type="button" class="rounded-md border border-slate-200 bg-white px-5 py-3 text-sm font-extrabold text-[#1e2b42] transition hover:bg-slate-50" data-modal-close>Cancel</button>
+                        <button type="submit" class="rounded-md bg-[#001e62] px-5 py-3 text-sm font-extrabold text-white transition hover:bg-[#002f95]">Update Product</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <script src="/assets/vendor/sweetalert2/sweetalert2.all.min.js"></script>
         <script>
             document.addEventListener('DOMContentLoaded', function () {
                 var sidebar = document.getElementById('app-sidebar');
@@ -362,7 +535,9 @@
                     if (!sidebar) return;
                     sidebar.classList.add('-translate-x-full');
                     if (overlay) overlay.classList.add('hidden');
-                    document.body.classList.remove('overflow-hidden');
+                    if (!document.querySelector('[data-modal].flex')) {
+                        document.body.classList.remove('overflow-hidden');
+                    }
                 }
 
                 function openSidebar() {
@@ -370,6 +545,23 @@
                     sidebar.classList.remove('-translate-x-full');
                     if (overlay) overlay.classList.remove('hidden');
                     document.body.classList.add('overflow-hidden');
+                }
+
+                function openModal(modalId) {
+                    var modal = document.getElementById(modalId);
+                    if (!modal) return;
+                    modal.classList.remove('hidden');
+                    modal.classList.add('flex');
+                    document.body.classList.add('overflow-hidden');
+                }
+
+                function closeModal(modal) {
+                    if (!modal) return;
+                    modal.classList.add('hidden');
+                    modal.classList.remove('flex');
+                    if (!document.querySelector('[data-modal].flex')) {
+                        document.body.classList.remove('overflow-hidden');
+                    }
                 }
 
                 toggleButtons.forEach(function (button) {
@@ -386,6 +578,72 @@
                 if (overlay) {
                     overlay.addEventListener('click', closeSidebar);
                 }
+
+                document.querySelectorAll('[data-modal-open]').forEach(function (trigger) {
+                    trigger.addEventListener('click', function () {
+                        var target = trigger.getAttribute('data-modal-open');
+                        if (target) openModal(target);
+                    });
+                });
+
+                document.querySelectorAll('[data-modal-close]').forEach(function (close) {
+                    close.addEventListener('click', function () {
+                        closeModal(close.closest('[data-modal]'));
+                    });
+                });
+
+                document.addEventListener('keydown', function (event) {
+                    if (event.key !== 'Escape') return;
+                    document.querySelectorAll('[data-modal].flex').forEach(closeModal);
+                });
+
+                document.querySelectorAll('.btn-edit-product').forEach(function (btn) {
+                    btn.addEventListener('click', function () {
+                        var editModalEl = document.getElementById('productEditModal');
+                        if (!editModalEl) return;
+
+                        editModalEl.querySelector('#edit_id').value = btn.getAttribute('data-id') || '';
+                        editModalEl.querySelector('#edit_product_code').value = btn.getAttribute('data-product-code') || '';
+                        editModalEl.querySelector('#edit_barcode').value = btn.getAttribute('data-barcode') || '';
+                        editModalEl.querySelector('#edit_product_name').value = btn.getAttribute('data-product-name') || '';
+                        editModalEl.querySelector('#edit_category_id').value = btn.getAttribute('data-category-id') || '0';
+                        editModalEl.querySelector('#edit_unit_id').value = btn.getAttribute('data-unit-id') || '0';
+                        editModalEl.querySelector('#edit_brand').value = btn.getAttribute('data-brand') || '';
+                        editModalEl.querySelector('#edit_min_stock').value = btn.getAttribute('data-min-stock') || '0';
+                        editModalEl.querySelector('#edit_max_stock').value = btn.getAttribute('data-max-stock') || '0';
+                        editModalEl.querySelector('#edit_reorder_point').value = btn.getAttribute('data-reorder-point') || '0';
+                        editModalEl.querySelector('#edit_default_lead_time_days').value = btn.getAttribute('data-default-lead-time-days') || '0';
+                        editModalEl.querySelector('#edit_pack_size').value = btn.getAttribute('data-pack-size') || '1';
+                        editModalEl.querySelector('#edit_is_active').value = btn.getAttribute('data-is-active') || '1';
+                        editModalEl.querySelector('#edit_supplier_id').value = btn.getAttribute('data-supplier-id') || '0';
+                        editModalEl.querySelector('#edit_last_price').value = btn.getAttribute('data-last-price') || '0';
+
+                        openModal('productEditModal');
+                    });
+                });
+
+                document.querySelectorAll('.btn-delete-product').forEach(function (btn) {
+                    btn.addEventListener('click', function (event) {
+                        event.preventDefault();
+                        var productName = btn.getAttribute('data-product-name') || 'produk';
+                        var targetUrl = btn.getAttribute('data-url');
+
+                        Swal.fire({
+                            title: 'Hapus produk ini?',
+                            text: 'Produk ' + productName + ' akan dihapus dari master data.',
+                            icon: 'warning',
+                            showCancelButton: true,
+                            confirmButtonColor: '#d33',
+                            cancelButtonColor: '#6c757d',
+                            confirmButtonText: 'Ya, hapus',
+                            cancelButtonText: 'Batal'
+                        }).then(function (result) {
+                            if (result.isConfirmed && targetUrl) {
+                                window.location.href = targetUrl;
+                            }
+                        });
+                    });
+                });
             });
         </script>
     </body>

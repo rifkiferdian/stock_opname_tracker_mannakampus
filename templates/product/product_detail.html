@@ -1,0 +1,323 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+        <title>
+            {{ if .Title }}
+                {{ .Title }}
+            {{ else }}
+                Product Detail
+            {{ end }}
+        </title>
+
+        <link rel="stylesheet" href="/assets/fonts/google/plus-jakarta-sans.css">
+        <link rel="stylesheet" href="/assets/css/tailwind.css">
+        <link href="/assets/vendor/boxicons/css/boxicons.min.css" rel="stylesheet" />
+    </head>
+
+    <body class="bg-[#f5f7fb] font-display text-[#07142f]">
+        <div class="flex min-h-screen">
+            {{ template "sidebar" . }}
+
+            <div class="flex min-h-screen min-w-0 flex-1 flex-col">
+                {{ template "header" . }}
+
+                <main class="min-w-0 flex-1 px-4 pb-6 pt-8 sm:px-6 sm:pt-10 lg:px-8 mt-4">
+                    <div class="mx-auto flex w-full max-w-7xl flex-col gap-5">
+                        <div class="flex items-center justify-between">
+                            <a href="/products" class="inline-flex items-center gap-2 text-sm font-extrabold text-[#001e62] transition hover:text-[#24408f]">
+                                <i class="bx bx-arrow-back text-base"></i>
+                                Back to List
+                            </a>
+                        </div>
+
+                        <section class="grid gap-5 lg:grid-cols-[minmax(0,2.1fr)_minmax(17rem,1fr)]">
+                            <article class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+                                <div class="min-w-0">
+                                    <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                                        <div class="min-w-0">
+                                            <p class="text-[11px] font-extrabold uppercase tracking-[0.18em] text-[#4f5b70]">SKU: {{ .Product.ProductCode }}</p>
+                                            <h1 class="mt-2 text-[2.15rem] font-extrabold leading-tight text-[#0b3586]">{{ .Product.ProductName }}</h1>
+
+                                            <div class="mt-4 flex flex-wrap items-center gap-2">
+                                                {{ if .Product.CategoryName }}
+                                                <span class="inline-flex items-center gap-1.5 rounded-md bg-slate-100 px-3 py-2 text-sm font-semibold text-[#5a6781]">
+                                                    <i class="bx bx-category-alt text-base"></i>
+                                                    {{ .Product.CategoryName }}
+                                                </span>
+                                                {{ end }}
+                                                <span class="inline-flex items-center gap-1.5 rounded-md bg-slate-100 px-3 py-2 text-sm font-semibold text-[#5a6781]">
+                                                    <i class="bx bx-buildings text-base"></i>
+                                                    {{ if .Product.PrimarySupplierName }}{{ .Product.PrimarySupplierName }}{{ else }}Warehouse A-12{{ end }}
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        <div class="shrink-0">
+                                            {{ if .Product.IsActive }}
+                                            <span class="inline-flex items-center rounded-full bg-[#edf3ff] px-4 py-2 text-xs font-extrabold uppercase tracking-[0.14em] text-[#153f95]">Active Stock</span>
+                                            {{ else }}
+                                            <span class="inline-flex items-center rounded-full bg-rose-50 px-4 py-2 text-xs font-extrabold uppercase tracking-[0.14em] text-rose-600">Inactive</span>
+                                            {{ end }}
+                                        </div>
+                                    </div>
+
+                                    <div class="mt-8 flex items-start justify-between gap-8">
+                                        <div class="min-w-0 flex-1">
+                                            <p class="text-[11px] font-extrabold uppercase text-[#07142f]">Current Stock</p>
+                                            <div class="mt-2 flex items-end gap-2">
+                                                <p class="text-4xl font-extrabold leading-none text-[#07142f]">{{ .Product.CurrentStockDisplay }}</p>
+                                                <span class="pb-1 text-base font-medium text-[#8b95a5]">{{ .Product.UnitName }}</span>
+                                            </div>
+                                        </div>
+                                        <div class="min-w-0 flex-1">
+                                            <p class="text-[11px] font-extrabold uppercase text-[#07142f]">On Order</p>
+                                            <div class="mt-2 flex items-end gap-2">
+                                                <p class="text-4xl font-extrabold leading-none text-[#07142f]">{{ .Product.OnOrderQtyDisplay }}</p>
+                                                <span class="pb-1 text-base font-medium text-[#8b95a5]">{{ .Product.UnitName }}</span>
+                                            </div>
+                                        </div>
+                                        <div class="min-w-0 flex-1">
+                                            <p class="text-[11px] font-extrabold uppercase text-[#07142f]">Safety Level</p>
+                                            <div class="mt-2 flex items-end gap-2">
+                                                <p class="text-4xl font-extrabold leading-none text-[#f28b53]">{{ .Product.ReorderPointDisplay }}</p>
+                                                <span class="pb-1 text-base font-medium text-[#8b95a5]">{{ .Product.UnitName }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </article>
+
+                            <div class="grid gap-4">
+                                <article class="rounded-lg bg-[#24408f] p-6 text-white shadow-sm">
+                                    <p class="text-[10px] font-extrabold uppercase tracking-widest text-white/70">Supplier Coverage</p>
+                                    <div class="mt-2 flex items-end gap-2">
+                                        <p class="text-5xl font-extrabold leading-none">{{ .Product.SupplierNetworkCount }}</p>
+                                        <p class="pb-2 text-base font-extrabold text-white/50">link(s)</p>
+                                    </div>
+                                    <p class="mt-3 text-sm font-semibold text-white/75">Active supplier network for this product.</p>
+                                    <div class="mt-10 border-t border-white/20 pt-4 text-sm font-semibold text-white/80">
+                                        Primary supplier:
+                                        <span class="font-extrabold text-white">{{ if .Product.PrimarySupplierName }}{{ .Product.PrimarySupplierName }}{{ else }}-{{ end }}</span>
+                                    </div>
+                                </article>
+
+                                <article class="rounded-lg bg-white p-6 shadow-sm">
+                                    <div class="flex items-center justify-between gap-3">
+                                        <div>
+                                            <p class="text-[10px] font-extrabold uppercase tracking-widest text-[#8b95a5]">Global Status</p>
+                                            <p class="mt-2 text-sm font-extrabold text-[#07142f]">Store Availability</p>
+                                        </div>
+                                        <span class="inline-flex h-8 w-8 items-center justify-center rounded-full bg-[#eef3ff] text-[#24408f]">
+                                            <i class="bx bx-check-shield text-lg"></i>
+                                        </span>
+                                    </div>
+                                    <div class="mt-4 flex items-center justify-between gap-3">
+                                        <p class="text-xs font-semibold text-[#8b95a5]">Latest stock opname</p>
+                                        <p class="text-sm font-extrabold text-[#07142f]">{{ .Product.AvailabilityPercent }}%</p>
+                                    </div>
+                                    <div class="mt-3 h-1.5 w-full rounded-full bg-slate-200">
+                                        <div class="h-1.5 rounded-full bg-[#24408f]" style="width: {{ .Product.AvailabilityPercent }}%;"></div>
+                                    </div>
+                                    <p class="mt-4 text-xs font-semibold text-[#566173]">Last checked: {{ .Product.LatestSessionDisplay }}</p>
+                                </article>
+                            </div>
+                        </section>
+
+                        <section class="overflow-hidden rounded-lg bg-white shadow-sm">
+                            <div class="flex flex-col gap-4 px-5 py-5 md:flex-row md:items-center md:justify-between">
+                                <div>
+                                    <h2 class="text-lg font-extrabold text-[#001e62]">Supplier Network</h2>
+                                    <p class="mt-1 text-xs font-medium text-[#566173]">Vendor relationships, unit price, and replenishment settings for this product.</p>
+                                </div>
+
+                                <div class="inline-flex items-center gap-2 rounded-md border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-extrabold text-[#566173]">
+                                    <i class="bx bx-buildings text-base"></i>
+                                    {{ len .Suppliers }} supplier(s)
+                                </div>
+                            </div>
+
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-sm" style="min-width: 980px;">
+                                    <thead class="bg-slate-50 text-[10px] font-extrabold uppercase text-[#001e62]">
+                                        <tr>
+                                            <th class="px-5 py-4 text-left">Supplier Name</th>
+                                            <th class="px-5 py-4 text-left">Lead Time</th>
+                                            <th class="px-5 py-4 text-left">Unit Price</th>
+                                            <th class="px-5 py-4 text-left">Minimum Order</th>
+                                            <th class="px-5 py-4 text-left">Priority Status</th>
+                                            <th class="px-5 py-4 text-left">Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-slate-100">
+                                        {{ range .Suppliers }}
+                                        <tr class="hover:bg-slate-50/70">
+                                            <td class="px-5 py-4">
+                                                <div class="flex items-center gap-3">
+                                                    <span class="inline-flex h-9 w-9 flex-none items-center justify-center rounded-md bg-[#eef3ff] text-[10px] font-extrabold text-[#24408f]">
+                                                        {{ if ge (len .SupplierName) 2 }}
+                                                            {{ printf "%.2s" .SupplierName }}
+                                                        {{ else }}
+                                                            {{ .SupplierCode }}
+                                                        {{ end }}
+                                                    </span>
+                                                    <div>
+                                                        <p class="font-extrabold text-[#07142f]">{{ .SupplierName }}</p>
+                                                        <p class="mt-1 text-[11px] font-semibold text-[#8b95a5]">{{ if .Address }}{{ .Address }}{{ else }}Address not available{{ end }}</p>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td class="px-5 py-4 font-semibold text-[#1e2b42]">{{ .LeadTimeDays }} days</td>
+                                            <td class="px-5 py-4 font-extrabold text-[#07142f]">{{ .LastPriceDisplay }}</td>
+                                            <td class="px-5 py-4 font-semibold text-[#566173]">{{ .MOQDisplay }} {{ $.Product.UnitName }}</td>
+                                            <td class="px-5 py-4">
+                                                {{ if .IsPrimary }}
+                                                <span class="inline-flex items-center gap-1 rounded-full bg-[#eef3ff] px-3 py-1 text-[10px] font-extrabold text-[#24408f]">
+                                                    <span class="h-2 w-2 rounded-full bg-[#24408f]"></span>
+                                                    Primary
+                                                </span>
+                                                {{ else }}
+                                                <span class="inline-flex items-center gap-1 rounded-full bg-slate-100 px-3 py-1 text-[10px] font-extrabold text-[#566173]">
+                                                    <span class="h-2 w-2 rounded-full bg-slate-400"></span>
+                                                    Priority {{ .PriorityNo }}
+                                                </span>
+                                                {{ end }}
+                                            </td>
+                                            <td class="px-5 py-4">
+                                                {{ if .IsActive }}
+                                                <span class="inline-flex items-center gap-1 rounded-full bg-[#dcfae7] px-3 py-1 text-[10px] font-extrabold text-[#19a856]">
+                                                    <span class="h-2 w-2 rounded-full bg-[#19a856]"></span>
+                                                    Active
+                                                </span>
+                                                {{ else }}
+                                                <span class="inline-flex items-center gap-1 rounded-full bg-rose-50 px-3 py-1 text-[10px] font-extrabold text-rose-600">
+                                                    <span class="h-2 w-2 rounded-full bg-rose-500"></span>
+                                                    Inactive
+                                                </span>
+                                                {{ end }}
+                                            </td>
+                                        </tr>
+                                        {{ else }}
+                                        <tr>
+                                            <td colspan="6" class="px-5 py-10 text-center text-sm font-semibold text-[#566173]">Produk ini belum memiliki supplier network.</td>
+                                        </tr>
+                                        {{ end }}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </section>
+
+                        <section class="overflow-hidden rounded-lg bg-white shadow-sm">
+                            <div class="flex flex-col gap-4 px-5 py-5 md:flex-row md:items-center md:justify-between">
+                                <div>
+                                    <h2 class="text-lg font-extrabold text-[#001e62]">Stock Opname History</h2>
+                                    <p class="mt-1 text-xs font-medium text-[#566173]">Recent stock checks, discrepancies, and replenishment recommendations.</p>
+                                </div>
+
+                                <div class="inline-flex items-center gap-2 rounded-md border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-extrabold text-[#566173]">
+                                    <i class="bx bx-clipboard text-base"></i>
+                                    {{ len .Histories }} latest record(s)
+                                </div>
+                            </div>
+
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-sm" style="min-width: 1180px;">
+                                    <thead class="sticky top-0 z-10 bg-[#001e62] text-[10px] font-extrabold uppercase text-white shadow-sm">
+                                        <tr>
+                                            <th class="border-b border-[#163b88] px-5 py-4 text-left">Date</th>
+                                            <th class="border-b border-[#163b88] px-5 py-4 text-left">Location</th>
+                                            <th class="border-b border-[#163b88] px-5 py-4 text-left">Checker</th>
+                                            <th class="border-b border-[#163b88] px-5 py-4 text-left">Shop Qty</th>
+                                            <th class="border-b border-[#163b88] px-5 py-4 text-left">Warehouse Qty</th>
+                                            <th class="border-b border-[#163b88] px-5 py-4 text-left">Discrepancy</th>
+                                            <th class="border-b border-[#163b88] px-5 py-4 text-left">PO Recommendation</th>
+                                            <th class="border-b border-[#163b88] px-5 py-4 text-left">Approved PO</th>
+                                            <th class="border-b border-[#163b88] px-5 py-4 text-left">Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-slate-100">
+                                        {{ range .Histories }}
+                                        <tr class="hover:bg-slate-50/70">
+                                            <td class="px-5 py-4">
+                                                <p class="font-extrabold text-[#07142f]">{{ .SessionDateDisplay }}</p>
+                                                <p class="mt-1 text-[11px] font-semibold text-[#8b95a5]">{{ .SessionNumber }}</p>
+                                            </td>
+                                            <td class="px-5 py-4 font-semibold text-[#1e2b42]">{{ .StoreName }}</td>
+                                            <td class="px-5 py-4 font-semibold text-[#566173]">{{ .CheckerName }}</td>
+                                            <td class="px-5 py-4 font-extrabold text-[#07142f]">{{ .QtyStoreDisplay }}</td>
+                                            <td class="px-5 py-4 font-extrabold text-[#07142f]">{{ .QtyWarehouseDisplay }}</td>
+                                            <td class="px-5 py-4">
+                                                <span class="inline-flex rounded-md bg-slate-100 px-3 py-1 text-[10px] font-extrabold text-[#001e62]">{{ .DiscrepancyDisplay }} {{ $.Product.UnitName }}</span>
+                                            </td>
+                                            <td class="px-5 py-4">
+                                                <p class="font-semibold text-[#1e2b42]">
+                                                    {{ if .CheckerNotes }}
+                                                        {{ .CheckerNotes }}
+                                                    {{ else }}
+                                                        Suggested {{ .SuggestBuyQtyDisplay }} {{ $.Product.UnitName }}
+                                                    {{ end }}
+                                                </p>
+                                            </td>
+                                            <td class="px-5 py-4 font-extrabold text-[#001e62]">{{ .ApprovedBuyQtyDisplay }} {{ $.Product.UnitName }}</td>
+                                            <td class="px-5 py-4">
+                                                <span class="inline-flex rounded-full px-3 py-1 text-[10px] font-extrabold uppercase {{ .StatusBadgeClass }}">{{ .StatusLabel }}</span>
+                                            </td>
+                                        </tr>
+                                        {{ else }}
+                                        <tr>
+                                            <td colspan="9" class="px-5 py-10 text-center text-sm font-semibold text-[#566173]">Belum ada riwayat stock opname untuk produk ini.</td>
+                                        </tr>
+                                        {{ end }}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </section>
+                    </div>
+                </main>
+                <br><br><br>
+                {{ template "footer" . }}
+            </div>
+        </div>
+
+        <div id="sidebar-overlay" class="fixed inset-0 z-40 hidden bg-slate-900/50 lg:hidden"></div>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                var sidebar = document.getElementById('app-sidebar');
+                var overlay = document.getElementById('sidebar-overlay');
+                var toggleButtons = document.querySelectorAll('[data-sidebar-toggle]');
+
+                function closeSidebar() {
+                    if (!sidebar) return;
+                    sidebar.classList.add('-translate-x-full');
+                    if (overlay) overlay.classList.add('hidden');
+                    document.body.classList.remove('overflow-hidden');
+                }
+
+                function openSidebar() {
+                    if (!sidebar) return;
+                    sidebar.classList.remove('-translate-x-full');
+                    if (overlay) overlay.classList.remove('hidden');
+                    document.body.classList.add('overflow-hidden');
+                }
+
+                toggleButtons.forEach(function (button) {
+                    button.addEventListener('click', function () {
+                        if (!sidebar) return;
+                        if (sidebar.classList.contains('-translate-x-full')) {
+                            openSidebar();
+                        } else {
+                            closeSidebar();
+                        }
+                    });
+                });
+
+                if (overlay) {
+                    overlay.addEventListener('click', closeSidebar);
+                }
+            });
+        </script>
+    </body>
+</html>
