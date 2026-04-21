@@ -8,12 +8,13 @@
             {{ if .Title }}
                 {{ .Title }}
             {{ else }}
-                Stock Opname Tracker
+                Supplier Directory
             {{ end }}
         </title>
 
         <link rel="stylesheet" href="/assets/fonts/google/plus-jakarta-sans.css">
         <link rel="stylesheet" href="/assets/css/tailwind.css">
+        <link href="/assets/vendor/sweetalert2/sweetalert2.min.css" rel="stylesheet" />
         <link href="/assets/vendor/boxicons/css/boxicons.min.css" rel="stylesheet" />
     </head>
 
@@ -33,11 +34,11 @@
                             </div>
 
                             <div class="flex flex-wrap items-center gap-3">
-                                <button type="button" class="inline-flex items-center justify-center gap-2 rounded-md bg-white px-5 py-3 text-sm font-extrabold text-[#001e62] shadow-sm transition hover:bg-[#eef3ff]">
+                                <a href="/suppliers" class="inline-flex items-center justify-center gap-2 rounded-md bg-white px-5 py-3 text-sm font-extrabold text-[#001e62] shadow-sm transition hover:bg-[#eef3ff]">
                                     <i class="bx bx-download text-base"></i>
                                     Export Data
-                                </button>
-                                <button type="button" class="inline-flex items-center justify-center gap-2 rounded-md bg-[#001e62] px-5 py-3 text-sm font-extrabold text-white shadow-md shadow-[#001e62]/20 transition hover:bg-[#002f95]">
+                                </a>
+                                <button type="button" class="inline-flex items-center justify-center gap-2 rounded-md bg-[#001e62] px-5 py-3 text-sm font-extrabold text-white shadow-md shadow-[#001e62]/20 transition hover:bg-[#002f95]" data-modal-open="supplierModal">
                                     <i class="bx bxs-user-plus text-base"></i>
                                     Add Supplier
                                 </button>
@@ -48,70 +49,89 @@
                             <article class="rounded-lg bg-white p-5 shadow-sm">
                                 <p class="text-[10px] font-extrabold uppercase text-[#566173]">Total Suppliers</p>
                                 <div class="mt-3 flex items-end justify-between gap-3">
-                                    <p class="text-3xl font-extrabold leading-none text-[#001e62]">1,284</p>
+                                    <p class="text-3xl font-extrabold leading-none text-[#001e62]">{{ .Stats.TotalSuppliers }}</p>
                                     <span class="inline-flex items-center gap-1 text-[11px] font-extrabold text-[#19a856]">
-                                        +12%
-                                        <i class="bx bx-trending-up text-sm"></i>
+                                        Directory
+                                        <i class="bx bx-buildings text-sm"></i>
                                     </span>
                                 </div>
                             </article>
 
                             <article class="rounded-lg bg-white p-5 shadow-sm">
-                                <p class="text-[10px] font-extrabold uppercase text-[#566173]">Active Orders</p>
+                                <p class="text-[10px] font-extrabold uppercase text-[#566173]">Active Suppliers</p>
                                 <div class="mt-3 flex items-end justify-between gap-3">
-                                    <p class="text-3xl font-extrabold leading-none text-[#001e62]">42</p>
-                                    <span class="text-[11px] font-extrabold text-[#566173]">Currently Pending</span>
+                                    <p class="text-3xl font-extrabold leading-none text-[#001e62]">{{ .Stats.ActiveSuppliers }}</p>
+                                    <span class="text-[11px] font-extrabold text-[#566173]">Ready to Order</span>
                                 </div>
                             </article>
 
                             <article class="rounded-lg bg-white p-5 shadow-sm">
-                                <p class="text-[10px] font-extrabold uppercase text-[#566173]">Critical Supply</p>
+                                <p class="text-[10px] font-extrabold uppercase text-[#566173]">Inactive Suppliers</p>
                                 <div class="mt-3 flex items-end justify-between gap-3">
-                                    <p class="text-3xl font-extrabold leading-none text-rose-600">08</p>
-                                    <span class="text-[11px] font-extrabold text-rose-600">Action Required</span>
+                                    <p class="text-3xl font-extrabold leading-none text-rose-600">{{ .Stats.InactiveSuppliers }}</p>
+                                    <span class="text-[11px] font-extrabold text-rose-600">Need Attention</span>
                                 </div>
                             </article>
 
                             <article class="rounded-lg bg-white p-5 shadow-sm">
-                                <p class="text-[10px] font-extrabold uppercase text-[#566173]">Avg Fulfillment</p>
+                                <p class="text-[10px] font-extrabold uppercase text-[#566173]">Linked Products</p>
                                 <div class="mt-3 flex items-end justify-between gap-3">
-                                    <p class="text-3xl font-extrabold leading-none text-[#001e62]">4.2d</p>
+                                    <p class="text-3xl font-extrabold leading-none text-[#001e62]">{{ .Stats.LinkedProducts }}</p>
                                     <span class="inline-flex items-center gap-1 text-[11px] font-extrabold text-[#19a856]">
-                                        -0.5w
-                                        <i class="bx bx-trending-down text-sm"></i>
+                                        Catalog
+                                        <i class="bx bx-package text-sm"></i>
                                     </span>
                                 </div>
                             </article>
                         </section>
 
-                        <section class="rounded-lg bg-white p-4 shadow-sm">
+                        <form action="/suppliers" method="get" class="rounded-lg bg-white p-4 shadow-sm">
                             <div class="flex flex-col gap-3 lg:flex-row lg:items-center">
                                 <label class="relative block min-w-0 flex-1">
                                     <i class="bx bx-filter-alt pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                                    <input type="text" class="w-full rounded-md border border-slate-200 bg-slate-50 py-3 pl-10 pr-4 text-sm font-semibold text-slate-600 outline-none transition focus:border-brand-500 focus:bg-white" placeholder="Filter by Name or Contact...">
+                                    <input type="text" name="search" value="{{ .Filters.Search }}" class="w-full rounded-md border border-slate-200 bg-slate-50 py-3 pl-10 pr-4 text-sm font-semibold text-slate-600 outline-none transition focus:border-brand-500 focus:bg-white" placeholder="Filter by Name or Contact...">
                                 </label>
 
-                                <select class="rounded-md border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-extrabold text-[#1e2b42] outline-none transition focus:border-brand-500 focus:bg-white">
-                                    <option>Status: All</option>
-                                    <option>Active</option>
-                                    <option>Pending</option>
-                                    <option>Inactive</option>
+                                <select name="status" class="rounded-md border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-extrabold text-[#1e2b42] outline-none transition focus:border-brand-500 focus:bg-white">
+                                    <option value="">Status: All</option>
+                                    <option value="active" {{ if eq .Filters.Status "active" }}selected{{ end }}>Active</option>
+                                    <option value="inactive" {{ if eq .Filters.Status "inactive" }}selected{{ end }}>Inactive</option>
                                 </select>
 
-                                <select class="rounded-md border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-extrabold text-[#1e2b42] outline-none transition focus:border-brand-500 focus:bg-white">
-                                    <option>Category: All</option>
-                                    <option>Electronics</option>
-                                    <option>Apparel</option>
-                                    <option>Furniture</option>
+                                <select name="type" class="rounded-md border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-extrabold text-[#1e2b42] outline-none transition focus:border-brand-500 focus:bg-white">
+                                    <option value="">Category: All</option>
+                                    {{ range .Types }}
+                                    <option value="{{ . }}" {{ if eq $.Filters.Type . }}selected{{ end }}>{{ . }}</option>
+                                    {{ end }}
                                 </select>
 
-                                <select class="rounded-md border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-extrabold text-[#001e62] outline-none transition focus:border-brand-500 focus:bg-white">
-                                    <option>Recently Added</option>
-                                    <option>Supplier Name</option>
-                                    <option>Last Order</option>
+                                <select name="sort" class="rounded-md border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-extrabold text-[#001e62] outline-none transition focus:border-brand-500 focus:bg-white">
+                                    <option value="recent" {{ if eq .Filters.Sort "recent" }}selected{{ end }}>Recently Added</option>
+                                    <option value="name" {{ if eq .Filters.Sort "name" }}selected{{ end }}>Supplier Name</option>
+                                    <option value="products" {{ if eq .Filters.Sort "products" }}selected{{ end }}>Most Products</option>
+                                    <option value="code" {{ if eq .Filters.Sort "code" }}selected{{ end }}>Supplier Code</option>
                                 </select>
+
+                                <div class="flex flex-wrap items-center gap-2">
+                                    <button type="submit" class="inline-flex items-center justify-center gap-2 rounded-md bg-[#001e62] px-5 py-3 text-sm font-extrabold text-white transition hover:bg-[#002f95]">
+                                        <i class="bx bx-search-alt text-base"></i>
+                                        Apply
+                                    </button>
+                                    {{ if or .Filters.Search .Filters.Status .Filters.Type (ne .Filters.Sort "recent") }}
+                                    <a href="/suppliers" class="inline-flex items-center justify-center gap-2 rounded-md bg-slate-50 px-5 py-3 text-sm font-extrabold text-[#566173] transition hover:bg-slate-100">
+                                        <i class="bx bx-reset text-base"></i>
+                                        Reset
+                                    </a>
+                                    {{ end }}
+                                </div>
                             </div>
-                        </section>
+                        </form>
+
+                        {{ if .Error }}
+                        <div class="rounded-lg border border-rose-200 bg-rose-50 px-5 py-4 text-sm font-semibold text-rose-600">
+                            {{ .Error }}
+                        </div>
+                        {{ end }}
 
                         <section class="overflow-hidden rounded-lg bg-white shadow-sm">
                             <div class="overflow-x-auto">
@@ -129,163 +149,128 @@
                                         </tr>
                                     </thead>
                                     <tbody class="divide-y divide-slate-100">
+                                        {{ range $supplier := .suppliers }}
                                         <tr class="hover:bg-slate-50/70">
                                             <td class="px-5 py-4">
                                                 <div class="flex items-center gap-3">
-                                                    <span class="inline-flex h-9 w-9 flex-none items-center justify-center rounded-md bg-[#eef3ff] text-xs font-extrabold text-[#001e62]">NE</span>
+                                                    <span class="inline-flex h-9 min-w-9 flex-none items-center justify-center rounded-md bg-[#eef3ff] px-2 text-xs font-extrabold text-[#001e62]">
+                                                        {{ if ge (len $supplier.SupplierName) 2 }}
+                                                            {{ printf "%.2s" $supplier.SupplierName }}
+                                                        {{ else }}
+                                                            {{ $supplier.SupplierCode }}
+                                                        {{ end }}
+                                                    </span>
                                                     <div>
-                                                        <p class="font-extrabold text-[#07142f]">NextGen Electronics</p>
-                                                        <p class="mt-1 text-[10px] font-extrabold uppercase text-[#8b95a5]">SUP-2024-001</p>
+                                                        <p class="font-extrabold text-[#07142f]">{{ $supplier.SupplierName }}</p>
+                                                        <p class="mt-1 text-[10px] font-extrabold uppercase text-[#8b95a5]">{{ $supplier.SupplierCode }}</p>
                                                     </div>
                                                 </div>
                                             </td>
-                                            <td class="px-5 py-4 font-semibold text-[#1e2b42]">Sarah Jenkins</td>
-                                            <td class="px-5 py-4 font-semibold text-[#566173]">+1 (555) 012-4455</td>
-                                            <td class="px-5 py-4">
-                                                <span class="inline-flex rounded-full bg-[#eef3ff] px-3 py-1 text-[10px] font-extrabold uppercase text-[#001e62]">Electronics</span>
+                                            <td class="px-5 py-4 font-semibold text-[#1e2b42]">
+                                                {{ if $supplier.PICName }}{{ $supplier.PICName }}{{ else }}-{{ end }}
                                             </td>
-                                            <td class="px-5 py-4 font-extrabold text-[#1e2b42]">1,420</td>
+                                            <td class="px-5 py-4 font-semibold text-[#566173]">
+                                                {{ if $supplier.Phone }}{{ $supplier.Phone }}{{ else }}-{{ end }}
+                                            </td>
                                             <td class="px-5 py-4">
+                                                {{ if $supplier.SupplierType }}
+                                                <span class="inline-flex rounded-full bg-[#eef3ff] px-3 py-1 text-[10px] font-extrabold uppercase text-[#001e62]">{{ $supplier.SupplierType }}</span>
+                                                {{ else }}
+                                                <span class="text-xs font-semibold text-[#8b95a5]">-</span>
+                                                {{ end }}
+                                            </td>
+                                            <td class="px-5 py-4 font-extrabold text-[#1e2b42]">{{ $supplier.ProductCount }}</td>
+                                            <td class="px-5 py-4">
+                                                {{ if $supplier.IsActive }}
                                                 <span class="inline-flex items-center gap-1.5 rounded-full bg-[#dcfae7] px-3 py-1 text-[10px] font-extrabold uppercase text-[#19a856]">
                                                     <span class="h-2 w-2 rounded-full bg-[#19a856]"></span>
-                                                    Active
+                                                    {{ $supplier.StatusLabel }}
                                                 </span>
-                                            </td>
-                                            <td class="px-5 py-4 font-semibold text-[#566173]">Oct 12, 2023</td>
-                                            <td class="px-5 py-4">
-                                                <a href="{{ baseURL "/suppliers/global-logistics" }}" class="inline-flex rounded-md px-3 py-2 text-sm font-extrabold text-[#001e62] transition hover:bg-[#eef3ff]">View</a>
-                                            </td>
-                                        </tr>
-
-                                        <tr class="hover:bg-slate-50/70">
-                                            <td class="px-5 py-4">
-                                                <div class="flex items-center gap-3">
-                                                    <span class="inline-flex h-9 w-9 flex-none items-center justify-center rounded-md bg-slate-100 text-xs font-extrabold text-[#24408f]">AV</span>
-                                                    <div>
-                                                        <p class="font-extrabold text-[#07142f]">Apex Velvets Co.</p>
-                                                        <p class="mt-1 text-[10px] font-extrabold uppercase text-[#8b95a5]">SUP-2024-042</p>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td class="px-5 py-4 font-semibold text-[#1e2b42]">Marco Rossi</td>
-                                            <td class="px-5 py-4 font-semibold text-[#566173]">+44 20 7946 0123</td>
-                                            <td class="px-5 py-4">
-                                                <span class="inline-flex rounded-full bg-[#fff0e8] px-3 py-1 text-[10px] font-extrabold uppercase text-[#f37a4a]">Apparel</span>
-                                            </td>
-                                            <td class="px-5 py-4 font-extrabold text-[#1e2b42]">3,890</td>
-                                            <td class="px-5 py-4">
-                                                <span class="inline-flex items-center gap-1.5 rounded-full bg-[#dcfae7] px-3 py-1 text-[10px] font-extrabold uppercase text-[#19a856]">
-                                                    <span class="h-2 w-2 rounded-full bg-[#19a856]"></span>
-                                                    Active
-                                                </span>
-                                            </td>
-                                            <td class="px-5 py-4 font-semibold text-[#566173]">Oct 28, 2023</td>
-                                            <td class="px-5 py-4">
-                                                <a href="{{ baseURL "/suppliers/apex-velvets" }}" class="inline-flex rounded-md px-3 py-2 text-sm font-extrabold text-[#001e62] transition hover:bg-[#eef3ff]">View</a>
-                                            </td>
-                                        </tr>
-
-                                        <tr class="hover:bg-slate-50/70">
-                                            <td class="px-5 py-4">
-                                                <div class="flex items-center gap-3">
-                                                    <span class="inline-flex h-9 w-9 flex-none items-center justify-center rounded-md bg-[#eef3ff] text-xs font-extrabold text-[#001e62]">LS</span>
-                                                    <div>
-                                                        <p class="font-extrabold text-[#07142f]">Lumina Smart Systems</p>
-                                                        <p class="mt-1 text-[10px] font-extrabold uppercase text-[#8b95a5]">SUP-2024-089</p>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td class="px-5 py-4 font-semibold text-[#1e2b42]">Elena Vance</td>
-                                            <td class="px-5 py-4 font-semibold text-[#566173]">+1 (555) 098-7711</td>
-                                            <td class="px-5 py-4">
-                                                <span class="inline-flex rounded-full bg-[#eef3ff] px-3 py-1 text-[10px] font-extrabold uppercase text-[#001e62]">Electronics</span>
-                                            </td>
-                                            <td class="px-5 py-4 font-extrabold text-[#1e2b42]">542</td>
-                                            <td class="px-5 py-4">
+                                                {{ else }}
                                                 <span class="inline-flex items-center gap-1.5 rounded-full bg-rose-50 px-3 py-1 text-[10px] font-extrabold uppercase text-rose-600">
                                                     <span class="h-2 w-2 rounded-full bg-rose-500"></span>
-                                                    Inactive
+                                                    {{ $supplier.StatusLabel }}
                                                 </span>
+                                                {{ end }}
                                             </td>
-                                            <td class="px-5 py-4 font-semibold text-[#566173]">Sep 15, 2023</td>
+                                            <td class="px-5 py-4 font-semibold text-[#566173]">{{ $supplier.UpdatedAtDisplay }}</td>
                                             <td class="px-5 py-4">
-                                                <a href="{{ baseURL "/suppliers/lumina-smart" }}" class="inline-flex rounded-md px-3 py-2 text-sm font-extrabold text-[#001e62] transition hover:bg-[#eef3ff]">View</a>
-                                            </td>
-                                        </tr>
-
-                                        <tr class="hover:bg-slate-50/70">
-                                            <td class="px-5 py-4">
-                                                <div class="flex items-center gap-3">
-                                                    <span class="inline-flex h-9 w-9 flex-none items-center justify-center rounded-md bg-slate-100 text-xs font-extrabold text-[#24408f]">ZC</span>
-                                                    <div>
-                                                        <p class="font-extrabold text-[#07142f]">Zenith Crafts Ltd</p>
-                                                        <p class="mt-1 text-[10px] font-extrabold uppercase text-[#8b95a5]">SUP-2024-115</p>
-                                                    </div>
+                                                <div class="flex flex-wrap items-center gap-1">
+                                                    <a href="/suppliers/{{ $supplier.ID }}" class="inline-flex rounded-md px-3 py-2 text-sm font-extrabold text-[#001e62] transition hover:bg-[#eef3ff]">
+                                                        View
+                                                    </a>
+                                                    <button
+                                                        type="button"
+                                                        class="btn-edit-supplier inline-flex rounded-md px-3 py-2 text-sm font-extrabold text-amber-700 transition hover:bg-amber-50"
+                                                        data-id="{{ $supplier.ID }}"
+                                                        data-supplier-group-id="{{ $supplier.SupplierGroupID }}"
+                                                        data-supplier-code="{{ $supplier.SupplierCode }}"
+                                                        data-supplier-name="{{ $supplier.SupplierName }}"
+                                                        data-supplier-type="{{ $supplier.SupplierType }}"
+                                                        data-address="{{ $supplier.Address }}"
+                                                        data-phone="{{ $supplier.Phone }}"
+                                                        data-email="{{ $supplier.Email }}"
+                                                        data-pic-name="{{ $supplier.PICName }}"
+                                                        data-payment-term-days="{{ $supplier.PaymentTermDays }}"
+                                                        data-is-active="{{ if $supplier.IsActive }}1{{ else }}0{{ end }}">
+                                                        Edit
+                                                    </button>
+                                                    <button type="button" class="btn-delete-supplier inline-flex rounded-md px-3 py-2 text-sm font-extrabold text-rose-600 transition hover:bg-rose-50" data-url="/suppliers/delete/{{ $supplier.ID }}" data-supplier-name="{{ $supplier.SupplierName }}">
+                                                        Delete
+                                                    </button>
                                                 </div>
                                             </td>
-                                            <td class="px-5 py-4 font-semibold text-[#1e2b42]">Jonathan Wick</td>
-                                            <td class="px-5 py-4 font-semibold text-[#566173]">+1 (555) 234-8899</td>
-                                            <td class="px-5 py-4">
-                                                <span class="inline-flex rounded-full bg-slate-100 px-3 py-1 text-[10px] font-extrabold uppercase text-[#566173]">Furniture</span>
-                                            </td>
-                                            <td class="px-5 py-4 font-extrabold text-[#1e2b42]">892</td>
-                                            <td class="px-5 py-4">
-                                                <span class="inline-flex items-center gap-1.5 rounded-full bg-[#dcfae7] px-3 py-1 text-[10px] font-extrabold uppercase text-[#19a856]">
-                                                    <span class="h-2 w-2 rounded-full bg-[#19a856]"></span>
-                                                    Active
-                                                </span>
-                                            </td>
-                                            <td class="px-5 py-4 font-semibold text-[#566173]">Nov 01, 2023</td>
-                                            <td class="px-5 py-4">
-                                                <a href="{{ baseURL "/suppliers/zenith-crafts" }}" class="inline-flex rounded-md px-3 py-2 text-sm font-extrabold text-[#001e62] transition hover:bg-[#eef3ff]">View</a>
+                                        </tr>
+                                        {{ else }}
+                                        <tr>
+                                            <td colspan="8" class="px-5 py-10 text-center text-sm font-semibold text-[#566173]">
+                                                {{ if $.Filters.Search }}
+                                                    Tidak ada supplier yang cocok dengan pencarian "{{ $.Filters.Search }}"
+                                                {{ else }}
+                                                    Belum ada data supplier
+                                                {{ end }}
                                             </td>
                                         </tr>
-
-                                        <tr class="hover:bg-slate-50/70">
-                                            <td class="px-5 py-4">
-                                                <div class="flex items-center gap-3">
-                                                    <span class="inline-flex h-9 w-9 flex-none items-center justify-center rounded-md bg-slate-100 text-xs font-extrabold text-[#24408f]">OB</span>
-                                                    <div>
-                                                        <p class="font-extrabold text-[#07142f]">Oceanic Boutique</p>
-                                                        <p class="mt-1 text-[10px] font-extrabold uppercase text-[#8b95a5]">SUP-2024-156</p>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td class="px-5 py-4 font-semibold text-[#1e2b42]">Amara Gupta</td>
-                                            <td class="px-5 py-4 font-semibold text-[#566173]">+91 22 4567 8901</td>
-                                            <td class="px-5 py-4">
-                                                <span class="inline-flex rounded-full bg-[#fff0e8] px-3 py-1 text-[10px] font-extrabold uppercase text-[#f37a4a]">Apparel</span>
-                                            </td>
-                                            <td class="px-5 py-4 font-extrabold text-[#1e2b42]">2,110</td>
-                                            <td class="px-5 py-4">
-                                                <span class="inline-flex items-center gap-1.5 rounded-full bg-[#fff0e8] px-3 py-1 text-[10px] font-extrabold uppercase text-[#f37a4a]">
-                                                    <span class="h-2 w-2 rounded-full bg-[#f37a4a]"></span>
-                                                    Pending
-                                                </span>
-                                            </td>
-                                            <td class="px-5 py-4 font-semibold text-[#566173]">---</td>
-                                            <td class="px-5 py-4">
-                                                <a href="{{ baseURL "/suppliers/oceanic-boutique" }}" class="inline-flex rounded-md px-3 py-2 text-sm font-extrabold text-[#001e62] transition hover:bg-[#eef3ff]">View</a>
-                                            </td>
-                                        </tr>
+                                        {{ end }}
                                     </tbody>
                                 </table>
                             </div>
 
                             <div class="flex flex-col gap-3 border-t border-slate-100 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
-                                <p class="text-xs font-extrabold uppercase text-[#566173]">Showing 1-10 of 1,284 suppliers</p>
+                                <p class="text-xs font-extrabold uppercase text-[#566173]">
+                                    {{ if gt .Pagination.TotalItems 0 }}
+                                        Showing {{ .Pagination.StartItem }}-{{ .Pagination.EndItem }} of {{ .Pagination.TotalItems }} suppliers
+                                    {{ else }}
+                                        Showing 0 suppliers
+                                    {{ end }}
+                                    {{ if or .Filters.Search .Filters.Status .Filters.Type (ne .Filters.Sort "recent") }} with active filters{{ end }}
+                                </p>
                                 <div class="flex items-center gap-2">
-                                    <button type="button" class="inline-flex h-8 w-8 items-center justify-center rounded-md bg-slate-100 text-sm font-extrabold text-slate-400">
+                                    {{ if .Pagination.HasPrev }}
+                                    <a href="{{ .Pagination.PrevURL }}" class="inline-flex h-8 w-8 items-center justify-center rounded-md bg-slate-100 text-sm font-extrabold text-[#566173] transition hover:bg-slate-200">
                                         <i class="bx bx-chevron-left"></i>
-                                    </button>
-                                    <button type="button" class="inline-flex h-8 w-8 items-center justify-center rounded-md bg-[#001e62] text-sm font-extrabold text-white">1</button>
-                                    <button type="button" class="inline-flex h-8 w-8 items-center justify-center rounded-md bg-slate-50 text-sm font-extrabold text-[#566173]">2</button>
-                                    <button type="button" class="inline-flex h-8 w-8 items-center justify-center rounded-md bg-slate-50 text-sm font-extrabold text-[#566173]">3</button>
-                                    <span class="px-2 text-sm font-extrabold text-[#8b95a5]">...</span>
-                                    <button type="button" class="inline-flex h-8 items-center justify-center rounded-md bg-slate-50 px-3 text-sm font-extrabold text-[#566173]">128</button>
-                                    <button type="button" class="inline-flex h-8 w-8 items-center justify-center rounded-md bg-slate-100 text-sm font-extrabold text-[#566173]">
+                                    </a>
+                                    {{ else }}
+                                    <span class="inline-flex h-8 w-8 items-center justify-center rounded-md bg-slate-100 text-sm font-extrabold text-slate-400">
+                                        <i class="bx bx-chevron-left"></i>
+                                    </span>
+                                    {{ end }}
+
+                                    {{ range .Pagination.Pages }}
+                                    <a href="{{ .URL }}" class="inline-flex h-8 w-8 items-center justify-center rounded-md text-sm font-extrabold transition {{ if .Active }}bg-[#001e62] text-white{{ else }}bg-slate-50 text-[#566173] hover:bg-slate-100{{ end }}">
+                                        {{ .Number }}
+                                    </a>
+                                    {{ end }}
+
+                                    {{ if .Pagination.HasNext }}
+                                    <a href="{{ .Pagination.NextURL }}" class="inline-flex h-8 w-8 items-center justify-center rounded-md bg-slate-100 text-sm font-extrabold text-[#566173] transition hover:bg-slate-200">
                                         <i class="bx bx-chevron-right"></i>
-                                    </button>
+                                    </a>
+                                    {{ else }}
+                                    <span class="inline-flex h-8 w-8 items-center justify-center rounded-md bg-slate-100 text-sm font-extrabold text-slate-400">
+                                        <i class="bx bx-chevron-right"></i>
+                                    </span>
+                                    {{ end }}
                                 </div>
                             </div>
                         </section>
@@ -296,6 +281,148 @@
 
         <div id="sidebar-overlay" class="fixed inset-0 z-40 hidden bg-slate-900/50 lg:hidden"></div>
 
+        <div data-modal class="fixed inset-0 z-50 hidden items-start justify-center overflow-y-auto p-4 sm:items-center sm:p-6" id="supplierModal">
+            <div class="absolute inset-0 bg-slate-900/50" data-modal-close></div>
+            <div class="relative w-full max-w-4xl rounded-lg bg-white p-5 shadow-xl sm:p-6">
+                <div class="flex items-center justify-between border-b border-slate-100 pb-4">
+                    <h2 class="text-lg font-extrabold text-[#001e62]">Add Supplier</h2>
+                    <button type="button" class="text-slate-400 transition hover:text-slate-600" data-modal-close>
+                        <i class="bx bx-x text-2xl"></i>
+                    </button>
+                </div>
+
+                <form action="/suppliers" method="post" class="mt-6 space-y-5">
+                    <div class="grid gap-5 md:grid-cols-2">
+                        <div>
+                            <label for="supplier_group_id" class="text-[10px] font-extrabold uppercase text-[#566173]">Supplier Group</label>
+                            <select id="supplier_group_id" name="supplier_group_id" class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500">
+                                <option value="0">Pilih Group</option>
+                                {{ range .Groups }}
+                                <option value="{{ .ID }}">{{ .GroupName }}</option>
+                                {{ end }}
+                            </select>
+                        </div>
+                        <div>
+                            <label for="supplier_code" class="text-[10px] font-extrabold uppercase text-[#566173]">Supplier Code</label>
+                            <input type="text" id="supplier_code" name="supplier_code" required class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold uppercase outline-none transition focus:border-brand-500" placeholder="ABC-FOOD">
+                        </div>
+                        <div>
+                            <label for="supplier_name" class="text-[10px] font-extrabold uppercase text-[#566173]">Supplier Name</label>
+                            <input type="text" id="supplier_name" name="supplier_name" required class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500" placeholder="ABC Food">
+                        </div>
+                        <div>
+                            <label for="supplier_type" class="text-[10px] font-extrabold uppercase text-[#566173]">Supplier Type</label>
+                            <input type="text" id="supplier_type" name="supplier_type" class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500" placeholder="Food">
+                        </div>
+                        <div>
+                            <label for="phone" class="text-[10px] font-extrabold uppercase text-[#566173]">Phone</label>
+                            <input type="text" id="phone" name="phone" class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500" placeholder="08123456789">
+                        </div>
+                        <div>
+                            <label for="email" class="text-[10px] font-extrabold uppercase text-[#566173]">Email</label>
+                            <input type="email" id="email" name="email" class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500" placeholder="supplier@example.com">
+                        </div>
+                        <div>
+                            <label for="pic_name" class="text-[10px] font-extrabold uppercase text-[#566173]">PIC Name</label>
+                            <input type="text" id="pic_name" name="pic_name" class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500" placeholder="Budi">
+                        </div>
+                        <div>
+                            <label for="payment_term_days" class="text-[10px] font-extrabold uppercase text-[#566173]">Payment Term Days</label>
+                            <input type="number" id="payment_term_days" name="payment_term_days" min="0" value="0" class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500">
+                        </div>
+                        <div class="md:col-span-2">
+                            <label for="address" class="text-[10px] font-extrabold uppercase text-[#566173]">Address</label>
+                            <textarea id="address" name="address" class="mt-2 h-24 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500" placeholder="Alamat supplier"></textarea>
+                        </div>
+                        <div>
+                            <label for="is_active" class="text-[10px] font-extrabold uppercase text-[#566173]">Status</label>
+                            <select id="is_active" name="is_active" class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500">
+                                <option value="1" selected>Active</option>
+                                <option value="0">Inactive</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col gap-3 border-t border-slate-100 pt-4 sm:flex-row sm:justify-end">
+                        <button type="button" class="rounded-md border border-slate-200 bg-white px-5 py-3 text-sm font-extrabold text-[#1e2b42] transition hover:bg-slate-50" data-modal-close>Cancel</button>
+                        <button type="submit" class="rounded-md bg-[#001e62] px-5 py-3 text-sm font-extrabold text-white transition hover:bg-[#002f95]">Save Supplier</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div data-modal class="fixed inset-0 z-50 hidden items-start justify-center overflow-y-auto p-4 sm:items-center sm:p-6" id="supplierEditModal">
+            <div class="absolute inset-0 bg-slate-900/50" data-modal-close></div>
+            <div class="relative w-full max-w-4xl rounded-lg bg-white p-5 shadow-xl sm:p-6">
+                <div class="flex items-center justify-between border-b border-slate-100 pb-4">
+                    <h2 class="text-lg font-extrabold text-[#001e62]">Edit Supplier</h2>
+                    <button type="button" class="text-slate-400 transition hover:text-slate-600" data-modal-close>
+                        <i class="bx bx-x text-2xl"></i>
+                    </button>
+                </div>
+
+                <form action="/suppliers/update" method="post" class="mt-6 space-y-5">
+                    <input type="hidden" id="edit_id" name="id">
+                    <div class="grid gap-5 md:grid-cols-2">
+                        <div>
+                            <label for="edit_supplier_group_id" class="text-[10px] font-extrabold uppercase text-[#566173]">Supplier Group</label>
+                            <select id="edit_supplier_group_id" name="supplier_group_id" class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500">
+                                <option value="0">Pilih Group</option>
+                                {{ range .Groups }}
+                                <option value="{{ .ID }}">{{ .GroupName }}</option>
+                                {{ end }}
+                            </select>
+                        </div>
+                        <div>
+                            <label for="edit_supplier_code" class="text-[10px] font-extrabold uppercase text-[#566173]">Supplier Code</label>
+                            <input type="text" id="edit_supplier_code" name="supplier_code" required class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold uppercase outline-none transition focus:border-brand-500">
+                        </div>
+                        <div>
+                            <label for="edit_supplier_name" class="text-[10px] font-extrabold uppercase text-[#566173]">Supplier Name</label>
+                            <input type="text" id="edit_supplier_name" name="supplier_name" required class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500">
+                        </div>
+                        <div>
+                            <label for="edit_supplier_type" class="text-[10px] font-extrabold uppercase text-[#566173]">Supplier Type</label>
+                            <input type="text" id="edit_supplier_type" name="supplier_type" class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500">
+                        </div>
+                        <div>
+                            <label for="edit_phone" class="text-[10px] font-extrabold uppercase text-[#566173]">Phone</label>
+                            <input type="text" id="edit_phone" name="phone" class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500">
+                        </div>
+                        <div>
+                            <label for="edit_email" class="text-[10px] font-extrabold uppercase text-[#566173]">Email</label>
+                            <input type="email" id="edit_email" name="email" class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500">
+                        </div>
+                        <div>
+                            <label for="edit_pic_name" class="text-[10px] font-extrabold uppercase text-[#566173]">PIC Name</label>
+                            <input type="text" id="edit_pic_name" name="pic_name" class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500">
+                        </div>
+                        <div>
+                            <label for="edit_payment_term_days" class="text-[10px] font-extrabold uppercase text-[#566173]">Payment Term Days</label>
+                            <input type="number" id="edit_payment_term_days" name="payment_term_days" min="0" class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500">
+                        </div>
+                        <div class="md:col-span-2">
+                            <label for="edit_address" class="text-[10px] font-extrabold uppercase text-[#566173]">Address</label>
+                            <textarea id="edit_address" name="address" class="mt-2 h-24 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500"></textarea>
+                        </div>
+                        <div>
+                            <label for="edit_is_active" class="text-[10px] font-extrabold uppercase text-[#566173]">Status</label>
+                            <select id="edit_is_active" name="is_active" class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500">
+                                <option value="1">Active</option>
+                                <option value="0">Inactive</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col gap-3 border-t border-slate-100 pt-4 sm:flex-row sm:justify-end">
+                        <button type="button" class="rounded-md border border-slate-200 bg-white px-5 py-3 text-sm font-extrabold text-[#1e2b42] transition hover:bg-slate-50" data-modal-close>Cancel</button>
+                        <button type="submit" class="rounded-md bg-[#001e62] px-5 py-3 text-sm font-extrabold text-white transition hover:bg-[#002f95]">Update Supplier</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <script src="/assets/vendor/sweetalert2/sweetalert2.all.min.js"></script>
         <script>
             document.addEventListener('DOMContentLoaded', function () {
                 var sidebar = document.getElementById('app-sidebar');
@@ -306,7 +433,9 @@
                     if (!sidebar) return;
                     sidebar.classList.add('-translate-x-full');
                     if (overlay) overlay.classList.add('hidden');
-                    document.body.classList.remove('overflow-hidden');
+                    if (!document.querySelector('[data-modal].flex')) {
+                        document.body.classList.remove('overflow-hidden');
+                    }
                 }
 
                 function openSidebar() {
@@ -314,6 +443,23 @@
                     sidebar.classList.remove('-translate-x-full');
                     if (overlay) overlay.classList.remove('hidden');
                     document.body.classList.add('overflow-hidden');
+                }
+
+                function openModal(modalId) {
+                    var modal = document.getElementById(modalId);
+                    if (!modal) return;
+                    modal.classList.remove('hidden');
+                    modal.classList.add('flex');
+                    document.body.classList.add('overflow-hidden');
+                }
+
+                function closeModal(modal) {
+                    if (!modal) return;
+                    modal.classList.add('hidden');
+                    modal.classList.remove('flex');
+                    if (!document.querySelector('[data-modal].flex')) {
+                        document.body.classList.remove('overflow-hidden');
+                    }
                 }
 
                 toggleButtons.forEach(function (button) {
@@ -330,6 +476,69 @@
                 if (overlay) {
                     overlay.addEventListener('click', closeSidebar);
                 }
+
+                document.querySelectorAll('[data-modal-open]').forEach(function (trigger) {
+                    trigger.addEventListener('click', function () {
+                        var target = trigger.getAttribute('data-modal-open');
+                        if (target) openModal(target);
+                    });
+                });
+
+                document.querySelectorAll('[data-modal-close]').forEach(function (close) {
+                    close.addEventListener('click', function () {
+                        closeModal(close.closest('[data-modal]'));
+                    });
+                });
+
+                document.addEventListener('keydown', function (event) {
+                    if (event.key !== 'Escape') return;
+                    document.querySelectorAll('[data-modal].flex').forEach(closeModal);
+                });
+
+                document.querySelectorAll('.btn-edit-supplier').forEach(function (btn) {
+                    btn.addEventListener('click', function () {
+                        var editModalEl = document.getElementById('supplierEditModal');
+                        if (!editModalEl) return;
+
+                        editModalEl.querySelector('#edit_id').value = btn.getAttribute('data-id') || '';
+                        editModalEl.querySelector('#edit_supplier_group_id').value = btn.getAttribute('data-supplier-group-id') || '0';
+                        editModalEl.querySelector('#edit_supplier_code').value = btn.getAttribute('data-supplier-code') || '';
+                        editModalEl.querySelector('#edit_supplier_name').value = btn.getAttribute('data-supplier-name') || '';
+                        editModalEl.querySelector('#edit_supplier_type').value = btn.getAttribute('data-supplier-type') || '';
+                        editModalEl.querySelector('#edit_address').value = btn.getAttribute('data-address') || '';
+                        editModalEl.querySelector('#edit_phone').value = btn.getAttribute('data-phone') || '';
+                        editModalEl.querySelector('#edit_email').value = btn.getAttribute('data-email') || '';
+                        editModalEl.querySelector('#edit_pic_name').value = btn.getAttribute('data-pic-name') || '';
+                        editModalEl.querySelector('#edit_payment_term_days').value = btn.getAttribute('data-payment-term-days') || '0';
+                        editModalEl.querySelector('#edit_is_active').value = btn.getAttribute('data-is-active') || '1';
+
+                        openModal('supplierEditModal');
+                    });
+                });
+
+                document.querySelectorAll('.btn-delete-supplier').forEach(function (btn) {
+                    btn.addEventListener('click', function (event) {
+                        event.preventDefault();
+
+                        var supplierName = btn.getAttribute('data-supplier-name') || 'supplier';
+                        var targetUrl = btn.getAttribute('data-url');
+
+                        Swal.fire({
+                            title: 'Hapus supplier ini?',
+                            text: 'Supplier ' + supplierName + ' akan dihapus dari master data.',
+                            icon: 'warning',
+                            showCancelButton: true,
+                            confirmButtonColor: '#d33',
+                            cancelButtonColor: '#6c757d',
+                            confirmButtonText: 'Ya, hapus',
+                            cancelButtonText: 'Batal'
+                        }).then(function (result) {
+                            if (result.isConfirmed && targetUrl) {
+                                window.location.href = targetUrl;
+                            }
+                        });
+                    });
+                });
             });
         </script>
     </body>
