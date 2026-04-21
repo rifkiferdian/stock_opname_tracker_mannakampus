@@ -211,7 +211,7 @@ func renderProductPage(c *gin.Context, productService *services.ProductService, 
 	pagination := buildProductPagination(filter, totalItems)
 
 	Render(c, "product.html", gin.H{
-		"Title":      "Retail Inventory Master",
+		"Title":      "Master Inventaris Produk",
 		"Page":       "product",
 		"products":   products,
 		"Stats":      stats,
@@ -231,7 +231,7 @@ func renderProductDetailPage(c *gin.Context, productService *services.ProductSer
 		if errors.Is(err, sql.ErrNoRows) {
 			c.HTML(http.StatusNotFound, "error.html", gin.H{
 				"code_error": http.StatusNotFound,
-				"error":      "Product not found",
+				"error":      "Produk tidak ditemukan",
 			})
 			return
 		}

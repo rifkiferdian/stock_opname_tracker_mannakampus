@@ -119,7 +119,7 @@ func renderUnitPage(c *gin.Context, unitService *services.UnitService, message s
 	}
 
 	Render(c, "unit.html", gin.H{
-		"Title":   "Units Master",
+		"Title":   "Master Satuan",
 		"Page":    "unit",
 		"units":   units,
 		"Filters": filter,

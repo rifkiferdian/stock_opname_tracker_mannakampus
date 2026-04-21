@@ -181,7 +181,7 @@ func renderSupplierPage(c *gin.Context, supplierService *services.SupplierServic
 	pagination := buildSupplierPagination(filter, totalItems)
 
 	Render(c, "supplier.html", gin.H{
-		"Title":      "Supplier Directory",
+		"Title":      "Direktori Supplier",
 		"Page":       "supplier",
 		"suppliers":  suppliers,
 		"Stats":      stats,

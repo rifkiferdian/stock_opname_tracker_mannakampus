@@ -353,9 +353,9 @@ func (r *ProductRepository) GetByID(id int) (models.ProductDetail, error) {
 	detail.OnOrderQtyDisplay = formatProductDecimal(detail.OnOrderQty)
 	detail.IsActive = isActive == 1
 	if detail.IsActive {
-		detail.StatusLabel = "Active"
+		detail.StatusLabel = "Aktif"
 	} else {
-		detail.StatusLabel = "Inactive"
+		detail.StatusLabel = "Nonaktif"
 	}
 
 	if detail.MaxStock > 0 {
@@ -462,14 +462,14 @@ func (r *ProductRepository) GetSupplierNetwork(productID int) ([]models.ProductS
 		item.IsPrimary = isPrimary == 1
 		item.IsActive = isActive == 1
 		if item.IsPrimary {
-			item.PriorityLabel = "Primary"
+			item.PriorityLabel = "Utama"
 		} else {
-			item.PriorityLabel = fmt.Sprintf("Secondary %d", item.PriorityNo)
+			item.PriorityLabel = fmt.Sprintf("Prioritas %d", item.PriorityNo)
 		}
 		if item.IsActive {
-			item.StatusLabel = "Active"
+			item.StatusLabel = "Aktif"
 		} else {
-			item.StatusLabel = "Inactive"
+			item.StatusLabel = "Nonaktif"
 		}
 
 		suppliers = append(suppliers, item)
@@ -873,9 +873,9 @@ func scanProduct(scanner interface {
 	product.PrimarySupplierPriceDisplay = fmt.Sprintf("Rp %s", formatProductDecimal(product.PrimarySupplierPrice))
 	product.IsActive = isActive == 1
 	if product.IsActive {
-		product.StatusLabel = "Active"
+		product.StatusLabel = "Aktif"
 	} else {
-		product.StatusLabel = "Inactive"
+		product.StatusLabel = "Nonaktif"
 	}
 
 	if createdAt.Valid {
@@ -967,16 +967,33 @@ func formatProductStatusLabel(status string) string {
 	if status == "" {
 		return "-"
 	}
-
-	parts := strings.Split(status, "_")
-	for i, part := range parts {
-		if part == "" {
-			continue
+	switch status {
+	case "draft":
+		return "Draft"
+	case "submitted":
+		return "Diajukan"
+	case "reviewed":
+		return "Ditinjau"
+	case "approved":
+		return "Disetujui"
+	case "rejected":
+		return "Ditolak"
+	case "po_created":
+		return "PO Dibuat"
+	case "closed":
+		return "Selesai"
+	case "cancelled":
+		return "Dibatalkan"
+	default:
+		parts := strings.Split(status, "_")
+		for i, part := range parts {
+			if part == "" {
+				continue
+			}
+			parts[i] = strings.ToUpper(part[:1]) + strings.ToLower(part[1:])
 		}
-		parts[i] = strings.ToUpper(part[:1]) + strings.ToLower(part[1:])
+		return strings.Join(parts, " ")
 	}
-
-	return strings.Join(parts, " ")
 }
 
 func productStatusBadgeClass(status string) string {

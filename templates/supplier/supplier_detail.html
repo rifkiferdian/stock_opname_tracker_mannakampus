@@ -8,7 +8,7 @@
             {{ if .Title }}
                 {{ .Title }}
             {{ else }}
-                Supplier Detail
+                Detail Supplier
             {{ end }}
         </title>
 
@@ -39,23 +39,23 @@
 
                                         <div class="min-w-0">
                                             <h1 class="text-2xl font-extrabold leading-tight text-[#001e62] sm:text-3xl">{{ .Supplier.SupplierName }}</h1>
-                                            <p class="mt-2 text-xs font-extrabold uppercase text-[#8b95a5]">{{ if .Supplier.Address }}{{ .Supplier.Address }}{{ else }}Address not available{{ end }}</p>
+                                            <p class="mt-2 text-xs font-extrabold uppercase text-[#8b95a5]">{{ if .Supplier.Address }}{{ .Supplier.Address }}{{ else }}Alamat tidak tersedia{{ end }}</p>
 
                                             <div class="mt-6 grid gap-x-8 gap-y-4 sm:grid-cols-2">
                                                 <div>
-                                                    <p class="text-[10px] font-extrabold uppercase text-[#566173]">Contact Person</p>
+                                                    <p class="text-[10px] font-extrabold uppercase text-[#566173]">Nama PIC</p>
                                                     <p class="mt-1 text-sm font-extrabold text-[#07142f]">{{ if .Supplier.PICName }}{{ .Supplier.PICName }}{{ else }}-{{ end }}</p>
                                                 </div>
                                                 <div>
-                                                    <p class="text-[10px] font-extrabold uppercase text-[#566173]">Phone Number</p>
+                                                    <p class="text-[10px] font-extrabold uppercase text-[#566173]">Nomor Telepon</p>
                                                     <p class="mt-1 text-sm font-extrabold text-[#07142f]">{{ if .Supplier.Phone }}{{ .Supplier.Phone }}{{ else }}-{{ end }}</p>
                                                 </div>
                                                 <div>
-                                                    <p class="text-[10px] font-extrabold uppercase text-[#566173]">Email Address</p>
+                                                    <p class="text-[10px] font-extrabold uppercase text-[#566173]">Alamat Email</p>
                                                     <p class="mt-1 text-sm font-extrabold text-[#07142f]">{{ if .Supplier.Email }}{{ .Supplier.Email }}{{ else }}-{{ end }}</p>
                                                 </div>
                                                 <div>
-                                                    <p class="text-[10px] font-extrabold uppercase text-[#566173]">Contract Status</p>
+                                                    <p class="text-[10px] font-extrabold uppercase text-[#566173]">Status Kontrak</p>
                                                     <p class="mt-1 text-sm font-extrabold text-[#07142f]">
                                                         {{ .Supplier.StatusLabel }}{{ if .Supplier.SupplierGroupName }} / {{ .Supplier.SupplierGroupName }}{{ end }}
                                                     </p>
@@ -67,21 +67,21 @@
                                     <div class="flex w-full flex-col gap-3 sm:w-auto">
                                         <a href="/suppliers" class="inline-flex items-center justify-center gap-2 rounded-md bg-[#001e62] px-6 py-3 text-sm font-extrabold text-white shadow-md shadow-[#001e62]/20 transition hover:bg-[#002f95]">
                                             <i class="bx bx-arrow-back text-base"></i>
-                                            Back to List
+                                            Kembali ke Daftar
                                         </a>
                                         <div class="inline-flex items-center justify-center gap-2 rounded-md border border-slate-200 bg-white px-6 py-3 text-sm font-extrabold text-[#001e62] shadow-sm">
                                             <i class="bx bx-package text-base"></i>
-                                            {{ .Supplier.ProductCount }} Linked Products
+                                            {{ .Supplier.ProductCount }} Produk Tertaut
                                         </div>
                                     </div>
                                 </div>
                             </article>
 
                             <article class="rounded-lg bg-[#24408f] p-6 text-white shadow-sm">
-                                <p class="text-[10px] font-extrabold uppercase tracking-widest text-white/70">Overall Performance</p>
+                                <p class="text-[10px] font-extrabold uppercase tracking-widest text-white/70">Ringkasan Kinerja</p>
                                 <div class="mt-2 flex items-end gap-2">
                                     <p class="text-5xl font-extrabold leading-none">{{ .Supplier.ProductCount }}</p>
-                                    <p class="pb-2 text-base font-extrabold text-white/50">linked</p>
+                                    <p class="pb-2 text-base font-extrabold text-white/50">tertaut</p>
                                 </div>
                                 <div class="mt-12 flex flex-wrap items-center gap-2 text-sm">
                                     {{ if .Supplier.IsActive }}
@@ -102,11 +102,11 @@
                                 <div class="mt-12 border-t border-white/20 pt-5">
                                     <div class="grid grid-cols-2 gap-5">
                                         <div>
-                                            <p class="text-[10px] font-extrabold text-white/45">Payment Term</p>
-                                            <p class="mt-1 text-base font-extrabold">{{ .Supplier.PaymentTermDays }} days</p>
+                                            <p class="text-[10px] font-extrabold text-white/45">Termin Pembayaran</p>
+                                            <p class="mt-1 text-base font-extrabold">{{ .Supplier.PaymentTermDays }} hari</p>
                                         </div>
                                         <div>
-                                            <p class="text-[10px] font-extrabold text-white/45">Updated At</p>
+                                            <p class="text-[10px] font-extrabold text-white/45">Terakhir Diperbarui</p>
                                             <p class="mt-1 text-base font-extrabold">{{ .Supplier.UpdatedAtDisplay }}</p>
                                         </div>
                                     </div>
@@ -117,18 +117,18 @@
                         <section class="overflow-hidden rounded-lg bg-white shadow-sm">
                             <div class="flex flex-col gap-4 px-5 py-5 md:flex-row md:items-center md:justify-between">
                                 <div>
-                                    <h2 class="text-lg font-extrabold text-[#001e62]">Supplied Items</h2>
-                                    <p class="mt-1 text-xs font-medium text-[#566173]">Manage catalog and current stock levels for this supplier.</p>
+                                    <h2 class="text-lg font-extrabold text-[#001e62]">Produk yang Disuplai</h2>
+                                    <p class="mt-1 text-xs font-medium text-[#566173]">Kelola katalog dan informasi stok yang terhubung dengan supplier ini.</p>
                                 </div>
 
                                 <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
                                     <div class="inline-flex items-center gap-2 rounded-md border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-extrabold text-[#566173]">
                                         <i class="bx bx-package text-base"></i>
-                                        {{ len .Products }} item(s)
+                                        {{ len .Products }} item
                                     </div>
                                     <a href="/suppliers" class="inline-flex items-center justify-center gap-2 rounded-md bg-[#001e62] px-6 py-3 text-sm font-extrabold text-white shadow-md shadow-[#001e62]/20 transition hover:bg-[#002f95]">
                                         <i class="bx bx-arrow-back text-base"></i>
-                                        Back
+                                        Kembali
                                     </a>
                                 </div>
                             </div>
@@ -138,11 +138,11 @@
                                     <thead class="bg-slate-50 text-[10px] font-extrabold text-[#001e62]">
                                         <tr>
                                             <th class="px-5 py-4 text-left">Barcode/SKU</th>
-                                            <th class="px-5 py-4 text-left">Item Name</th>
-                                            <th class="px-5 py-4 text-left">Category</th>
-                                            <th class="px-5 py-4 text-left">Unit Price</th>
+                                            <th class="px-5 py-4 text-left">Nama Produk</th>
+                                            <th class="px-5 py-4 text-left">Kategori</th>
+                                            <th class="px-5 py-4 text-left">Harga Satuan</th>
                                             <th class="px-5 py-4 text-left">MOQ</th>
-                                            <th class="px-5 py-4 text-left">Lead Time</th>
+                                            <th class="px-5 py-4 text-left">Waktu Tunggu</th>
                                             <th class="px-5 py-4 text-left">Status</th>
                                         </tr>
                                     </thead>
@@ -152,14 +152,14 @@
                                             <td class="px-5 py-5 text-[11px] font-semibold text-[#8b95a5]">{{ if .Barcode }}#{{ .Barcode }}{{ else }}#{{ .ProductCode }}{{ end }}</td>
                                             <td class="px-5 py-5">
                                                 <p class="font-extrabold text-[#07142f]">{{ .ProductName }}</p>
-                                                <p class="mt-1 text-[11px] font-semibold text-[#566173]">{{ .ProductCode }}{{ if .IsPrimary }} - Primary Supplier{{ else }} - Priority {{ .PriorityNo }}{{ end }}</p>
+                                                <p class="mt-1 text-[11px] font-semibold text-[#566173]">{{ .ProductCode }}{{ if .IsPrimary }} - Supplier Utama{{ else }} - Prioritas {{ .PriorityNo }}{{ end }}</p>
                                             </td>
                                             <td class="px-5 py-5">
-                                                <span class="inline-flex rounded-full bg-slate-100 px-3 py-1 text-[10px] font-extrabold text-[#566173]">{{ if .CategoryName }}{{ .CategoryName }}{{ else }}Uncategorized{{ end }}</span>
+                                                <span class="inline-flex rounded-full bg-slate-100 px-3 py-1 text-[10px] font-extrabold text-[#566173]">{{ if .CategoryName }}{{ .CategoryName }}{{ else }}Tanpa Kategori{{ end }}</span>
                                             </td>
                                             <td class="px-5 py-5 font-extrabold text-[#07142f]">{{ .LastPriceDisplay }}</td>
                                             <td class="px-5 py-5 font-semibold text-[#566173]">{{ .MOQDisplay }}</td>
-                                            <td class="px-5 py-5 font-semibold text-[#566173]">{{ .LeadTimeDays }} days</td>
+                                            <td class="px-5 py-5 font-semibold text-[#566173]">{{ .LeadTimeDays }} hari</td>
                                             <td class="px-5 py-5">
                                                 {{ if .IsActive }}
                                                 <span class="inline-flex items-center gap-2 text-xs font-extrabold text-[#07142f]">
@@ -184,7 +184,7 @@
                             </div>
 
                             <div class="flex flex-col gap-3 border-t border-slate-100 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
-                                <p class="text-xs font-semibold text-[#566173]">Showing {{ len .Products }} of {{ .Supplier.ProductCount }} linked products</p>
+                                <p class="text-xs font-semibold text-[#566173]">Menampilkan {{ len .Products }} dari {{ .Supplier.ProductCount }} produk tertaut</p>
                                 <div class="flex items-center gap-2">
                                     <span class="inline-flex items-center justify-center rounded-md bg-slate-50 px-4 py-2 text-sm font-extrabold text-[#001e62]">{{ .Supplier.SupplierCode }}</span>
                                 </div>

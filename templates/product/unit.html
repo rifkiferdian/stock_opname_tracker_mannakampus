@@ -8,7 +8,7 @@
             {{ if .Title }}
                 {{ .Title }}
             {{ else }}
-                Units Master
+                Master Satuan
             {{ end }}
         </title>
 
@@ -29,25 +29,25 @@
                     <div class="mx-auto flex w-full max-w-7xl flex-col gap-6">
                         <section class="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
                             <div>
-                                <h1 class="text-xl font-extrabold leading-tight text-[#001e62] sm:text-2xl">Units Master</h1>
-                                <p class="mt-1 text-sm font-medium text-[#566173]">Manage item measurement units used across products and stock operations.</p>
+                                <h1 class="text-xl font-extrabold leading-tight text-[#001e62] sm:text-2xl">Master Satuan</h1>
+                                <p class="mt-1 text-sm font-medium text-[#566173]">Kelola satuan pengukuran item yang digunakan pada produk dan operasional stok.</p>
                             </div>
 
                             <div class="flex flex-wrap items-center gap-3">
                                 <button type="button" class="inline-flex items-center justify-center gap-2 rounded-md bg-white px-5 py-3 text-sm font-extrabold text-[#001e62] shadow-sm transition hover:bg-[#eef3ff]">
                                     <i class="bx bx-download text-base"></i>
-                                    Export Units
+                                    Ekspor Satuan
                                 </button>
                                 <button type="button" class="inline-flex items-center justify-center gap-2 rounded-md bg-[#001e62] px-5 py-3 text-sm font-extrabold text-white shadow-md shadow-[#001e62]/20 transition hover:bg-[#002f95]" data-modal-open="unitModal">
                                     <i class="bx bx-plus-circle text-base"></i>
-                                    Add Unit
+                                    Tambah Satuan
                                 </button>
                             </div>
                         </section>
 
                         <form action="/units" method="get" class="grid gap-4 rounded-lg bg-white p-5 shadow-sm lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] lg:items-end">
                             <label class="block">
-                                <span class="text-[10px] font-extrabold uppercase text-[#566173]">Search</span>
+                                <span class="text-[10px] font-extrabold uppercase text-[#566173]">Pencarian</span>
                                 <div class="relative mt-2">
                                     <i class="bx bx-search pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
                                     <input
@@ -55,23 +55,23 @@
                                         name="search"
                                         value="{{ .Filters.Search }}"
                                         class="w-full rounded-md border border-slate-200 bg-slate-50 py-3 pl-10 pr-4 text-sm font-semibold text-slate-600 outline-none transition focus:border-brand-500 focus:bg-white"
-                                        placeholder="Search unit code or name...">
+                                        placeholder="Cari kode atau nama satuan...">
                                 </div>
                             </label>
 
                             <label class="block">
-                                <span class="text-[10px] font-extrabold uppercase text-[#566173]">Sort</span>
+                                <span class="text-[10px] font-extrabold uppercase text-[#566173]">Urutkan</span>
                                 <select name="sort" class="mt-2 w-full rounded-md border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-[#1e2b42] outline-none transition focus:border-brand-500 focus:bg-white">
-                                    <option value="recent" {{ if eq .Filters.Sort "recent" }}selected{{ end }}>Recently Updated</option>
-                                    <option value="code" {{ if eq .Filters.Sort "code" }}selected{{ end }}>Unit Code</option>
-                                    <option value="name" {{ if eq .Filters.Sort "name" }}selected{{ end }}>Unit Name</option>
+                                    <option value="recent" {{ if eq .Filters.Sort "recent" }}selected{{ end }}>Terakhir Diperbarui</option>
+                                    <option value="code" {{ if eq .Filters.Sort "code" }}selected{{ end }}>Kode Satuan</option>
+                                    <option value="name" {{ if eq .Filters.Sort "name" }}selected{{ end }}>Nama Satuan</option>
                                 </select>
                             </label>
 
                             <div class="flex flex-wrap items-center gap-3">
                                 <button type="submit" class="inline-flex items-center justify-center gap-2 rounded-md bg-slate-50 px-6 py-3 text-sm font-extrabold text-[#001e62] transition hover:bg-[#eef3ff]">
                                     <i class="bx bx-filter-alt text-base"></i>
-                                    Apply Filters
+                                    Terapkan Filter
                                 </button>
                                 {{ if or .Filters.Search (ne .Filters.Sort "recent") }}
                                 <a href="/units" class="inline-flex items-center justify-center gap-2 rounded-md border border-slate-200 bg-white px-6 py-3 text-sm font-extrabold text-[#566173] transition hover:bg-slate-50">
@@ -92,13 +92,13 @@
                                 <table class="w-full text-sm" style="min-width: 920px;">
                                     <thead class="bg-slate-100 text-[10px] font-extrabold uppercase text-[#001e62]">
                                         <tr>
-                                            <th class="px-5 py-5 text-left">Unit Details</th>
-                                            <th class="px-5 py-5 text-left">Code</th>
-                                            <th class="px-5 py-5 text-left">Description</th>
-                                            <th class="px-5 py-5 text-left">Created At</th>
-                                            <th class="px-5 py-5 text-left">Updated At</th>
+                                            <th class="px-5 py-5 text-left">Detail Satuan</th>
+                                            <th class="px-5 py-5 text-left">Kode</th>
+                                            <th class="px-5 py-5 text-left">Deskripsi</th>
+                                            <th class="px-5 py-5 text-left">Dibuat Pada</th>
+                                            <th class="px-5 py-5 text-left">Diperbarui Pada</th>
                                             <th class="px-5 py-5 text-left">Status</th>
-                                            <th class="px-5 py-5 text-left">Actions</th>
+                                            <th class="px-5 py-5 text-left">Aksi</th>
                                         </tr>
                                     </thead>
                                     <tbody class="divide-y divide-slate-100">
@@ -111,7 +111,7 @@
                                                     </span>
                                                     <div>
                                                         <p class="font-extrabold leading-tight text-[#07142f]">{{ $unit.UnitName }}</p>
-                                                        <p class="mt-1 text-xs font-semibold text-[#566173]">Unit #{{ $unit.ID }}</p>
+                                                        <p class="mt-1 text-xs font-semibold text-[#566173]">Satuan #{{ $unit.ID }}</p>
                                                     </div>
                                                 </div>
                                             </td>
@@ -130,7 +130,7 @@
                                             <td class="px-5 py-5">
                                                 <span class="inline-flex items-center gap-1.5 rounded-lg bg-[#dcfae7] px-3 py-2 text-[10px] font-extrabold uppercase text-[#19a856]">
                                                     <span class="h-1.5 w-1.5 rounded-full bg-[#19a856]"></span>
-                                                    Active
+                                                    Aktif
                                                 </span>
                                             </td>
                                             <td class="px-5 py-5">
@@ -165,11 +165,11 @@
                             </div>
 
                             <div class="flex flex-col gap-3 border-t border-slate-100 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
-                                <p class="text-xs font-semibold text-[#1e2b42]">Showing {{ len .units }} units{{ if or .Filters.Search (ne .Filters.Sort "recent") }} with active filters{{ end }}</p>
+                                <p class="text-xs font-semibold text-[#1e2b42]">Menampilkan {{ len .units }} satuan{{ if or .Filters.Search (ne .Filters.Sort "recent") }} dengan filter aktif{{ end }}</p>
                                 <div class="flex items-center gap-2">
-                                    <button type="button" class="inline-flex h-9 items-center justify-center rounded-md bg-white px-4 text-sm font-semibold text-[#1e2b42] shadow-sm transition hover:bg-[#eef3ff]">Previous</button>
+                                    <button type="button" class="inline-flex h-9 items-center justify-center rounded-md bg-white px-4 text-sm font-semibold text-[#1e2b42] shadow-sm transition hover:bg-[#eef3ff]">Sebelumnya</button>
                                     <button type="button" class="inline-flex h-9 w-9 items-center justify-center rounded-md bg-[#001e62] text-sm font-extrabold text-white">1</button>
-                                    <button type="button" class="inline-flex h-9 items-center justify-center rounded-md bg-white px-4 text-sm font-semibold text-[#1e2b42] shadow-sm transition hover:bg-[#eef3ff]">Next</button>
+                                    <button type="button" class="inline-flex h-9 items-center justify-center rounded-md bg-white px-4 text-sm font-semibold text-[#1e2b42] shadow-sm transition hover:bg-[#eef3ff]">Berikutnya</button>
                                 </div>
                             </div>
                         </section>
@@ -178,28 +178,28 @@
                             <article class="rounded-lg border border-[#dbe4f0] bg-white p-6 shadow-sm">
                                 <div class="flex items-center gap-3">
                                     <i class="bx bx-ruler text-2xl text-[#001e62]"></i>
-                                    <h2 class="text-sm font-extrabold uppercase text-[#001e62]">Unit Registry</h2>
+                                    <h2 class="text-sm font-extrabold uppercase text-[#001e62]">Daftar Satuan</h2>
                                 </div>
                                 <p class="mt-4 text-3xl font-extrabold leading-none text-[#001e62]">{{ len .units }}</p>
-                                <p class="mt-2 text-sm font-medium leading-relaxed text-[#566173]">Total measurement units available for product setup.</p>
+                                <p class="mt-2 text-sm font-medium leading-relaxed text-[#566173]">Total satuan pengukuran yang tersedia untuk pengaturan produk.</p>
                             </article>
 
                             <article class="rounded-lg bg-white p-6 shadow-sm">
                                 <div class="flex items-center gap-3">
                                     <i class="bx bx-sync text-2xl text-[#001e62]"></i>
-                                    <h2 class="text-sm font-extrabold uppercase text-[#001e62]">Catalog Mapping</h2>
+                                    <h2 class="text-sm font-extrabold uppercase text-[#001e62]">Pemetaan Katalog</h2>
                                 </div>
-                                <p class="mt-4 text-sm font-medium leading-relaxed text-[#1e2b42]">Units are linked to product master data through <span class="font-extrabold">unit_id</span>.</p>
-                                <p class="mt-2 text-sm font-medium leading-relaxed text-[#566173]">Deleting a unit will set linked product unit references to null.</p>
+                                <p class="mt-4 text-sm font-medium leading-relaxed text-[#1e2b42]">Satuan terhubung ke data master produk melalui <span class="font-extrabold">unit_id</span>.</p>
+                                <p class="mt-2 text-sm font-medium leading-relaxed text-[#566173]">Menghapus satuan akan mengubah referensi satuan produk yang tertaut menjadi null.</p>
                             </article>
 
                             <article class="rounded-lg bg-white p-6 shadow-sm">
                                 <div class="flex items-center gap-3">
                                     <i class="bx bx-badge-check text-2xl text-[#001e62]"></i>
-                                    <h2 class="text-sm font-extrabold uppercase text-[#001e62]">Data Quality</h2>
+                                    <h2 class="text-sm font-extrabold uppercase text-[#001e62]">Kualitas Data</h2>
                                 </div>
-                                <p class="mt-4 text-sm font-medium leading-relaxed text-[#1e2b42]">Unit codes are stored uppercase and must be unique.</p>
-                                <p class="mt-2 text-sm font-medium leading-relaxed text-[#566173]">Examples: PCS, BOX, PACK, KRT.</p>
+                                <p class="mt-4 text-sm font-medium leading-relaxed text-[#1e2b42]">Kode satuan disimpan dalam huruf besar dan harus unik.</p>
+                                <p class="mt-2 text-sm font-medium leading-relaxed text-[#566173]">Contoh: PCS, BOX, PACK, KRT.</p>
                             </article>
                         </section>
                     </div>
@@ -213,7 +213,7 @@
             <div class="absolute inset-0 bg-slate-900/50" data-modal-close></div>
             <div class="relative w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-lg bg-white p-5 shadow-xl sm:p-6">
                 <div class="flex items-center justify-between border-b border-slate-100 pb-4">
-                    <h2 class="text-lg font-extrabold text-[#001e62]">Add Unit</h2>
+                    <h2 class="text-lg font-extrabold text-[#001e62]">Tambah Satuan</h2>
                     <button type="button" class="text-slate-400 transition hover:text-slate-600" data-modal-close>
                         <i class="bx bx-x text-2xl"></i>
                     </button>
@@ -222,21 +222,21 @@
                 <form action="/units" method="post" class="mt-6 space-y-5">
                     <div class="grid gap-5 md:grid-cols-2">
                         <div>
-                            <label for="unit_code" class="text-[10px] font-extrabold uppercase text-[#566173]">Unit Code</label>
+                            <label for="unit_code" class="text-[10px] font-extrabold uppercase text-[#566173]">Kode Satuan</label>
                             <input type="text" class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold uppercase outline-none transition focus:border-brand-500" id="unit_code" name="unit_code" required placeholder="PCS">
                         </div>
                         <div>
-                            <label for="unit_name" class="text-[10px] font-extrabold uppercase text-[#566173]">Unit Name</label>
+                            <label for="unit_name" class="text-[10px] font-extrabold uppercase text-[#566173]">Nama Satuan</label>
                             <input type="text" class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500" id="unit_name" name="unit_name" required placeholder="Pieces">
                         </div>
                     </div>
                     <div>
-                        <label for="description" class="text-[10px] font-extrabold uppercase text-[#566173]">Description</label>
+                            <label for="description" class="text-[10px] font-extrabold uppercase text-[#566173]">Deskripsi</label>
                         <textarea class="mt-2 h-28 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500" id="description" name="description" placeholder="Satuan per pcs"></textarea>
                     </div>
                     <div class="flex flex-col gap-3 border-t border-slate-100 pt-4 sm:flex-row sm:justify-end">
-                        <button type="button" class="rounded-md border border-slate-200 bg-white px-5 py-3 text-sm font-extrabold text-[#1e2b42] transition hover:bg-slate-50" data-modal-close>Cancel</button>
-                        <button type="submit" class="rounded-md bg-[#001e62] px-5 py-3 text-sm font-extrabold text-white transition hover:bg-[#002f95]">Save Unit</button>
+                        <button type="button" class="rounded-md border border-slate-200 bg-white px-5 py-3 text-sm font-extrabold text-[#1e2b42] transition hover:bg-slate-50" data-modal-close>Batal</button>
+                        <button type="submit" class="rounded-md bg-[#001e62] px-5 py-3 text-sm font-extrabold text-white transition hover:bg-[#002f95]">Simpan Satuan</button>
                     </div>
                 </form>
             </div>
@@ -246,7 +246,7 @@
             <div class="absolute inset-0 bg-slate-900/50" data-modal-close></div>
             <div class="relative w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-lg bg-white p-5 shadow-xl sm:p-6">
                 <div class="flex items-center justify-between border-b border-slate-100 pb-4">
-                    <h2 class="text-lg font-extrabold text-[#001e62]">Edit Unit</h2>
+                    <h2 class="text-lg font-extrabold text-[#001e62]">Edit Satuan</h2>
                     <button type="button" class="text-slate-400 transition hover:text-slate-600" data-modal-close>
                         <i class="bx bx-x text-2xl"></i>
                     </button>
@@ -256,21 +256,21 @@
                     <input type="hidden" name="id" id="edit_id">
                     <div class="grid gap-5 md:grid-cols-2">
                         <div>
-                            <label for="edit_unit_code" class="text-[10px] font-extrabold uppercase text-[#566173]">Unit Code</label>
+                            <label for="edit_unit_code" class="text-[10px] font-extrabold uppercase text-[#566173]">Kode Satuan</label>
                             <input type="text" class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold uppercase outline-none transition focus:border-brand-500" id="edit_unit_code" name="unit_code" required>
                         </div>
                         <div>
-                            <label for="edit_unit_name" class="text-[10px] font-extrabold uppercase text-[#566173]">Unit Name</label>
+                            <label for="edit_unit_name" class="text-[10px] font-extrabold uppercase text-[#566173]">Nama Satuan</label>
                             <input type="text" class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500" id="edit_unit_name" name="unit_name" required>
                         </div>
                     </div>
                     <div>
-                        <label for="edit_description" class="text-[10px] font-extrabold uppercase text-[#566173]">Description</label>
+                        <label for="edit_description" class="text-[10px] font-extrabold uppercase text-[#566173]">Deskripsi</label>
                         <textarea class="mt-2 h-28 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500" id="edit_description" name="description"></textarea>
                     </div>
                     <div class="flex flex-col gap-3 border-t border-slate-100 pt-4 sm:flex-row sm:justify-end">
-                        <button type="button" class="rounded-md border border-slate-200 bg-white px-5 py-3 text-sm font-extrabold text-[#1e2b42] transition hover:bg-slate-50" data-modal-close>Cancel</button>
-                        <button type="submit" class="rounded-md bg-[#001e62] px-5 py-3 text-sm font-extrabold text-white transition hover:bg-[#002f95]">Update Unit</button>
+                        <button type="button" class="rounded-md border border-slate-200 bg-white px-5 py-3 text-sm font-extrabold text-[#1e2b42] transition hover:bg-slate-50" data-modal-close>Batal</button>
+                        <button type="submit" class="rounded-md bg-[#001e62] px-5 py-3 text-sm font-extrabold text-white transition hover:bg-[#002f95]">Simpan Perubahan</button>
                     </div>
                 </form>
             </div>
@@ -365,12 +365,12 @@
                 document.querySelectorAll('.btn-delete-unit').forEach(function (btn) {
                     btn.addEventListener('click', function (event) {
                         event.preventDefault();
-                        var unitName = btn.getAttribute('data-unit-name') || 'unit';
+                        var unitName = btn.getAttribute('data-unit-name') || 'satuan';
                         var targetUrl = btn.getAttribute('data-url');
 
                         Swal.fire({
                             title: 'Hapus unit ini?',
-                            text: 'Unit ' + unitName + ' akan dihapus dari master data.',
+                            text: 'Satuan ' + unitName + ' akan dihapus dari master data.',
                             icon: 'warning',
                             showCancelButton: true,
                             confirmButtonColor: '#d33',

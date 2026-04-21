@@ -254,9 +254,9 @@ func (r *SupplierRepository) GetSuppliedProducts(supplierID int) ([]models.Suppl
 		product.IsPrimary = isPrimary == 1
 		product.IsActive = isActive == 1
 		if product.IsActive {
-			product.StatusLabel = "Active"
+			product.StatusLabel = "Aktif"
 		} else {
-			product.StatusLabel = "Inactive"
+			product.StatusLabel = "Nonaktif"
 		}
 		if updatedAt.Valid {
 			product.UpdatedAt = updatedAt.Time.Format("2006-01-02 15:04:05")
@@ -465,9 +465,9 @@ func scanSupplier(scanner interface {
 
 	supplier.IsActive = isActive == 1
 	if supplier.IsActive {
-		supplier.StatusLabel = "Active"
+		supplier.StatusLabel = "Aktif"
 	} else {
-		supplier.StatusLabel = "Inactive"
+		supplier.StatusLabel = "Nonaktif"
 	}
 
 	if createdAt.Valid {

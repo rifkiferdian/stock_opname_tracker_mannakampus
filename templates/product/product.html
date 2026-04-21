@@ -8,7 +8,7 @@
             {{ if .Title }}
                 {{ .Title }}
             {{ else }}
-                Retail Inventory Master
+                Master Inventaris Produk
             {{ end }}
         </title>
 
@@ -29,56 +29,56 @@
                     <div class="mx-auto flex w-full max-w-7xl flex-col gap-6">
                         <section class="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
                             <div>
-                                <h1 class="text-xl font-extrabold leading-tight text-[#001e62] sm:text-2xl">Retail Inventory Master</h1>
-                                <p class="mt-1 text-sm font-medium text-[#566173]">Manage global product data, stock levels across locations, and supplier associations.</p>
+                                <h1 class="text-xl font-extrabold leading-tight text-[#001e62] sm:text-2xl">Master Inventaris Produk</h1>
+                                <p class="mt-1 text-sm font-medium text-[#566173]">Kelola data produk, level stok antar lokasi, dan keterkaitan supplier.</p>
                             </div>
 
                             <div class="flex flex-wrap items-center gap-3">
                                 <a href="/products" class="inline-flex items-center justify-center gap-2 rounded-md bg-white px-5 py-3 text-sm font-extrabold text-[#001e62] shadow-sm transition hover:bg-[#eef3ff]">
                                     <i class="bx bx-download text-base"></i>
-                                    Export Items
+                                    Ekspor Produk
                                 </a>
                                 <button type="button" class="inline-flex items-center justify-center gap-2 rounded-md bg-[#001e62] px-5 py-3 text-sm font-extrabold text-white shadow-md shadow-[#001e62]/20 transition hover:bg-[#002f95]" data-modal-open="productModal">
                                     <i class="bx bx-plus-circle text-base"></i>
-                                    Add New Item
+                                    Tambah Produk
                                 </button>
                             </div>
                         </section>
 
                         <section class="grid gap-4" style="grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));">
                             <article class="rounded-lg bg-white p-5 shadow-sm">
-                                <p class="text-[10px] font-extrabold uppercase text-[#566173]">Total Products</p>
+                                <p class="text-[10px] font-extrabold uppercase text-[#566173]">Total Produk</p>
                                 <div class="mt-3 flex items-end justify-between gap-3">
                                     <p class="text-3xl font-extrabold leading-none text-[#001e62]">{{ .Stats.TotalProducts }}</p>
                                     <span class="inline-flex items-center gap-1 text-[11px] font-extrabold text-[#19a856]">
-                                        Catalog
+                                        Katalog
                                         <i class="bx bx-package text-sm"></i>
                                     </span>
                                 </div>
                             </article>
 
                             <article class="rounded-lg bg-white p-5 shadow-sm">
-                                <p class="text-[10px] font-extrabold uppercase text-[#566173]">Active Products</p>
+                                <p class="text-[10px] font-extrabold uppercase text-[#566173]">Produk Aktif</p>
                                 <div class="mt-3 flex items-end justify-between gap-3">
                                     <p class="text-3xl font-extrabold leading-none text-[#001e62]">{{ .Stats.ActiveProducts }}</p>
-                                    <span class="text-[11px] font-extrabold text-[#566173]">Ready to Sell</span>
+                                    <span class="text-[11px] font-extrabold text-[#566173]">Siap Dijual</span>
                                 </div>
                             </article>
 
                             <article class="rounded-lg bg-white p-5 shadow-sm">
-                                <p class="text-[10px] font-extrabold uppercase text-[#566173]">Inactive Products</p>
+                                <p class="text-[10px] font-extrabold uppercase text-[#566173]">Produk Nonaktif</p>
                                 <div class="mt-3 flex items-end justify-between gap-3">
                                     <p class="text-3xl font-extrabold leading-none text-rose-600">{{ .Stats.InactiveProducts }}</p>
-                                    <span class="text-[11px] font-extrabold text-rose-600">Need Review</span>
+                                    <span class="text-[11px] font-extrabold text-rose-600">Perlu Tinjau</span>
                                 </div>
                             </article>
 
                             <article class="rounded-lg bg-white p-5 shadow-sm">
-                                <p class="text-[10px] font-extrabold uppercase text-[#566173]">Linked Suppliers</p>
+                                <p class="text-[10px] font-extrabold uppercase text-[#566173]">Supplier Tertaut</p>
                                 <div class="mt-3 flex items-end justify-between gap-3">
                                     <p class="text-3xl font-extrabold leading-none text-[#001e62]">{{ .Stats.LinkedSuppliers }}</p>
                                     <span class="inline-flex items-center gap-1 text-[11px] font-extrabold text-[#19a856]">
-                                        Sourcing
+                                        Pengadaan
                                         <i class="bx bx-buildings text-sm"></i>
                                     </span>
                                 </div>
@@ -87,42 +87,42 @@
 
                         <form action="/products" method="get" class="rounded-lg bg-white p-4 shadow-sm">
                             <div class="flex flex-col gap-3 lg:flex-row lg:items-center">
-                                <label class="relative block min-w-0 flex-[1.5]">
+                                <label class="relative block min-w-0 flex-1 lg:min-w-[24rem]">
                                     <i class="bx bx-search pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                                    <input type="text" name="search" value="{{ .Filters.Search }}" class="w-full rounded-md border border-slate-200 bg-slate-50 py-3 pl-10 pr-4 text-sm font-semibold text-slate-600 outline-none transition focus:border-brand-500 focus:bg-white" placeholder="Search SKU, barcode, product name...">
+                                    <input type="text" name="search" value="{{ .Filters.Search }}" class="w-full rounded-md border border-slate-200 bg-slate-50 py-3 pl-10 pr-4 text-sm font-semibold text-slate-600 outline-none transition focus:border-brand-500 focus:bg-white" placeholder="Cari SKU, barcode, atau nama produk...">
                                 </label>
 
                                 <select name="category_id" class="rounded-md border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-extrabold text-[#1e2b42] outline-none transition focus:border-brand-500 focus:bg-white">
-                                    <option value="0">Category: All</option>
+                                    <option value="0">Kategori: Semua</option>
                                     {{ range .Categories }}
                                     <option value="{{ .ID }}" {{ if eq $.Filters.CategoryID .ID }}selected{{ end }}>{{ .CategoryName }}</option>
                                     {{ end }}
                                 </select>
 
                                 <select name="status" class="rounded-md border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-extrabold text-[#1e2b42] outline-none transition focus:border-brand-500 focus:bg-white">
-                                    <option value="">Status: All</option>
-                                    <option value="active" {{ if eq .Filters.Status "active" }}selected{{ end }}>Active</option>
-                                    <option value="inactive" {{ if eq .Filters.Status "inactive" }}selected{{ end }}>Inactive</option>
+                                    <option value="">Status: Semua</option>
+                                    <option value="active" {{ if eq .Filters.Status "active" }}selected{{ end }}>Aktif</option>
+                                    <option value="inactive" {{ if eq .Filters.Status "inactive" }}selected{{ end }}>Nonaktif</option>
                                 </select>
 
                                 <select name="brand" class="rounded-md border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-extrabold text-[#1e2b42] outline-none transition focus:border-brand-500 focus:bg-white">
-                                    <option value="">Brand: All</option>
+                                    <option value="">Merek: Semua</option>
                                     {{ range .Brands }}
                                     <option value="{{ . }}" {{ if eq $.Filters.Brand . }}selected{{ end }}>{{ . }}</option>
                                     {{ end }}
                                 </select>
 
                                 <select name="sort" class="rounded-md border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-extrabold text-[#1e2b42] outline-none transition focus:border-brand-500 focus:bg-white">
-                                    <option value="recent" {{ if eq .Filters.Sort "recent" }}selected{{ end }}>Recent</option>
-                                    <option value="name" {{ if eq .Filters.Sort "name" }}selected{{ end }}>Name</option>
-                                    <option value="code" {{ if eq .Filters.Sort "code" }}selected{{ end }}>Code</option>
-                                    <option value="brand" {{ if eq .Filters.Sort "brand" }}selected{{ end }}>Brand</option>
+                                    <option value="recent" {{ if eq .Filters.Sort "recent" }}selected{{ end }}>Terbaru</option>
+                                    <option value="name" {{ if eq .Filters.Sort "name" }}selected{{ end }}>Nama</option>
+                                    <option value="code" {{ if eq .Filters.Sort "code" }}selected{{ end }}>Kode</option>
+                                    <option value="brand" {{ if eq .Filters.Sort "brand" }}selected{{ end }}>Merek</option>
                                 </select>
 
-                                <div class="flex flex-wrap items-center gap-2">
+                                <div class="flex flex-wrap items-center gap-2 lg:ml-auto">
                                     <button type="submit" class="inline-flex items-center justify-center gap-2 rounded-md bg-[#001e62] px-5 py-3 text-sm font-extrabold text-white transition hover:bg-[#002f95]">
                                         <i class="bx bx-filter-alt text-base"></i>
-                                        Apply
+                                        Terapkan
                                     </button>
                                     {{ if or .Filters.Search (gt .Filters.CategoryID 0) .Filters.Status .Filters.Brand (ne .Filters.Sort "recent") }}
                                     <a href="/products" class="inline-flex items-center justify-center gap-2 rounded-md bg-slate-50 px-5 py-3 text-sm font-extrabold text-[#566173] transition hover:bg-slate-100">
@@ -145,14 +145,14 @@
                                 <table class="w-full text-sm" style="min-width: 1120px;">
                                     <thead class="bg-slate-100 text-[10px] font-extrabold uppercase text-[#001e62]">
                                         <tr>
-                                            <th class="px-5 py-5 text-left">Item Details</th>
+                                            <th class="px-5 py-5 text-left">Detail Produk</th>
                                             <th class="px-5 py-5 text-left">SKU</th>
-                                            <th class="px-5 py-5 text-left">Categorization</th>
-                                            <th class="px-5 py-5 text-left">Unit Price</th>
-                                            <th class="px-5 py-5 text-left">Inventory (S/W)</th>
+                                            <th class="px-5 py-5 text-left">Kategorisasi</th>
+                                            <th class="px-5 py-5 text-left">Harga Satuan</th>
+                                            <th class="px-5 py-5 text-left">Inventaris (T/G)</th>
                                             <th class="px-5 py-5 text-left">Supplier</th>
                                             <th class="px-5 py-5 text-left">Status</th>
-                                            <th class="px-5 py-5 text-left">Actions</th>
+                                            <th class="px-5 py-5 text-left">Aksi</th>
                                         </tr>
                                     </thead>
                                     <tbody class="divide-y divide-slate-100">
@@ -169,7 +169,7 @@
                                                     </span>
                                                     <div>
                                                         <p class="font-extrabold leading-tight text-[#07142f]">{{ $product.ProductName }}</p>
-                                                        <p class="mt-1 text-xs font-semibold text-[#566173]">{{ if $product.CategoryName }}{{ $product.CategoryName }}{{ else }}Uncategorized{{ end }}</p>
+                                                        <p class="mt-1 text-xs font-semibold text-[#566173]">{{ if $product.CategoryName }}{{ $product.CategoryName }}{{ else }}Tanpa Kategori{{ end }}</p>
                                                     </div>
                                                 </div>
                                             </td>
@@ -178,12 +178,12 @@
                                                 <p class="mt-1 text-[11px] font-semibold text-[#566173]">{{ if $product.Barcode }}{{ $product.Barcode }}{{ else }}-{{ end }}</p>
                                             </td>
                                             <td class="px-5 py-5">
-                                                <p class="font-extrabold text-[#07142f]">{{ if $product.Brand }}{{ $product.Brand }}{{ else }}No brand{{ end }}</p>
-                                                <p class="mt-1 text-[11px] font-semibold text-[#566173]">Unit: {{ if $product.UnitName }}{{ $product.UnitName }}{{ else }}-{{ end }}</p>
+                                                <p class="font-extrabold text-[#07142f]">{{ if $product.Brand }}{{ $product.Brand }}{{ else }}Tanpa Merek{{ end }}</p>
+                                                <p class="mt-1 text-[11px] font-semibold text-[#566173]">Satuan: {{ if $product.UnitName }}{{ $product.UnitName }}{{ else }}-{{ end }}</p>
                                             </td>
                                             <td class="px-5 py-5 text-lg font-extrabold text-[#001e62]">
                                                 {{ if gt $product.PrimarySupplierID 0 }}{{ $product.PrimarySupplierPriceDisplay }}{{ else }}-{{ end }}
-                                                <p class="mt-1 text-[11px] font-semibold text-[#566173]">Pack {{ $product.PackSizeDisplay }}</p>
+                                                <p class="mt-1 text-[11px] font-semibold text-[#566173]">Kemasan {{ $product.PackSizeDisplay }}</p>
                                             </td>
                                             <td class="px-5 py-5">
                                                 <div class="flex items-center gap-4">
@@ -199,11 +199,11 @@
                                                         {{ end }}
                                                     </div>
                                                 </div>
-                                                <p class="mt-2 text-[11px] font-semibold text-[#566173]">Min {{ $product.MinStockDisplay }} / Max {{ $product.MaxStockDisplay }}</p>
+                                                <p class="mt-2 text-[11px] font-semibold text-[#566173]">Min {{ $product.MinStockDisplay }} / Maks {{ $product.MaxStockDisplay }}</p>
                                             </td>
                                             <td class="px-5 py-5">
                                                 <p class="font-semibold text-[#1e2b42]">{{ if $product.PrimarySupplierName }}{{ $product.PrimarySupplierName }}{{ else }}-{{ end }}</p>
-                                                <p class="mt-1 text-[11px] font-semibold text-[#566173]">Lead time {{ $product.DefaultLeadTimeDays }} days</p>
+                                                <p class="mt-1 text-[11px] font-semibold text-[#566173]">Lead time {{ $product.DefaultLeadTimeDays }} hari</p>
                                             </td>
                                             <td class="px-5 py-5">
                                                 {{ if $product.IsActive }}
@@ -267,17 +267,17 @@
                             <div class="flex flex-col gap-3 border-t border-slate-100 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
                                 <p class="text-xs font-semibold text-[#1e2b42]">
                                     {{ if gt .Pagination.TotalItems 0 }}
-                                        Showing {{ .Pagination.StartItem }} to {{ .Pagination.EndItem }} of {{ .Pagination.TotalItems }} entries
+                                        Menampilkan {{ .Pagination.StartItem }} sampai {{ .Pagination.EndItem }} dari {{ .Pagination.TotalItems }} data
                                     {{ else }}
-                                        Showing 0 entries
+                                        Menampilkan 0 data
                                     {{ end }}
-                                    {{ if or .Filters.Search (gt .Filters.CategoryID 0) .Filters.Status .Filters.Brand (ne .Filters.Sort "recent") }} with active filters{{ end }}
+                                    {{ if or .Filters.Search (gt .Filters.CategoryID 0) .Filters.Status .Filters.Brand (ne .Filters.Sort "recent") }} dengan filter aktif{{ end }}
                                 </p>
                                 <div class="flex items-center gap-2">
                                     {{ if .Pagination.HasPrev }}
-                                    <a href="{{ .Pagination.PrevURL }}" class="inline-flex h-9 items-center justify-center rounded-md bg-white px-4 text-sm font-semibold text-[#1e2b42] shadow-sm transition hover:bg-[#eef3ff]">Previous</a>
+                                    <a href="{{ .Pagination.PrevURL }}" class="inline-flex h-9 items-center justify-center rounded-md bg-white px-4 text-sm font-semibold text-[#1e2b42] shadow-sm transition hover:bg-[#eef3ff]">Sebelumnya</a>
                                     {{ else }}
-                                    <span class="inline-flex h-9 items-center justify-center rounded-md bg-slate-100 px-4 text-sm font-semibold text-slate-400">Previous</span>
+                                    <span class="inline-flex h-9 items-center justify-center rounded-md bg-slate-100 px-4 text-sm font-semibold text-slate-400">Sebelumnya</span>
                                     {{ end }}
 
                                     {{ range .Pagination.Pages }}
@@ -285,9 +285,9 @@
                                     {{ end }}
 
                                     {{ if .Pagination.HasNext }}
-                                    <a href="{{ .Pagination.NextURL }}" class="inline-flex h-9 items-center justify-center rounded-md bg-white px-4 text-sm font-semibold text-[#1e2b42] shadow-sm transition hover:bg-[#eef3ff]">Next</a>
+                                    <a href="{{ .Pagination.NextURL }}" class="inline-flex h-9 items-center justify-center rounded-md bg-white px-4 text-sm font-semibold text-[#1e2b42] shadow-sm transition hover:bg-[#eef3ff]">Berikutnya</a>
                                     {{ else }}
-                                    <span class="inline-flex h-9 items-center justify-center rounded-md bg-slate-100 px-4 text-sm font-semibold text-slate-400">Next</span>
+                                    <span class="inline-flex h-9 items-center justify-center rounded-md bg-slate-100 px-4 text-sm font-semibold text-slate-400">Berikutnya</span>
                                     {{ end }}
                                 </div>
                             </div>
@@ -297,31 +297,31 @@
                             <article class="rounded-lg border border-[#dbe4f0] bg-white p-6 shadow-sm">
                                 <div class="flex items-center gap-3">
                                     <i class="bx bx-error text-2xl text-[#001e62]"></i>
-                                    <h2 class="text-sm font-extrabold uppercase text-[#001e62]">Catalog Health</h2>
+                                    <h2 class="text-sm font-extrabold uppercase text-[#001e62]">Kesehatan Katalog</h2>
                                 </div>
-                                <p class="mt-4 text-sm font-medium leading-relaxed text-[#1e2b42]">{{ .Stats.InactiveProducts }} products are currently inactive and need review.</p>
-                                <p class="mt-2 text-sm font-medium leading-relaxed text-[#566173]">Update category, supplier, or stock policy directly from the product list.</p>
+                                <p class="mt-4 text-sm font-medium leading-relaxed text-[#1e2b42]">{{ .Stats.InactiveProducts }} produk saat ini nonaktif dan perlu ditinjau.</p>
+                                <p class="mt-2 text-sm font-medium leading-relaxed text-[#566173]">Perbarui kategori, supplier, atau kebijakan stok langsung dari daftar produk.</p>
                             </article>
 
                             <article class="rounded-lg bg-white p-6 shadow-sm">
                                 <div class="flex items-center gap-3">
                                     <i class="bx bx-sync text-2xl text-[#001e62]"></i>
-                                    <h2 class="text-sm font-extrabold uppercase text-[#001e62]">Catalog Sync</h2>
+                                    <h2 class="text-sm font-extrabold uppercase text-[#001e62]">Sinkronisasi Katalog</h2>
                                 </div>
-                                <p class="mt-4 text-sm font-medium leading-relaxed text-[#1e2b42]">{{ .Stats.ActiveProducts }} active products are available in the current master catalog.</p>
-                                <p class="mt-2 text-sm font-medium leading-relaxed text-[#566173]">Filters and pagination stay in sync while you browse the product master.</p>
+                                <p class="mt-4 text-sm font-medium leading-relaxed text-[#1e2b42]">{{ .Stats.ActiveProducts }} produk aktif tersedia di katalog master saat ini.</p>
+                                <p class="mt-2 text-sm font-medium leading-relaxed text-[#566173]">Filter dan pagination tetap sinkron saat kamu menelusuri master produk.</p>
                             </article>
 
                             <article class="rounded-lg bg-white p-6 shadow-sm">
                                 <div class="flex items-center gap-3">
                                     <i class="bx bx-trending-up text-2xl text-[#001e62]"></i>
-                                    <h2 class="text-sm font-extrabold uppercase text-[#001e62]">Supplier Links</h2>
+                                    <h2 class="text-sm font-extrabold uppercase text-[#001e62]">Tautan Supplier</h2>
                                 </div>
                                 <div class="mt-4 flex flex-wrap items-end gap-3">
                                     <p class="text-3xl font-extrabold leading-none text-[#001e62]">{{ .Stats.LinkedSuppliers }}</p>
-                                    <span class="pb-1 text-xs font-extrabold text-[#19a856]">connected suppliers</span>
+                                    <span class="pb-1 text-xs font-extrabold text-[#19a856]">supplier terhubung</span>
                                 </div>
-                                <p class="mt-2 text-sm font-medium leading-relaxed text-[#566173]">Each product can keep a primary supplier and the latest known purchase price.</p>
+                                <p class="mt-2 text-sm font-medium leading-relaxed text-[#566173]">Setiap produk dapat menyimpan supplier utama dan harga beli terakhir yang diketahui.</p>
                             </article>
                         </section>
                     </div>
@@ -335,7 +335,7 @@
             <div class="absolute inset-0 bg-slate-900/50" data-modal-close></div>
             <div class="relative w-full max-w-3xl rounded-lg bg-white p-5 shadow-xl sm:p-6">
                 <div class="flex items-center justify-between border-b border-slate-100 pb-4">
-                    <h2 class="text-lg font-extrabold text-[#001e62]">Add Product</h2>
+                    <h2 class="text-lg font-extrabold text-[#001e62]">Tambah Produk</h2>
                     <button type="button" class="text-slate-400 transition hover:text-slate-600" data-modal-close>
                         <i class="bx bx-x text-2xl"></i>
                     </button>
@@ -344,7 +344,7 @@
                 <form action="/products" method="post" class="mt-6 max-h-[75vh] space-y-5 overflow-y-auto pr-1">
                     <div class="grid gap-5 md:grid-cols-2">
                         <div>
-                            <label for="product_code" class="text-[10px] font-extrabold uppercase text-[#566173]">Product Code</label>
+                            <label for="product_code" class="text-[10px] font-extrabold uppercase text-[#566173]">Kode Produk</label>
                             <input type="text" id="product_code" name="product_code" required class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold uppercase outline-none transition focus:border-brand-500" placeholder="BRG-0004">
                         </div>
                         <div>
@@ -352,33 +352,33 @@
                             <input type="text" id="barcode" name="barcode" class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500" placeholder="899999000004">
                         </div>
                         <div>
-                            <label for="product_name" class="text-[10px] font-extrabold uppercase text-[#566173]">Product Name</label>
+                            <label for="product_name" class="text-[10px] font-extrabold uppercase text-[#566173]">Nama Produk</label>
                             <input type="text" id="product_name" name="product_name" required class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500" placeholder="Nama Produk">
                         </div>
                         <div>
-                            <label for="brand" class="text-[10px] font-extrabold uppercase text-[#566173]">Brand</label>
-                            <input type="text" id="brand" name="brand" class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500" placeholder="Brand">
+                            <label for="brand" class="text-[10px] font-extrabold uppercase text-[#566173]">Merek</label>
+                            <input type="text" id="brand" name="brand" class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500" placeholder="Merek">
                         </div>
                         <div>
-                            <label for="category_id" class="text-[10px] font-extrabold uppercase text-[#566173]">Category</label>
+                            <label for="category_id" class="text-[10px] font-extrabold uppercase text-[#566173]">Kategori</label>
                             <select id="category_id" name="category_id" class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500">
-                                <option value="0">Pilih Category</option>
+                                <option value="0">Pilih Kategori</option>
                                 {{ range .Categories }}
                                 <option value="{{ .ID }}">{{ .CategoryName }}</option>
                                 {{ end }}
                             </select>
                         </div>
                         <div>
-                            <label for="unit_id" class="text-[10px] font-extrabold uppercase text-[#566173]">Unit</label>
+                            <label for="unit_id" class="text-[10px] font-extrabold uppercase text-[#566173]">Satuan</label>
                             <select id="unit_id" name="unit_id" class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500">
-                                <option value="0">Pilih Unit</option>
+                                <option value="0">Pilih Satuan</option>
                                 {{ range .Units }}
                                 <option value="{{ .ID }}">{{ .UnitName }}</option>
                                 {{ end }}
                             </select>
                         </div>
                         <div>
-                            <label for="supplier_id" class="text-[10px] font-extrabold uppercase text-[#566173]">Primary Supplier</label>
+                            <label for="supplier_id" class="text-[10px] font-extrabold uppercase text-[#566173]">Supplier Utama</label>
                             <select id="supplier_id" name="supplier_id" class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500">
                                 <option value="0">Pilih Supplier</option>
                                 {{ range .Suppliers }}
@@ -387,41 +387,41 @@
                             </select>
                         </div>
                         <div>
-                            <label for="last_price" class="text-[10px] font-extrabold uppercase text-[#566173]">Last Price</label>
+                            <label for="last_price" class="text-[10px] font-extrabold uppercase text-[#566173]">Harga Terakhir</label>
                             <input type="number" id="last_price" name="last_price" min="0" step="0.01" value="0" class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500">
                         </div>
                         <div>
-                            <label for="min_stock" class="text-[10px] font-extrabold uppercase text-[#566173]">Min Stock</label>
+                            <label for="min_stock" class="text-[10px] font-extrabold uppercase text-[#566173]">Stok Minimum</label>
                             <input type="number" id="min_stock" name="min_stock" min="0" step="0.01" value="0" class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500">
                         </div>
                         <div>
-                            <label for="max_stock" class="text-[10px] font-extrabold uppercase text-[#566173]">Max Stock</label>
+                            <label for="max_stock" class="text-[10px] font-extrabold uppercase text-[#566173]">Stok Maksimum</label>
                             <input type="number" id="max_stock" name="max_stock" min="0" step="0.01" value="0" class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500">
                         </div>
                         <div>
-                            <label for="reorder_point" class="text-[10px] font-extrabold uppercase text-[#566173]">Reorder Point</label>
+                            <label for="reorder_point" class="text-[10px] font-extrabold uppercase text-[#566173]">Titik Reorder</label>
                             <input type="number" id="reorder_point" name="reorder_point" min="0" step="0.01" value="0" class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500">
                         </div>
                         <div>
-                            <label for="default_lead_time_days" class="text-[10px] font-extrabold uppercase text-[#566173]">Lead Time Days</label>
+                            <label for="default_lead_time_days" class="text-[10px] font-extrabold uppercase text-[#566173]">Lead Time (Hari)</label>
                             <input type="number" id="default_lead_time_days" name="default_lead_time_days" min="0" value="0" class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500">
                         </div>
                         <div>
-                            <label for="pack_size" class="text-[10px] font-extrabold uppercase text-[#566173]">Pack Size</label>
+                            <label for="pack_size" class="text-[10px] font-extrabold uppercase text-[#566173]">Ukuran Kemasan</label>
                             <input type="number" id="pack_size" name="pack_size" min="0.01" step="0.01" value="1" class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500">
                         </div>
                         <div>
                             <label for="is_active" class="text-[10px] font-extrabold uppercase text-[#566173]">Status</label>
                             <select id="is_active" name="is_active" class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500">
-                                <option value="1" selected>Active</option>
-                                <option value="0">Inactive</option>
+                                <option value="1" selected>Aktif</option>
+                                <option value="0">Nonaktif</option>
                             </select>
                         </div>
                     </div>
 
                     <div class="flex flex-col gap-3 border-t border-slate-100 pt-4 sm:flex-row sm:justify-end">
-                        <button type="button" class="rounded-md border border-slate-200 bg-white px-5 py-3 text-sm font-extrabold text-[#1e2b42] transition hover:bg-slate-50" data-modal-close>Cancel</button>
-                        <button type="submit" class="rounded-md bg-[#001e62] px-5 py-3 text-sm font-extrabold text-white transition hover:bg-[#002f95]">Save Product</button>
+                        <button type="button" class="rounded-md border border-slate-200 bg-white px-5 py-3 text-sm font-extrabold text-[#1e2b42] transition hover:bg-slate-50" data-modal-close>Batal</button>
+                        <button type="submit" class="rounded-md bg-[#001e62] px-5 py-3 text-sm font-extrabold text-white transition hover:bg-[#002f95]">Simpan Produk</button>
                     </div>
                 </form>
             </div>
@@ -431,7 +431,7 @@
             <div class="absolute inset-0 bg-slate-900/50" data-modal-close></div>
             <div class="relative w-full max-w-3xl rounded-lg bg-white p-5 shadow-xl sm:p-6">
                 <div class="flex items-center justify-between border-b border-slate-100 pb-4">
-                    <h2 class="text-lg font-extrabold text-[#001e62]">Edit Product</h2>
+                    <h2 class="text-lg font-extrabold text-[#001e62]">Edit Produk</h2>
                     <button type="button" class="text-slate-400 transition hover:text-slate-600" data-modal-close>
                         <i class="bx bx-x text-2xl"></i>
                     </button>
@@ -441,7 +441,7 @@
                     <input type="hidden" id="edit_id" name="id">
                     <div class="grid gap-5 md:grid-cols-2">
                         <div>
-                            <label for="edit_product_code" class="text-[10px] font-extrabold uppercase text-[#566173]">Product Code</label>
+                            <label for="edit_product_code" class="text-[10px] font-extrabold uppercase text-[#566173]">Kode Produk</label>
                             <input type="text" id="edit_product_code" name="product_code" required class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold uppercase outline-none transition focus:border-brand-500">
                         </div>
                         <div>
@@ -449,33 +449,33 @@
                             <input type="text" id="edit_barcode" name="barcode" class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500">
                         </div>
                         <div>
-                            <label for="edit_product_name" class="text-[10px] font-extrabold uppercase text-[#566173]">Product Name</label>
+                            <label for="edit_product_name" class="text-[10px] font-extrabold uppercase text-[#566173]">Nama Produk</label>
                             <input type="text" id="edit_product_name" name="product_name" required class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500">
                         </div>
                         <div>
-                            <label for="edit_brand" class="text-[10px] font-extrabold uppercase text-[#566173]">Brand</label>
+                            <label for="edit_brand" class="text-[10px] font-extrabold uppercase text-[#566173]">Merek</label>
                             <input type="text" id="edit_brand" name="brand" class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500">
                         </div>
                         <div>
-                            <label for="edit_category_id" class="text-[10px] font-extrabold uppercase text-[#566173]">Category</label>
+                            <label for="edit_category_id" class="text-[10px] font-extrabold uppercase text-[#566173]">Kategori</label>
                             <select id="edit_category_id" name="category_id" class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500">
-                                <option value="0">Pilih Category</option>
+                                <option value="0">Pilih Kategori</option>
                                 {{ range .Categories }}
                                 <option value="{{ .ID }}">{{ .CategoryName }}</option>
                                 {{ end }}
                             </select>
                         </div>
                         <div>
-                            <label for="edit_unit_id" class="text-[10px] font-extrabold uppercase text-[#566173]">Unit</label>
+                            <label for="edit_unit_id" class="text-[10px] font-extrabold uppercase text-[#566173]">Satuan</label>
                             <select id="edit_unit_id" name="unit_id" class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500">
-                                <option value="0">Pilih Unit</option>
+                                <option value="0">Pilih Satuan</option>
                                 {{ range .Units }}
                                 <option value="{{ .ID }}">{{ .UnitName }}</option>
                                 {{ end }}
                             </select>
                         </div>
                         <div>
-                            <label for="edit_supplier_id" class="text-[10px] font-extrabold uppercase text-[#566173]">Primary Supplier</label>
+                            <label for="edit_supplier_id" class="text-[10px] font-extrabold uppercase text-[#566173]">Supplier Utama</label>
                             <select id="edit_supplier_id" name="supplier_id" class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500">
                                 <option value="0">Pilih Supplier</option>
                                 {{ range .Suppliers }}
@@ -484,41 +484,41 @@
                             </select>
                         </div>
                         <div>
-                            <label for="edit_last_price" class="text-[10px] font-extrabold uppercase text-[#566173]">Last Price</label>
+                            <label for="edit_last_price" class="text-[10px] font-extrabold uppercase text-[#566173]">Harga Terakhir</label>
                             <input type="number" id="edit_last_price" name="last_price" min="0" step="0.01" class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500">
                         </div>
                         <div>
-                            <label for="edit_min_stock" class="text-[10px] font-extrabold uppercase text-[#566173]">Min Stock</label>
+                            <label for="edit_min_stock" class="text-[10px] font-extrabold uppercase text-[#566173]">Stok Minimum</label>
                             <input type="number" id="edit_min_stock" name="min_stock" min="0" step="0.01" class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500">
                         </div>
                         <div>
-                            <label for="edit_max_stock" class="text-[10px] font-extrabold uppercase text-[#566173]">Max Stock</label>
+                            <label for="edit_max_stock" class="text-[10px] font-extrabold uppercase text-[#566173]">Stok Maksimum</label>
                             <input type="number" id="edit_max_stock" name="max_stock" min="0" step="0.01" class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500">
                         </div>
                         <div>
-                            <label for="edit_reorder_point" class="text-[10px] font-extrabold uppercase text-[#566173]">Reorder Point</label>
+                            <label for="edit_reorder_point" class="text-[10px] font-extrabold uppercase text-[#566173]">Titik Reorder</label>
                             <input type="number" id="edit_reorder_point" name="reorder_point" min="0" step="0.01" class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500">
                         </div>
                         <div>
-                            <label for="edit_default_lead_time_days" class="text-[10px] font-extrabold uppercase text-[#566173]">Lead Time Days</label>
+                            <label for="edit_default_lead_time_days" class="text-[10px] font-extrabold uppercase text-[#566173]">Lead Time (Hari)</label>
                             <input type="number" id="edit_default_lead_time_days" name="default_lead_time_days" min="0" class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500">
                         </div>
                         <div>
-                            <label for="edit_pack_size" class="text-[10px] font-extrabold uppercase text-[#566173]">Pack Size</label>
+                            <label for="edit_pack_size" class="text-[10px] font-extrabold uppercase text-[#566173]">Ukuran Kemasan</label>
                             <input type="number" id="edit_pack_size" name="pack_size" min="0.01" step="0.01" class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500">
                         </div>
                         <div>
                             <label for="edit_is_active" class="text-[10px] font-extrabold uppercase text-[#566173]">Status</label>
                             <select id="edit_is_active" name="is_active" class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500">
-                                <option value="1">Active</option>
-                                <option value="0">Inactive</option>
+                                <option value="1">Aktif</option>
+                                <option value="0">Nonaktif</option>
                             </select>
                         </div>
                     </div>
 
                     <div class="flex flex-col gap-3 border-t border-slate-100 pt-4 sm:flex-row sm:justify-end">
-                        <button type="button" class="rounded-md border border-slate-200 bg-white px-5 py-3 text-sm font-extrabold text-[#1e2b42] transition hover:bg-slate-50" data-modal-close>Cancel</button>
-                        <button type="submit" class="rounded-md bg-[#001e62] px-5 py-3 text-sm font-extrabold text-white transition hover:bg-[#002f95]">Update Product</button>
+                        <button type="button" class="rounded-md border border-slate-200 bg-white px-5 py-3 text-sm font-extrabold text-[#1e2b42] transition hover:bg-slate-50" data-modal-close>Batal</button>
+                        <button type="submit" class="rounded-md bg-[#001e62] px-5 py-3 text-sm font-extrabold text-white transition hover:bg-[#002f95]">Simpan Perubahan</button>
                     </div>
                 </form>
             </div>
