@@ -22,8 +22,17 @@ type Supplier struct {
 }
 
 type SupplierGroup struct {
-	ID        int
-	GroupName string
+	ID               int
+	GroupCode        string
+	GroupName        string
+	Description      string
+	IsActive         bool
+	StatusLabel      string
+	SupplierCount    int
+	CreatedAt        string
+	CreatedAtDisplay string
+	UpdatedAt        string
+	UpdatedAtDisplay string
 }
 
 type SupplierProduct struct {
@@ -54,10 +63,25 @@ type SupplierStats struct {
 	LinkedProducts    int
 }
 
+type SupplierGroupStats struct {
+	TotalGroups     int
+	ActiveGroups    int
+	InactiveGroups  int
+	LinkedSuppliers int
+}
+
 type SupplierListFilter struct {
 	Search string
 	Status string
 	Type   string
+	Sort   string
+	Page   int
+	Limit  int
+}
+
+type SupplierGroupListFilter struct {
+	Search string
+	Status string
 	Sort   string
 	Page   int
 	Limit  int
@@ -96,6 +120,13 @@ type SupplierCreateInput struct {
 	IsActive        bool
 }
 
+type SupplierGroupCreateInput struct {
+	GroupCode   string
+	GroupName   string
+	Description string
+	IsActive    bool
+}
+
 type SupplierUpdateInput struct {
 	ID              int
 	SupplierGroupID int
@@ -108,4 +139,12 @@ type SupplierUpdateInput struct {
 	PICName         string
 	PaymentTermDays int
 	IsActive        bool
+}
+
+type SupplierGroupUpdateInput struct {
+	ID          int
+	GroupCode   string
+	GroupName   string
+	Description string
+	IsActive    bool
 }
