@@ -61,6 +61,71 @@ func (s *StockCheckSessionService) GetSupplierOptions() ([]models.Supplier, erro
 	return s.Repo.GetSupplierOptions()
 }
 
+func (s *StockCheckSessionService) GetSessionDetailPage(id int) (models.StockCheckSessionDetailPage, error) {
+	if id <= 0 {
+		return models.StockCheckSessionDetailPage{}, errors.New("session id tidak valid")
+	}
+
+	session, err := s.Repo.GetByID(id)
+	if err != nil {
+		return models.StockCheckSessionDetailPage{}, err
+	}
+
+	items, err := s.Repo.GetReviewItems(id)
+	if err != nil {
+		return models.StockCheckSessionDetailPage{}, err
+	}
+
+	detail := models.StockCheckSessionDetail{
+		StockCheckSession: session,
+		StageLabel:        stockCheckSessionStageLabel(session.Status),
+		StatusBadgeClass:  stockCheckSessionDetailStatusBadgeClass(session.Status),
+		ItemCount:         len(items),
+	}
+
+	distinctSuppliers := map[string]struct{}{}
+	alertItems := 0
+
+	for _, item := range items {
+		detail.TotalSuggestedQty += item.SuggestBuyQty
+		detail.TotalApprovedQty += item.ApprovedBuyQty
+		detail.SuggestedPurchaseValue += item.SuggestLineValue
+
+		switch item.Status {
+		case "approved", "po_created":
+			detail.ApprovedItems++
+			detail.FinalApprovedValue += item.ApprovedLineValue
+		case "rejected":
+			detail.RejectedItems++
+		default:
+			detail.OnHoldItems++
+		}
+
+		if item.ConditionStatus != "good" {
+			alertItems++
+		}
+		if strings.TrimSpace(item.SelectedSupplierName) != "" && item.SelectedSupplierName != "-" {
+			distinctSuppliers[item.SelectedSupplierName] = struct{}{}
+		}
+	}
+
+	detail.DistinctSupplierCount = len(distinctSuppliers)
+	detail.TotalSuggestedQtyDisplay = formatStockCheckSessionDecimal(detail.TotalSuggestedQty)
+	detail.TotalApprovedQtyDisplay = formatStockCheckSessionDecimal(detail.TotalApprovedQty)
+	detail.SuggestedPurchaseValueDisplay = formatStockCheckSessionCurrency(detail.SuggestedPurchaseValue)
+	detail.FinalApprovedValueDisplay = formatStockCheckSessionCurrency(detail.FinalApprovedValue)
+	if detail.SuggestedPurchaseValue > 0 {
+		detail.ApprovalYieldPercent = (detail.FinalApprovedValue / detail.SuggestedPurchaseValue) * 100
+	}
+	detail.ApprovalYieldDisplay = fmt.Sprintf("%.1f%%", detail.ApprovalYieldPercent)
+
+	return models.StockCheckSessionDetailPage{
+		Session:       detail,
+		Items:         items,
+		OverviewCards: buildStockCheckSessionOverviewCards(detail, alertItems),
+	}, nil
+}
+
 func (s *StockCheckSessionService) CreateSession(input models.StockCheckSessionCreateInput) error {
 	sanitizeStockCheckSessionCreateInput(&input)
 
@@ -209,4 +274,77 @@ func validateStockCheckSessionUpdateInput(input models.StockCheckSessionUpdateIn
 		return errors.New("status wajib dipilih")
 	}
 	return nil
+}
+
+func stockCheckSessionStageLabel(status string) string {
+	switch status {
+	case "draft":
+		return "Preparing Review"
+	case "in_progress", "submitted", "reviewed":
+		return "Currently Reviewing"
+	case "closed":
+		return "Finalized Session"
+	case "cancelled":
+		return "Cancelled Session"
+	default:
+		return "Session Overview"
+	}
+}
+
+func stockCheckSessionDetailStatusBadgeClass(status string) string {
+	switch status {
+	case "closed":
+		return "session-badge-success"
+	case "cancelled":
+		return "session-badge-danger"
+	case "reviewed", "submitted", "in_progress":
+		return "session-badge-warm"
+	default:
+		return "session-badge-muted"
+	}
+}
+
+func buildStockCheckSessionOverviewCards(detail models.StockCheckSessionDetail, alertItems int) []models.StockCheckSessionOverviewCard {
+	demandDescription := "No review lines have been added to this session yet."
+	if detail.ItemCount > 0 {
+		demandDescription = fmt.Sprintf(
+			"%d SKU membutuhkan evaluasi dengan usulan pembelian %s unit dan approval sementara %s unit.",
+			detail.ItemCount,
+			detail.TotalSuggestedQtyDisplay,
+			detail.TotalApprovedQtyDisplay,
+		)
+	}
+
+	riskDescription := "Belum ada supplier risk yang terdeteksi dari sesi ini."
+	if detail.RejectedItems > 0 || alertItems > 0 || detail.DistinctSupplierCount > 1 {
+		riskDescription = fmt.Sprintf(
+			"%d item butuh perhatian, %d item ditolak, dan %d supplier terlibat dalam keputusan pembelian.",
+			alertItems,
+			detail.RejectedItems,
+			detail.DistinctSupplierCount,
+		)
+	}
+
+	return []models.StockCheckSessionOverviewCard{
+		{
+			Title:         "Projected Demand",
+			Description:   demandDescription,
+			Icon:          "bx bx-trending-up",
+			IconWrapClass: "overview-tone-blue",
+		},
+		{
+			Title:         "Supplier Risks",
+			Description:   riskDescription,
+			Icon:          "bx bx-error-alt",
+			IconWrapClass: "overview-tone-amber",
+		},
+	}
+}
+
+func formatStockCheckSessionDecimal(value float64) string {
+	return fmt.Sprintf("%0.2f", value)
+}
+
+func formatStockCheckSessionCurrency(value float64) string {
+	return fmt.Sprintf("Rp %s", formatStockCheckSessionDecimal(value))
 }

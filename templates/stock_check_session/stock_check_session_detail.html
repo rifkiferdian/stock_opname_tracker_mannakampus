@@ -1,0 +1,1053 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+        <title>
+            {{ if .Title }}
+                {{ .Title }}
+            {{ else }}
+                Stock Check Session Detail
+            {{ end }}
+        </title>
+
+        <link rel="stylesheet" href="/assets/fonts/google/manrope-space-grotesk.css">
+        <link rel="stylesheet" href="/assets/css/tailwind.css">
+        <link href="/assets/vendor/boxicons/css/boxicons.min.css" rel="stylesheet" />
+
+        <style>
+            :root {
+                --page-bg: #f4f7fc;
+                --panel: rgba(255, 255, 255, 0.94);
+                --line: #e7edf6;
+                --text: #0f1f47;
+                --muted: #67748e;
+                --brand: #143d8f;
+                --brand-deep: #0f2f77;
+                --orange: #ef8f57;
+                --shadow-soft: 0 26px 60px -42px rgba(16, 34, 78, 0.4);
+            }
+
+            * {
+                box-sizing: border-box;
+            }
+
+            body {
+                background:
+                    radial-gradient(circle at top left, rgba(20, 61, 143, 0.06), transparent 30%),
+                    linear-gradient(180deg, #f8fbff 0%, var(--page-bg) 100%);
+                color: var(--text);
+                font-family: "Manrope", sans-serif;
+            }
+
+            .detail-shell {
+                display: flex;
+                flex-direction: column;
+                gap: 1.25rem;
+            }
+
+            .hero-grid {
+                display: grid;
+                gap: 1rem;
+                grid-template-columns: minmax(0, 1.95fr) minmax(17rem, 0.95fr);
+            }
+
+            .panel-card {
+                border: 1px solid rgba(231, 237, 246, 0.9);
+                border-radius: 1.4rem;
+                background: var(--panel);
+                box-shadow: var(--shadow-soft);
+                backdrop-filter: blur(12px);
+            }
+
+            .headline-card {
+                position: relative;
+                padding: 1.35rem 1.4rem 1.3rem 1.45rem;
+                overflow: hidden;
+            }
+
+            .headline-card::before {
+                content: "";
+                position: absolute;
+                inset: 0 auto 0 0;
+                width: 3px;
+                background: linear-gradient(180deg, #123c8c 0%, #315ec0 100%);
+            }
+
+            .eyebrow {
+                font-size: 0.59rem;
+                font-weight: 800;
+                letter-spacing: 0.18em;
+                text-transform: uppercase;
+                color: #7383a4;
+            }
+
+            .headline-title {
+                margin-top: 0.45rem;
+                font-family: "Space Grotesk", sans-serif;
+                font-size: 2rem;
+                font-weight: 700;
+                line-height: 1.05;
+                color: #0e3786;
+            }
+
+            .headline-subtitle {
+                margin-top: 0.85rem;
+                display: flex;
+                flex-wrap: wrap;
+                gap: 0.85rem;
+                color: var(--muted);
+                font-size: 0.88rem;
+                font-weight: 600;
+            }
+
+            .headline-meta {
+                display: flex;
+                justify-content: space-between;
+                gap: 1rem;
+            }
+
+            .headline-badge {
+                display: inline-flex;
+                align-items: center;
+                border-radius: 999px;
+                padding: 0.32rem 0.75rem;
+                font-size: 0.68rem;
+                font-weight: 800;
+                letter-spacing: 0.04em;
+                text-transform: uppercase;
+            }
+
+            .session-badge-muted {
+                background: #eef2f7;
+                color: #5d6b83;
+            }
+
+            .session-badge-warm {
+                background: #fff1df;
+                color: #c86d2e;
+            }
+
+            .session-badge-success {
+                background: #e7f8ef;
+                color: #1b8e54;
+            }
+
+            .session-badge-danger {
+                background: #fff0f3;
+                color: #d6365f;
+            }
+
+            .headline-time {
+                text-align: right;
+                font-size: 0.68rem;
+                font-weight: 700;
+                color: #7b88a1;
+            }
+
+            .headline-time strong {
+                display: block;
+                margin-top: 0.3rem;
+                color: #41516f;
+            }
+
+            .session-note {
+                margin-top: 1rem;
+                max-width: 42rem;
+                border-radius: 1rem;
+                background: #f8fbff;
+                padding: 0.95rem 1rem;
+                font-size: 0.84rem;
+                line-height: 1.65;
+                color: #526178;
+            }
+
+            .metric-card {
+                background: linear-gradient(180deg, #153f95 0%, #0c2d78 100%);
+                color: #ffffff;
+                padding: 1.3rem 1.4rem;
+            }
+
+            .metric-label {
+                font-size: 0.71rem;
+                font-weight: 800;
+                letter-spacing: 0.08em;
+                text-transform: uppercase;
+                color: rgba(255, 255, 255, 0.72);
+            }
+
+            .metric-value {
+                margin-top: 0.35rem;
+                font-family: "Space Grotesk", sans-serif;
+                font-size: 2rem;
+                font-weight: 700;
+                line-height: 1;
+                color: #ffffff;
+            }
+
+            .metric-grid {
+                margin-top: 1.2rem;
+                display: grid;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 1rem;
+            }
+
+            .metric-grid strong {
+                display: block;
+                margin-top: 0.2rem;
+                font-size: 1rem;
+                color: #ffffff;
+            }
+
+            .toolbar-row {
+                display: flex;
+                flex-wrap: wrap;
+                align-items: center;
+                justify-content: space-between;
+                gap: 0.75rem;
+            }
+
+            .toolbar-group {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 0.65rem;
+            }
+
+            .tool-button {
+                display: inline-flex;
+                min-height: 2.9rem;
+                align-items: center;
+                justify-content: center;
+                gap: 0.55rem;
+                border-radius: 0.9rem;
+                border: 1px solid transparent;
+                padding: 0.8rem 1.1rem;
+                font-size: 0.82rem;
+                font-weight: 800;
+                transition: 180ms ease;
+            }
+
+            .tool-button.neutral {
+                background: #ffffff;
+                border-color: var(--line);
+                color: #526178;
+            }
+
+            .tool-button.neutral:hover {
+                background: #f8fbff;
+                color: #233659;
+            }
+
+            .tool-button.ghost {
+                background: rgba(255, 255, 255, 0.72);
+                color: #bf3557;
+            }
+
+            .tool-button.primary {
+                background: #ffffff;
+                color: var(--brand);
+                border-color: var(--line);
+            }
+
+            .tool-button.emphasis {
+                background: linear-gradient(180deg, #153f95 0%, #0d2d79 100%);
+                color: #ffffff;
+                box-shadow: 0 18px 38px -28px rgba(13, 45, 121, 0.85);
+            }
+
+            .review-table-card {
+                overflow: hidden;
+            }
+
+            .review-table-wrap {
+                overflow-x: auto;
+            }
+
+            .review-table {
+                width: 100%;
+                min-width: 1120px;
+                border-collapse: separate;
+                border-spacing: 0;
+            }
+
+            .review-table thead th {
+                padding: 1rem 0.95rem;
+                border-bottom: 1px solid var(--line);
+                background: rgba(247, 249, 253, 0.98);
+                text-align: left;
+                font-size: 0.63rem;
+                font-weight: 800;
+                letter-spacing: 0.18em;
+                text-transform: uppercase;
+                color: #23407f;
+            }
+
+            .review-table tbody td {
+                padding: 1rem 0.95rem;
+                vertical-align: top;
+                border-bottom: 1px solid var(--line);
+                background: rgba(255, 255, 255, 0.92);
+            }
+
+            .review-table tbody tr:nth-child(even) td {
+                background: rgba(249, 251, 255, 0.94);
+            }
+
+            .item-cell {
+                display: flex;
+                align-items: flex-start;
+                gap: 0.8rem;
+            }
+
+            .item-avatar {
+                display: inline-flex;
+                height: 2.7rem;
+                width: 2.7rem;
+                flex: none;
+                align-items: center;
+                justify-content: center;
+                border-radius: 0.9rem;
+                background: linear-gradient(145deg, #153f95 0%, #0f2f77 100%);
+                font-family: "Space Grotesk", sans-serif;
+                font-size: 0.88rem;
+                font-weight: 700;
+                color: #ffffff;
+                box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22);
+            }
+
+            .item-title {
+                font-size: 0.9rem;
+                font-weight: 800;
+                color: #10204a;
+            }
+
+            .item-subtitle {
+                margin-top: 0.2rem;
+                font-size: 0.72rem;
+                font-weight: 700;
+                color: #7a869f;
+            }
+
+            .qty-grid {
+                display: grid;
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+                gap: 0.5rem;
+                min-width: 9rem;
+            }
+
+            .qty-box {
+                text-align: center;
+            }
+
+            .qty-box span {
+                display: block;
+                font-size: 0.6rem;
+                font-weight: 800;
+                letter-spacing: 0.1em;
+                text-transform: uppercase;
+                color: #92a0b7;
+            }
+
+            .qty-box strong {
+                display: block;
+                margin-top: 0.22rem;
+                font-size: 0.95rem;
+                font-weight: 800;
+                color: #18315f;
+            }
+
+            .qty-hint {
+                margin-top: 0.65rem;
+                font-size: 0.7rem;
+                font-weight: 700;
+                color: #95a2b8;
+            }
+
+            .focus-number {
+                font-family: "Space Grotesk", sans-serif;
+                font-size: 1.05rem;
+                font-weight: 700;
+            }
+
+            .focus-number.orange {
+                color: var(--orange);
+            }
+
+            .focus-number.blue {
+                color: var(--brand);
+            }
+
+            .focus-number.red {
+                color: #d6365f;
+            }
+
+            .sub-metric {
+                margin-top: 0.25rem;
+                font-size: 0.73rem;
+                font-weight: 700;
+                color: #95a2b8;
+            }
+
+            .approve-pill {
+                display: inline-flex;
+                min-width: 4rem;
+                justify-content: center;
+                border-radius: 0.4rem;
+                background: #edf2fb;
+                padding: 0.38rem 0.75rem;
+                font-family: "Space Grotesk", sans-serif;
+                font-size: 0.95rem;
+                font-weight: 700;
+                color: var(--brand);
+            }
+
+            .approve-pill.rejected {
+                color: #d6365f;
+                background: #fff0f3;
+            }
+
+            .supplier-chip {
+                display: inline-flex;
+                min-width: 9rem;
+                align-items: center;
+                justify-content: space-between;
+                gap: 0.55rem;
+                border-radius: 0.55rem;
+                border: 1px solid var(--line);
+                background: #f7f9fd;
+                padding: 0.46rem 0.7rem;
+                font-size: 0.73rem;
+                font-weight: 700;
+                color: #50607a;
+            }
+
+            .note-block {
+                min-width: 14rem;
+            }
+
+            .note-label {
+                font-size: 0.57rem;
+                font-weight: 800;
+                letter-spacing: 0.14em;
+                text-transform: uppercase;
+                color: #8e9ab1;
+            }
+
+            .condition-pill {
+                margin-top: 0.35rem;
+                display: inline-flex;
+                border-radius: 999px;
+                padding: 0.25rem 0.65rem;
+                font-size: 0.62rem;
+                font-weight: 800;
+            }
+
+            .condition-good {
+                background: #e7f8ef;
+                color: #1b8e54;
+            }
+
+            .condition-empty-rack {
+                background: #fff4d9;
+                color: #b7791f;
+            }
+
+            .condition-danger {
+                background: #ffe7e9;
+                color: #cf3759;
+            }
+
+            .condition-info {
+                background: #e8f0ff;
+                color: #20469a;
+            }
+
+            .condition-neutral {
+                background: #eef2f7;
+                color: #5d6b83;
+            }
+
+            .checker-copy {
+                margin-top: 0.45rem;
+                font-size: 0.76rem;
+                line-height: 1.55;
+                color: #5a6880;
+            }
+
+            .buyer-note {
+                margin-top: 0.55rem;
+                border: 1px solid var(--line);
+                border-radius: 0.2rem;
+                background: #ffffff;
+                padding: 0.38rem 0.5rem;
+                font-size: 0.72rem;
+                font-weight: 700;
+                color: #4f5e75;
+            }
+
+            .buyer-note-default {
+                border-color: #dfe6f1;
+                background: #ffffff;
+            }
+
+            .buyer-note-amber {
+                border-color: #f0c36f;
+                background: #fffdf7;
+            }
+
+            .buyer-note-danger {
+                border-color: #f199a8;
+                background: #fff9fa;
+            }
+
+            .buyer-note-info {
+                border-color: #8ea8ea;
+                background: #f8faff;
+            }
+
+            .status-pill {
+                display: inline-flex;
+                align-items: center;
+                border-radius: 999px;
+                padding: 0.28rem 0.72rem;
+                font-size: 0.68rem;
+                font-weight: 800;
+            }
+
+            .item-status-approved {
+                background: #e8f0ff;
+                color: #20469a;
+            }
+
+            .item-status-po-created {
+                background: #e7f8ef;
+                color: #1b8e54;
+            }
+
+            .item-status-pending {
+                background: #fff1df;
+                color: #c86d2e;
+            }
+
+            .item-status-rejected {
+                background: #fff0f3;
+                color: #d6365f;
+            }
+
+            .item-status-draft {
+                background: #eef2f7;
+                color: #5d6b83;
+            }
+
+            .table-footer {
+                display: flex;
+                flex-wrap: wrap;
+                align-items: center;
+                justify-content: space-between;
+                gap: 0.9rem;
+                padding: 1rem 1.15rem 1.1rem;
+            }
+
+            .footer-stats {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 1.75rem;
+            }
+
+            .footer-stats span {
+                display: block;
+                font-size: 0.62rem;
+                font-weight: 800;
+                letter-spacing: 0.14em;
+                text-transform: uppercase;
+                color: #8f9db3;
+            }
+
+            .footer-stats strong {
+                display: block;
+                margin-top: 0.3rem;
+                font-size: 0.88rem;
+                font-weight: 800;
+                color: #12315f;
+            }
+
+            .pager {
+                display: flex;
+                align-items: center;
+                gap: 0.35rem;
+            }
+
+            .pager a,
+            .pager span {
+                display: inline-flex;
+                height: 1.95rem;
+                min-width: 1.95rem;
+                align-items: center;
+                justify-content: center;
+                border-radius: 0.5rem;
+                background: #f1f5fb;
+                font-size: 0.78rem;
+                font-weight: 800;
+                color: #738099;
+            }
+
+            .pager .active {
+                background: var(--brand);
+                color: #ffffff;
+            }
+
+            .summary-grid {
+                display: grid;
+                gap: 1rem;
+                grid-template-columns: minmax(0, 1.7fr) minmax(18rem, 0.9fr);
+                align-items: start;
+            }
+
+            .overview-block h2 {
+                font-family: "Space Grotesk", sans-serif;
+                font-size: 1.15rem;
+                font-weight: 700;
+                color: #10204a;
+            }
+
+            .overview-list {
+                margin-top: 1rem;
+                display: grid;
+                gap: 1rem;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .overview-card {
+                padding: 1.15rem;
+            }
+
+            .overview-icon {
+                display: inline-flex;
+                height: 2.2rem;
+                width: 2.2rem;
+                align-items: center;
+                justify-content: center;
+                border-radius: 0.8rem;
+                font-size: 1.05rem;
+            }
+
+            .overview-tone-blue {
+                background: #e8f0ff;
+                color: #20469a;
+            }
+
+            .overview-tone-amber {
+                background: #fff1df;
+                color: #c86d2e;
+            }
+
+            .overview-card h3 {
+                margin-top: 0.85rem;
+                font-size: 0.88rem;
+                font-weight: 800;
+                color: #142349;
+            }
+
+            .overview-card p {
+                margin-top: 0.45rem;
+                font-size: 0.77rem;
+                line-height: 1.65;
+                color: #627087;
+            }
+
+            .summary-card {
+                background: linear-gradient(180deg, #2349a1 0%, #163986 100%);
+                color: #ffffff;
+                padding: 1.35rem;
+            }
+
+            .summary-card h2 {
+                font-family: "Space Grotesk", sans-serif;
+                font-size: 1.15rem;
+                font-weight: 700;
+                color: #ffffff;
+            }
+
+            .summary-list {
+                margin-top: 1.2rem;
+                display: flex;
+                flex-direction: column;
+                gap: 0.95rem;
+            }
+
+            .summary-row {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 1rem;
+                font-size: 0.83rem;
+                font-weight: 700;
+                color: rgba(255, 255, 255, 0.76);
+            }
+
+            .summary-row strong {
+                color: #ffffff;
+            }
+
+            .summary-total {
+                margin-top: 1.3rem;
+                padding-top: 1rem;
+                border-top: 1px solid rgba(255, 255, 255, 0.15);
+            }
+
+            .summary-total span {
+                font-size: 0.78rem;
+                font-weight: 800;
+                color: rgba(255, 255, 255, 0.7);
+            }
+
+            .summary-total strong {
+                display: block;
+                margin-top: 0.55rem;
+                font-family: "Space Grotesk", sans-serif;
+                font-size: 1.75rem;
+                font-weight: 700;
+                color: #ff9d66;
+            }
+
+            .summary-cta {
+                margin-top: 1.25rem;
+                width: 100%;
+                border: none;
+                border-radius: 0.8rem;
+                background: #ffffff;
+                padding: 0.95rem 1rem;
+                font-size: 0.82rem;
+                font-weight: 900;
+                letter-spacing: 0.12em;
+                text-transform: uppercase;
+                color: #123d8f;
+            }
+
+            .summary-caption {
+                margin-top: 0.8rem;
+                font-size: 0.65rem;
+                line-height: 1.55;
+                color: rgba(255, 255, 255, 0.5);
+                text-align: center;
+            }
+
+            @media (max-width: 1180px) {
+                .hero-grid,
+                .summary-grid {
+                    grid-template-columns: minmax(0, 1fr);
+                }
+            }
+
+            @media (max-width: 820px) {
+                .headline-meta {
+                    flex-direction: column;
+                }
+
+                .headline-time {
+                    text-align: left;
+                }
+
+                .overview-list {
+                    grid-template-columns: minmax(0, 1fr);
+                }
+            }
+        </style>
+    </head>
+
+    <body>
+        <div class="flex min-h-screen">
+            {{ template "sidebar" . }}
+
+            <div class="flex min-h-screen min-w-0 flex-1 flex-col">
+                {{ template "header" . }}
+
+                <main class="min-w-0 flex-1 px-4 pb-6 pt-8 sm:px-6 lg:px-8">
+                    <div class="detail-shell mx-auto w-full max-w-7xl">
+                        <div class="flex items-center justify-between gap-4">
+                            <a href="/stock-check-sessions" class="inline-flex items-center gap-2 text-sm font-extrabold text-[#123d8f] transition hover:text-[#214a98]">
+                                <i class="bx bx-arrow-back text-base"></i>
+                                Back to Session List
+                            </a>
+
+                            <span class="inline-flex items-center rounded-full bg-white px-4 py-2 text-[11px] font-extrabold uppercase tracking-[0.16em] text-[#70819f] shadow-sm">
+                                {{ .Session.SessionNumber }}
+                            </span>
+                        </div>
+
+                        <section class="hero-grid">
+                            <article class="panel-card headline-card">
+                                <div class="headline-meta">
+                                    <div class="min-w-0">
+                                        <p class="eyebrow">{{ .Session.StageLabel }}</p>
+                                        <h1 class="headline-title">{{ .Session.SupplierName }}</h1>
+                                        <div class="headline-subtitle">
+                                            <span><i class="bx bx-store mr-1"></i> Targeting: {{ .Session.StoreName }}</span>
+                                            <span><i class="bx bx-user mr-1"></i> Reviewer: {{ .Session.CreatedByName }}</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="shrink-0">
+                                        <span class="headline-badge {{ .Session.StatusBadgeClass }}">{{ .Session.StatusLabel }}</span>
+                                        <p class="headline-time">
+                                            Opened:
+                                            <strong>{{ .Session.CreatedAtDisplay }}</strong>
+                                        </p>
+                                    </div>
+                                </div>
+
+                                {{ if .Session.Notes }}
+                                <div class="session-note">
+                                    {{ .Session.Notes }}
+                                </div>
+                                {{ end }}
+                            </article>
+
+                            <article class="panel-card metric-card">
+                                <p class="metric-label">Suggested Purchase Value</p>
+                                <p class="metric-value">{{ .Session.SuggestedPurchaseValueDisplay }}</p>
+
+                                <div class="metric-grid">
+                                    <div>
+                                        <p class="metric-label">Items</p>
+                                        <strong>{{ .Session.ItemCount }} SKU</strong>
+                                    </div>
+                                    <div>
+                                        <p class="metric-label">Avg Yield</p>
+                                        <strong>{{ .Session.ApprovalYieldDisplay }}</strong>
+                                    </div>
+                                </div>
+                            </article>
+                        </section>
+
+                        <section class="toolbar-row">
+                            <div class="toolbar-group">
+                                <button type="button" class="tool-button neutral">
+                                    <i class="bx bx-filter-alt"></i>
+                                    Filter Items
+                                </button>
+                                <button type="button" class="tool-button neutral">
+                                    <i class="bx bx-export"></i>
+                                    Export
+                                </button>
+                            </div>
+
+                            <div class="toolbar-group">
+                                <button type="button" class="tool-button ghost">Reject Session</button>
+                                <button type="button" class="tool-button primary">Save Review</button>
+                                <button type="button" class="tool-button emphasis">
+                                    <i class="bx bx-check-circle"></i>
+                                    Approve All
+                                </button>
+                            </div>
+                        </section>
+
+                        <section class="panel-card review-table-card">
+                            <div class="review-table-wrap">
+                                <table class="review-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Item Details</th>
+                                            <th>Checker Qty<br>(Shop / Wh / Total)</th>
+                                            <th>Suggested</th>
+                                            <th>Final Approve</th>
+                                            <th>Supplier</th>
+                                            <th>Notes</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {{ range .Items }}
+                                        <tr>
+                                            <td>
+                                                <div class="item-cell">
+                                                    <span class="item-avatar" style="background: {{ .ProductAvatarClass }};">{{ .ProductInitials }}</span>
+                                                    <div class="min-w-0">
+                                                        <p class="item-title">{{ .ProductName }}</p>
+                                                        <p class="item-subtitle">
+                                                            SKU: {{ .ProductCode }}{{ if .Brand }} • {{ .Brand }}{{ end }}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="qty-grid">
+                                                    <div class="qty-box">
+                                                        <span>Shop</span>
+                                                        <strong>{{ .QtyStoreDisplay }}</strong>
+                                                    </div>
+                                                    <div class="qty-box">
+                                                        <span>Wh</span>
+                                                        <strong>{{ .QtyWarehouseDisplay }}</strong>
+                                                    </div>
+                                                    <div class="qty-box">
+                                                        <span>Total</span>
+                                                        <strong>{{ .TotalQtyDisplay }}</strong>
+                                                    </div>
+                                                </div>
+                                                <p class="qty-hint">System total: {{ .SystemTotalQtyDisplay }} {{ .UnitName }}</p>
+                                            </td>
+                                            <td>
+                                                <p class="focus-number orange">{{ .SuggestBuyQtyDisplay }}</p>
+                                                <p class="sub-metric">{{ .SuggestLineValueDisplay }}</p>
+                                            </td>
+                                            <td>
+                                                <span class="approve-pill {{ if eq .Status "rejected" }}rejected{{ end }}">{{ .ApprovedBuyQtyDisplay }}</span>
+                                                <p class="sub-metric">{{ .ApprovedLineValueDisplay }}</p>
+                                            </td>
+                                            <td>
+                                                <span class="supplier-chip">
+                                                    <span>{{ .SelectedSupplierName }}</span>
+                                                    <i class="bx bx-chevron-down"></i>
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <div class="note-block">
+                                                    <p class="note-label">Checker</p>
+                                                    <span class="condition-pill {{ .ConditionBadgeClass }}">{{ .ConditionLabel }}</span>
+                                                    <p class="checker-copy">"{{ .CheckerNotes }}"</p>
+                                                    <div class="buyer-note {{ .BuyerNoteAccentClass }}">
+                                                        {{ if .BuyerNotes }}
+                                                            {{ .BuyerNotes }}
+                                                        {{ else }}
+                                                            No buyer note yet.
+                                                        {{ end }}
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <span class="status-pill {{ .StatusBadgeClass }}">{{ .StatusLabel }}</span>
+                                            </td>
+                                        </tr>
+                                        {{ else }}
+                                        <tr>
+                                            <td colspan="7" class="px-5 py-12 text-center">
+                                                <div class="mx-auto max-w-md">
+                                                    <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 text-slate-400">
+                                                        <i class="bx bx-clipboard text-3xl"></i>
+                                                    </div>
+                                                    <p class="mt-4 text-[15px] font-bold text-slate-700">No review items in this session yet.</p>
+                                                    <p class="mt-1 text-[13px] font-medium text-slate-400">Tambahkan item stock check agar halaman ini menampilkan detail approval.</p>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        {{ end }}
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <div class="table-footer">
+                                <div class="footer-stats">
+                                    <div>
+                                        <span>Selected Items</span>
+                                        <strong>{{ .Session.ItemCount }} / {{ .Session.ItemCount }}</strong>
+                                    </div>
+                                    <div>
+                                        <span>Approved Total</span>
+                                        <strong>{{ .Session.FinalApprovedValueDisplay }}</strong>
+                                    </div>
+                                </div>
+
+                                <div class="pager">
+                                    <span><i class="bx bx-chevron-left"></i></span>
+                                    <span class="active">1</span>
+                                    <span>2</span>
+                                    <span>3</span>
+                                    <span><i class="bx bx-chevron-right"></i></span>
+                                </div>
+                            </div>
+                        </section>
+
+                        <section class="summary-grid">
+                            <div class="overview-block">
+                                <h2>Review Overview</h2>
+                                <div class="overview-list">
+                                    {{ range .Overview }}
+                                    <article class="panel-card overview-card">
+                                        <span class="overview-icon {{ .IconWrapClass }}">
+                                            <i class="{{ .Icon }}"></i>
+                                        </span>
+                                        <h3>{{ .Title }}</h3>
+                                        <p>{{ .Description }}</p>
+                                    </article>
+                                    {{ end }}
+                                </div>
+                            </div>
+
+                            <article class="panel-card summary-card">
+                                <h2>Purchase Summary</h2>
+
+                                <div class="summary-list">
+                                    <div class="summary-row">
+                                        <span>Items Approved</span>
+                                        <strong>{{ .Session.ApprovedItems }}</strong>
+                                    </div>
+                                    <div class="summary-row">
+                                        <span>Items Rejected</span>
+                                        <strong>{{ .Session.RejectedItems }}</strong>
+                                    </div>
+                                    <div class="summary-row">
+                                        <span>Items On-Hold</span>
+                                        <strong>{{ .Session.OnHoldItems }}</strong>
+                                    </div>
+                                </div>
+
+                                <div class="summary-total">
+                                    <span>Final Value</span>
+                                    <strong>{{ .Session.FinalApprovedValueDisplay }}</strong>
+                                </div>
+
+                                <button type="button" class="summary-cta">Finalize &amp; Issue PO</button>
+                                <p class="summary-caption">
+                                    By clicking finalize, digital PO will be generated and dispatched to verified suppliers.
+                                </p>
+                            </article>
+                        </section>
+                    </div>
+                </main>
+
+                {{ template "footer" . }}
+            </div>
+        </div>
+
+        <div id="sidebar-overlay" class="fixed inset-0 z-40 hidden bg-slate-900/50 lg:hidden"></div>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                var sidebar = document.getElementById('app-sidebar');
+                var overlay = document.getElementById('sidebar-overlay');
+                var toggleButtons = document.querySelectorAll('[data-sidebar-toggle]');
+
+                function closeSidebar() {
+                    if (!sidebar) return;
+                    sidebar.classList.add('-translate-x-full');
+                    if (overlay) overlay.classList.add('hidden');
+                    document.body.classList.remove('overflow-hidden');
+                }
+
+                function openSidebar() {
+                    if (!sidebar) return;
+                    sidebar.classList.remove('-translate-x-full');
+                    if (overlay) overlay.classList.remove('hidden');
+                    document.body.classList.add('overflow-hidden');
+                }
+
+                toggleButtons.forEach(function (button) {
+                    button.addEventListener('click', function () {
+                        if (!sidebar) return;
+                        if (sidebar.classList.contains('-translate-x-full')) {
+                            openSidebar();
+                        } else {
+                            closeSidebar();
+                        }
+                    });
+                });
+
+                if (overlay) {
+                    overlay.addEventListener('click', closeSidebar);
+                }
+            });
+        </script>
+    </body>
+</html>

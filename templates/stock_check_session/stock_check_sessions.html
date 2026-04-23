@@ -431,6 +431,16 @@
                 background: #fef3c7;
             }
 
+            .session-action-button.view {
+                border: 1px solid #dbeafe;
+                background: #eff6ff;
+                color: #1d4ed8;
+            }
+
+            .session-action-button.view:hover {
+                background: #dbeafe;
+            }
+
             .session-action-button.delete {
                 border: 1px solid #fecdd3;
                 background: #fff1f2;
@@ -625,7 +635,7 @@
                                                 {{ range .Sessions }}
                                             <tr class="transition hover:bg-[#f3f6fb]">
                                                 <td>
-                                                    <p class="max-w-[7rem] break-words text-[13px] font-extrabold leading-6 text-[#214a98]">{{ .SessionNumber }}</p>
+                                                    <a href="/stock-check-sessions/{{ .ID }}" class="max-w-[7rem] break-words text-[13px] font-extrabold leading-6 text-[#214a98] transition hover:text-[#153e8a] hover:underline">{{ .SessionNumber }}</a>
                                                 </td>
                                                 <td>
                                                     <div class="text-[13px] font-bold leading-5 text-slate-600">
@@ -656,6 +666,12 @@
                                                 </td>
                                                 <td>
                                                     <div class="flex flex-wrap items-center gap-2">
+                                                        <a
+                                                            href="/stock-check-sessions/{{ .ID }}"
+                                                            class="session-action-button view">
+                                                            <i class="bx bx-show text-sm"></i>
+                                                            View
+                                                        </a>
                                                         <button
                                                             type="button"
                                                             class="session-action-button edit btn-edit-session"

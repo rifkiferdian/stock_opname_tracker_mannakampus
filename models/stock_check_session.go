@@ -58,3 +58,74 @@ type StockCheckSessionUpdateInput struct {
 	Status         string
 	Notes          string
 }
+
+type StockCheckSessionDetailPage struct {
+	Session       StockCheckSessionDetail
+	Items         []StockCheckSessionReviewItem
+	OverviewCards []StockCheckSessionOverviewCard
+}
+
+type StockCheckSessionDetail struct {
+	StockCheckSession
+	StageLabel                    string
+	StatusBadgeClass              string
+	SuggestedPurchaseValue        float64
+	SuggestedPurchaseValueDisplay string
+	FinalApprovedValue            float64
+	FinalApprovedValueDisplay     string
+	ApprovalYieldPercent          float64
+	ApprovalYieldDisplay          string
+	ItemCount                     int
+	ApprovedItems                 int
+	RejectedItems                 int
+	OnHoldItems                   int
+	TotalSuggestedQty             float64
+	TotalSuggestedQtyDisplay      string
+	TotalApprovedQty              float64
+	TotalApprovedQtyDisplay       string
+	DistinctSupplierCount         int
+}
+
+type StockCheckSessionReviewItem struct {
+	ID                       int
+	ProductID                int
+	ProductCode              string
+	ProductName              string
+	Brand                    string
+	UnitName                 string
+	ProductInitials          string
+	ProductAvatarClass       string
+	QtyStore                 float64
+	QtyStoreDisplay          string
+	QtyWarehouse             float64
+	QtyWarehouseDisplay      string
+	TotalQty                 float64
+	TotalQtyDisplay          string
+	SystemTotalQty           float64
+	SystemTotalQtyDisplay    string
+	SuggestBuyQty            float64
+	SuggestBuyQtyDisplay     string
+	ApprovedBuyQty           float64
+	ApprovedBuyQtyDisplay    string
+	SelectedSupplierName     string
+	CheckerNotes             string
+	BuyerNotes               string
+	ConditionStatus          string
+	ConditionLabel           string
+	ConditionBadgeClass      string
+	BuyerNoteAccentClass     string
+	Status                   string
+	StatusLabel              string
+	StatusBadgeClass         string
+	SuggestLineValue         float64
+	SuggestLineValueDisplay  string
+	ApprovedLineValue        float64
+	ApprovedLineValueDisplay string
+}
+
+type StockCheckSessionOverviewCard struct {
+	Title         string
+	Description   string
+	Icon          string
+	IconWrapClass string
+}

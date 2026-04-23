@@ -5,6 +5,7 @@ import (
 	"fmt"
 	helpers "gobase-app/helper"
 	"gobase-app/models"
+	"math"
 	"strings"
 )
 
@@ -41,6 +42,186 @@ func (r *StockCheckSessionRepository) CountAll(filter models.StockCheckSessionLi
 	var total int
 	err := r.DB.QueryRow(query, args...).Scan(&total)
 	return total, err
+}
+
+func (r *StockCheckSessionRepository) GetByID(id int) (models.StockCheckSession, error) {
+	row := r.DB.QueryRow(`
+		SELECT
+			scs.id,
+			scs.session_number,
+			scs.session_date,
+			scs.store_id,
+			st.store_name,
+			scs.supplier_id,
+			sp.supplier_name,
+			scs.initiation_type,
+			scs.status,
+			scs.created_by,
+			COALESCE(u.name, '') AS created_by_name,
+			COALESCE(scs.notes, '') AS notes,
+			scs.created_at
+		FROM stock_check_sessions scs
+		INNER JOIN stores st ON st.store_id = scs.store_id
+		INNER JOIN suppliers sp ON sp.id = scs.supplier_id
+		LEFT JOIN users u ON u.id = scs.created_by
+		WHERE scs.id = ?
+		LIMIT 1
+	`, id)
+
+	return scanStockCheckSession(row)
+}
+
+func (r *StockCheckSessionRepository) GetReviewItems(sessionID int) ([]models.StockCheckSessionReviewItem, error) {
+	rows, err := r.DB.Query(`
+		SELECT
+			si.id,
+			si.product_id,
+			p.product_code,
+			p.product_name,
+			COALESCE(p.brand, '') AS brand,
+			COALESCE(un.unit_name, '') AS unit_name,
+			si.qty_store,
+			si.qty_warehouse,
+			si.total_qty,
+			(si.system_qty_store + si.system_qty_warehouse) AS system_total_qty,
+			si.suggest_buy_qty,
+			COALESCE(si.approved_buy_qty, 0) AS approved_buy_qty,
+			COALESCE(sel.supplier_name, sessup.supplier_name, '') AS selected_supplier_name,
+			COALESCE(si.checker_notes, '') AS checker_notes,
+			COALESCE(si.buyer_notes, '') AS buyer_notes,
+			si.condition_status,
+			si.status,
+			COALESCE(
+				(
+					SELECT ps.last_price
+					FROM product_suppliers ps
+					WHERE ps.product_id = si.product_id
+						AND ps.supplier_id = COALESCE(si.approved_supplier_id, si.suggested_supplier_id, scs.supplier_id)
+					ORDER BY ps.is_primary DESC, ps.priority_no ASC, ps.id ASC
+					LIMIT 1
+				),
+				(
+					SELECT ps.last_price
+					FROM product_suppliers ps
+					WHERE ps.product_id = si.product_id
+					ORDER BY ps.is_primary DESC, ps.priority_no ASC, ps.id ASC
+					LIMIT 1
+				),
+				0
+			) AS unit_price
+		FROM stock_check_session_items si
+		INNER JOIN stock_check_sessions scs ON scs.id = si.stock_check_session_id
+		INNER JOIN products p ON p.id = si.product_id
+		LEFT JOIN units un ON un.id = p.unit_id
+		LEFT JOIN suppliers sessup ON sessup.id = scs.supplier_id
+		LEFT JOIN suppliers sel ON sel.id = COALESCE(si.approved_supplier_id, si.suggested_supplier_id, scs.supplier_id)
+		WHERE si.stock_check_session_id = ?
+		ORDER BY
+			CASE si.status
+				WHEN 'approved' THEN 1
+				WHEN 'po_created' THEN 1
+				WHEN 'reviewed' THEN 2
+				WHEN 'submitted' THEN 2
+				WHEN 'draft' THEN 2
+				WHEN 'rejected' THEN 3
+				ELSE 4
+			END,
+			si.id ASC
+	`, sessionID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var items []models.StockCheckSessionReviewItem
+	for rows.Next() {
+		var (
+			item           models.StockCheckSessionReviewItem
+			qtyStore       sql.NullFloat64
+			qtyWarehouse   sql.NullFloat64
+			totalQty       sql.NullFloat64
+			systemTotalQty sql.NullFloat64
+			suggestQty     sql.NullFloat64
+			approvedQty    sql.NullFloat64
+			unitPrice      sql.NullFloat64
+		)
+
+		if err := rows.Scan(
+			&item.ID,
+			&item.ProductID,
+			&item.ProductCode,
+			&item.ProductName,
+			&item.Brand,
+			&item.UnitName,
+			&qtyStore,
+			&qtyWarehouse,
+			&totalQty,
+			&systemTotalQty,
+			&suggestQty,
+			&approvedQty,
+			&item.SelectedSupplierName,
+			&item.CheckerNotes,
+			&item.BuyerNotes,
+			&item.ConditionStatus,
+			&item.Status,
+			&unitPrice,
+		); err != nil {
+			return nil, err
+		}
+
+		if qtyStore.Valid {
+			item.QtyStore = qtyStore.Float64
+		}
+		if qtyWarehouse.Valid {
+			item.QtyWarehouse = qtyWarehouse.Float64
+		}
+		if totalQty.Valid {
+			item.TotalQty = totalQty.Float64
+		}
+		if systemTotalQty.Valid {
+			item.SystemTotalQty = systemTotalQty.Float64
+		}
+		if suggestQty.Valid {
+			item.SuggestBuyQty = suggestQty.Float64
+		}
+		if approvedQty.Valid {
+			item.ApprovedBuyQty = approvedQty.Float64
+		}
+
+		linePrice := 0.0
+		if unitPrice.Valid {
+			linePrice = unitPrice.Float64
+		}
+
+		if strings.TrimSpace(item.UnitName) == "" {
+			item.UnitName = "unit"
+		}
+		if strings.TrimSpace(item.SelectedSupplierName) == "" {
+			item.SelectedSupplierName = "-"
+		}
+
+		item.ProductInitials = strings.ToUpper(helpers.Initials(item.ProductName))
+		if item.ProductInitials == "" {
+			item.ProductInitials = "PR"
+		}
+		item.ProductAvatarClass = stockCheckSessionProductAvatarClass(item.ProductName)
+		item.QtyStoreDisplay = formatStockCheckWholeNumber(item.QtyStore)
+		item.QtyWarehouseDisplay = formatStockCheckWholeNumber(item.QtyWarehouse)
+		item.TotalQtyDisplay = formatStockCheckWholeNumber(item.TotalQty)
+		item.SystemTotalQtyDisplay = formatStockCheckWholeNumber(item.SystemTotalQty)
+		item.SuggestBuyQtyDisplay = formatStockCheckWholeNumber(item.SuggestBuyQty)
+		item.ApprovedBuyQtyDisplay = formatStockCheckWholeNumber(item.ApprovedBuyQty)
+		item.SuggestLineValue = item.SuggestBuyQty * linePrice
+		item.ApprovedLineValue = item.ApprovedBuyQty * linePrice
+		item.SuggestLineValueDisplay = formatStockCheckCurrency(item.SuggestLineValue)
+		item.ApprovedLineValueDisplay = formatStockCheckCurrency(item.ApprovedLineValue)
+		item.ConditionLabel, item.ConditionBadgeClass, item.BuyerNoteAccentClass = stockCheckSessionConditionMeta(item.ConditionStatus)
+		item.StatusLabel, item.StatusBadgeClass = stockCheckSessionItemStatusMeta(item.Status)
+
+		items = append(items, item)
+	}
+
+	return items, rows.Err()
 }
 
 func (r *StockCheckSessionRepository) GetStoreOptions() ([]models.Store, error) {
@@ -376,4 +557,66 @@ func nullableText(value string) interface{} {
 
 func buildStockCheckSessionNumber(storeCode string, sessionDate string, sequence int) string {
 	return fmt.Sprintf("SCS-%s-%s-%03d", storeCode, strings.ReplaceAll(sessionDate, "-", ""), sequence)
+}
+
+func formatStockCheckDecimal(value float64) string {
+	return fmt.Sprintf("%0.2f", value)
+}
+
+func formatStockCheckWholeNumber(value float64) string {
+	return fmt.Sprintf("%.0f", math.Round(value))
+}
+
+func formatStockCheckCurrency(value float64) string {
+	return fmt.Sprintf("Rp %s", formatStockCheckDecimal(value))
+}
+
+func stockCheckSessionItemStatusMeta(status string) (string, string) {
+	switch status {
+	case "approved":
+		return "Approved", "item-status-approved"
+	case "po_created":
+		return "PO Created", "item-status-po-created"
+	case "reviewed", "submitted":
+		return "Pending Review", "item-status-pending"
+	case "rejected":
+		return "Rejected", "item-status-rejected"
+	default:
+		return "Draft", "item-status-draft"
+	}
+}
+
+func stockCheckSessionConditionMeta(status string) (string, string, string) {
+	switch status {
+	case "empty_rack":
+		return "Empty Rack", "condition-empty-rack", "buyer-note-amber"
+	case "damaged":
+		return "Damaged", "condition-danger", "buyer-note-danger"
+	case "missing":
+		return "Missing", "condition-danger", "buyer-note-danger"
+	case "overstock":
+		return "Overstock", "condition-info", "buyer-note-info"
+	case "other":
+		return "Other", "condition-neutral", "buyer-note-default"
+	default:
+		return "Good", "condition-good", "buyer-note-default"
+	}
+}
+
+func stockCheckSessionProductAvatarClass(name string) string {
+	sum := 0
+	for _, ch := range name {
+		sum += int(ch)
+	}
+
+	switch sum % 4 {
+	case 0:
+		return "linear-gradient(145deg, #0f2f82 0%, #2149a6 100%)"
+	case 1:
+		return "linear-gradient(145deg, #ad3f22 0%, #dc6b2e 100%)"
+	case 2:
+		return "linear-gradient(145deg, #0f6a5b 0%, #1f9f82 100%)"
+	default:
+		return "linear-gradient(145deg, #3b455c 0%, #66738c 100%)"
+	}
 }

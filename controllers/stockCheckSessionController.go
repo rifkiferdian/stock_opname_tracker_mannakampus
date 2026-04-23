@@ -1,6 +1,8 @@
 package controllers
 
 import (
+	"database/sql"
+	"errors"
 	"gobase-app/config"
 	"gobase-app/models"
 	"gobase-app/repositories"
@@ -27,6 +29,16 @@ func StockCheckSessionIndex(c *gin.Context) {
 		Page:       page,
 		Limit:      10,
 	})
+}
+
+func StockCheckSessionDetail(c *gin.Context) {
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil || id <= 0 {
+		c.String(http.StatusBadRequest, "invalid stock check session id")
+		return
+	}
+
+	renderStockCheckSessionDetailPage(c, buildStockCheckSessionService(), id)
 }
 
 func StockCheckSessionStore(c *gin.Context) {
@@ -195,6 +207,31 @@ func renderStockCheckSessionPage(c *gin.Context, service *services.StockCheckSes
 		"Error":       message,
 		"FormMode":    formMode,
 		"FormSession": formSession,
+	})
+}
+
+func renderStockCheckSessionDetailPage(c *gin.Context, service *services.StockCheckSessionService, id int) {
+	pageData, err := service.GetSessionDetailPage(id)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			c.HTML(http.StatusNotFound, "error.html", gin.H{
+				"code_error": http.StatusNotFound,
+				"error":      "Stock check session tidak ditemukan",
+			})
+			return
+		}
+
+		c.String(http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	Render(c, "stock_check_session_detail.html", gin.H{
+		"Title":       pageData.Session.SessionNumber,
+		"Page":        "stock_check_sessions",
+		"Session":     pageData.Session,
+		"Items":       pageData.Items,
+		"Overview":    pageData.OverviewCards,
+		"CurrentPath": c.Request.URL.Path,
 	})
 }
 

@@ -21,6 +21,7 @@ func RegisterWebRoutes(r *gin.Engine) {
 	{
 		auth.GET("/dashboard", controllers.DashboardIndex)
 		auth.GET("/stock-check-sessions", controllers.StockCheckSessionIndex)
+		auth.GET("/stock-check-sessions/:id", controllers.StockCheckSessionDetail)
 		auth.POST("/stock-check-sessions", controllers.StockCheckSessionStore)
 		auth.POST("/stock-check-sessions/update", controllers.StockCheckSessionUpdate)
 		auth.GET("/stock-check-sessions/delete/:id", controllers.StockCheckSessionDelete)
