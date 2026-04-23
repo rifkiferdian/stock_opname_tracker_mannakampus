@@ -65,8 +65,8 @@ Nilai di atas contoh saja; cek implementasi di package `config` untuk memastikan
 
 4. Jalankan aplikasi:
 
-   ```bash
-   go run main.go
+   ```powershell
+   .\scripts\go-with-global-cache.cmd run main.go
    ```
 
 5. Buka browser dan akses:

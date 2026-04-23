@@ -51,6 +51,12 @@
                 </a>
             </li>
             {{ end }}
+            <li>
+                <a href="{{ baseURL "/stock-check-sessions" }}" class="flex items-center gap-3 rounded-2xl px-3 py-3 text-[14px] font-semibold transition sm:gap-4 sm:px-4 sm:py-4 sm:text-[15px] {{ if eq .Page "stock_check_sessions" }}text-white shadow-card ring-1{{ else }}text-slate-600 hover:bg-brand-50 hover:text-[#f26419]{{ end }}" {{ if eq .Page "stock_check_sessions" }}style="background: linear-gradient(135deg, #fb923c 0%, #f26419 100%); --tw-ring-color: rgb(251 146 60 / 0.28); box-shadow: 0 16px 32px -18px rgba(242, 100, 25, 0.85);"{{ end }}>
+                    <i class="bx bx-id-card text-xl"></i>
+                    <span>Sesi Stock Check</span>
+                </a>
+            </li>
             <li class="space-y-1">
                 <button type="button" class="flex w-full items-center justify-between rounded-2xl px-3 py-3 text-left text-[14px] font-semibold text-slate-600 transition hover:bg-brand-50 hover:text-[#f26419] sm:px-4 sm:py-4 sm:text-[15px]" data-submenu-toggle="reports-submenu" aria-expanded="false" aria-controls="reports-submenu">
                     <span class="flex items-center gap-3 sm:gap-4">

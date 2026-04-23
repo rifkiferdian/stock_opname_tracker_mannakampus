@@ -1,0 +1,1072 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+        <title>
+            {{ if .Title }}
+                {{ .Title }}
+            {{ else }}
+                Stock Check Sessions
+            {{ end }}
+        </title>
+
+        <link rel="stylesheet" href="/assets/fonts/google/plus-jakarta-sans.css">
+        <link rel="stylesheet" href="/assets/css/tailwind.css">
+        <link href="/assets/vendor/sweetalert2/sweetalert2.min.css" rel="stylesheet" />
+        <link href="/assets/vendor/boxicons/css/boxicons.min.css" rel="stylesheet" />
+        <style>
+            body {
+                background: #f4f6fb;
+            }
+
+            .session-shell {
+                display: flex;
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .session-toolbar {
+                border: 1px solid #edf1f7;
+                border-radius: 1.2rem;
+                background: #ffffff;
+                padding: 1rem;
+                box-shadow: 0 16px 40px -34px rgba(15, 23, 42, 0.34);
+            }
+
+            .session-create-button {
+                display: inline-flex;
+                min-height: 3.35rem;
+                align-items: center;
+                justify-content: center;
+                gap: 0.7rem;
+                border-radius: 0.95rem;
+                background: linear-gradient(180deg, #123d8d 0%, #0d3279 100%);
+                padding: 0.8rem 1.35rem;
+                font-size: 0.89rem;
+                font-weight: 800;
+                color: #ffffff;
+                box-shadow:
+                    0 14px 30px -18px rgba(18, 61, 141, 0.9),
+                    inset 0 1px 0 rgba(255, 255, 255, 0.16);
+                transition:
+                    transform 180ms ease,
+                    box-shadow 180ms ease,
+                    background 180ms ease;
+            }
+
+            .session-create-button:hover {
+                transform: translateY(-1px);
+                background: linear-gradient(180deg, #15469f 0%, #10367f 100%);
+                box-shadow:
+                    0 18px 34px -18px rgba(18, 61, 141, 0.95),
+                    inset 0 1px 0 rgba(255, 255, 255, 0.18);
+            }
+
+            .session-create-button:focus-visible {
+                outline: none;
+                box-shadow:
+                    0 0 0 4px rgba(18, 61, 141, 0.14),
+                    0 18px 34px -18px rgba(18, 61, 141, 0.95),
+                    inset 0 1px 0 rgba(255, 255, 255, 0.18);
+            }
+
+            .session-create-button-icon {
+                display: inline-flex;
+                height: 1.35rem;
+                width: 1.35rem;
+                align-items: center;
+                justify-content: center;
+                border-radius: 9999px;
+                background: rgba(255, 255, 255, 0.18);
+                color: #ffffff;
+                font-size: 1rem;
+                box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16);
+            }
+
+            .toolbar-grid {
+                display: grid;
+                gap: 0.75rem;
+                grid-template-columns: minmax(0, 0.2fr) repeat(3, minmax(0, 1fr)) auto;
+            }
+
+            .toolbar-field {
+                min-width: 0;
+            }
+
+            .toolbar-field-date {
+                grid-column: span 2;
+            }
+
+            .toolbar-label {
+                margin-bottom: 0.45rem;
+                display: block;
+                font-size: 0.6rem;
+                font-weight: 800;
+                letter-spacing: 0.18em;
+                text-transform: uppercase;
+                color: #7f8ba3;
+            }
+
+            .toolbar-input-wrap {
+                position: relative;
+            }
+
+            .toolbar-leading-icon,
+            .toolbar-trailing-icon {
+                pointer-events: none;
+                position: absolute;
+                top: 50%;
+                z-index: 1;
+                transform: translateY(-50%);
+                color: #8c98ae;
+            }
+
+            .toolbar-leading-icon {
+                left: 0.9rem;
+                font-size: 0.95rem;
+            }
+
+            .toolbar-trailing-icon {
+                right: 0.85rem;
+                font-size: 0.95rem;
+            }
+
+            .toolbar-date-trigger {
+                position: absolute;
+                top: 50%;
+                right: 0.55rem;
+                z-index: 2;
+                display: inline-flex;
+                height: 2rem;
+                width: 2rem;
+                align-items: center;
+                justify-content: center;
+                transform: translateY(-50%);
+                border: none;
+                border-radius: 0.65rem;
+                background: transparent;
+                color: #8c98ae;
+                transition: background-color 180ms ease, color 180ms ease;
+            }
+
+            .toolbar-date-trigger:hover {
+                background: #e9eef7;
+                color: #214a98;
+            }
+
+            .toolbar-date-trigger:focus-visible {
+                outline: none;
+                box-shadow: 0 0 0 3px rgba(21, 62, 138, 0.12);
+                background: #e9eef7;
+                color: #214a98;
+            }
+
+            .toolbar-control {
+                appearance: none;
+                color-scheme: light;
+                width: 100%;
+                min-height: 2.95rem;
+                border: 1px solid #edf1f7;
+                border-radius: 0.8rem;
+                background: #f8f9fc !important;
+                padding: 0.8rem 2.9rem 0.8rem 2.4rem;
+                font-size: 0.84rem;
+                font-weight: 700;
+                line-height: 1.2rem;
+                color: #445066 !important;
+                outline: none;
+                transition:
+                    border-color 180ms ease,
+                    box-shadow 180ms ease,
+                    background-color 180ms ease;
+            }
+
+            .toolbar-control[type="date"] {
+                min-width: 8.5rem;
+            }
+
+            .toolbar-control option {
+                color: #445066 !important;
+                background: #ffffff !important;
+            }
+
+            .toolbar-control:focus {
+                border-color: #153e8a;
+                box-shadow: 0 0 0 3px rgba(21, 62, 138, 0.1);
+                background: #ffffff !important;
+            }
+
+            .toolbar-control[type="date"]::-webkit-datetime-edit {
+                color: #445066;
+            }
+
+            .toolbar-control::-webkit-calendar-picker-indicator {
+                position: absolute;
+                right: 0.75rem;
+                opacity: 0;
+                cursor: pointer;
+                width: 1rem;
+                height: 1rem;
+            }
+
+            .date-range-combo {
+                display: grid;
+                grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+                gap: 0.35rem;
+                align-items: center;
+            }
+
+            .date-range-separator {
+                font-size: 0.85rem;
+                font-weight: 800;
+                color: #94a3b8;
+            }
+
+            .toolbar-reset {
+                display: inline-flex;
+                min-height: 2.95rem;
+                align-items: center;
+                justify-content: center;
+                gap: 0.55rem;
+                border: 1px solid #edf1f7;
+                border-radius: 0.8rem;
+                background: #eef2f8;
+                padding: 0.8rem 1.3rem;
+                font-size: 0.88rem;
+                font-weight: 800;
+                color: #214a98;
+                transition: background-color 180ms ease;
+            }
+
+            .toolbar-reset:hover {
+                background: #e4ebf6;
+            }
+
+            .toolbar-apply {
+                display: inline-flex;
+                min-height: 2.95rem;
+                align-items: center;
+                justify-content: center;
+                gap: 0.5rem;
+                border-radius: 0.8rem;
+                background: linear-gradient(180deg, #123d8d 0%, #0f347d 100%);
+                padding: 0.8rem 1.2rem;
+                font-size: 0.88rem;
+                font-weight: 800;
+                color: #ffffff;
+                box-shadow:
+                    0 12px 24px -18px rgba(18, 61, 141, 0.9),
+                    inset 0 1px 0 rgba(255, 255, 255, 0.14);
+                transition:
+                    transform 180ms ease,
+                    box-shadow 180ms ease,
+                    background 180ms ease;
+            }
+
+            .toolbar-apply:hover {
+                transform: translateY(-1px);
+                background: linear-gradient(180deg, #15469f 0%, #113985 100%);
+                box-shadow:
+                    0 16px 28px -18px rgba(18, 61, 141, 0.95),
+                    inset 0 1px 0 rgba(255, 255, 255, 0.16);
+            }
+
+            .toolbar-apply:focus-visible {
+                outline: none;
+                box-shadow:
+                    0 0 0 4px rgba(18, 61, 141, 0.12),
+                    0 16px 28px -18px rgba(18, 61, 141, 0.95),
+                    inset 0 1px 0 rgba(255, 255, 255, 0.16);
+            }
+
+            .session-table-card {
+                overflow: hidden;
+                border: 1px solid #edf1f7;
+                border-radius: 1.25rem;
+                background: #ffffff;
+                box-shadow: 0 20px 48px -38px rgba(15, 23, 42, 0.34);
+            }
+
+            .session-table {
+                width: 100%;
+                min-width: 960px;
+                border-collapse: separate;
+                border-spacing: 0;
+            }
+
+            .session-table thead {
+                background: linear-gradient(180deg, #123d8d 0%, #0d3279 100%);
+            }
+
+            .session-table thead th {
+                padding: 1rem 1rem;
+                text-align: left;
+                font-size: 0.64rem;
+                font-weight: 800;
+                letter-spacing: 0.18em;
+                text-transform: uppercase;
+                color: rgba(255, 255, 255, 0.96);
+            }
+
+            .session-table tbody tr:nth-child(even) {
+                background: #f8f9fc;
+            }
+
+            .session-table tbody td {
+                padding: 1.1rem 1rem;
+                vertical-align: top;
+                border-top: 1px solid #edf1f7;
+            }
+
+            .session-table tbody tr:first-child td {
+                border-top: none;
+            }
+
+            .session-badge {
+                display: inline-flex;
+                align-items: center;
+                border-radius: 0.35rem;
+                padding: 0.22rem 0.45rem;
+                font-size: 0.54rem;
+                font-weight: 800;
+                letter-spacing: 0.04em;
+                text-transform: uppercase;
+            }
+
+            .session-status {
+                display: inline-flex;
+                align-items: center;
+                gap: 0.7rem;
+                font-size: 0.88rem;
+                font-weight: 800;
+                line-height: 1.25;
+            }
+
+            .session-status-dot {
+                display: inline-block;
+                height: 0.7rem;
+                width: 0.7rem;
+                flex: none;
+                border-radius: 9999px;
+                vertical-align: middle;
+            }
+
+            .session-status-label {
+                display: inline-block;
+            }
+
+            .session-status-label.break {
+                max-width: 4.75rem;
+            }
+
+            .session-status-text-draft {
+                color: #64748b;
+            }
+
+            .session-status-dot-draft {
+                background: #94a3b8;
+            }
+
+            .session-status-text-in-progress {
+                color: #f28b53;
+            }
+
+            .session-status-dot-in-progress {
+                background: #f28b53;
+            }
+
+            .session-status-text-submitted {
+                color: #2563eb;
+            }
+
+            .session-status-dot-submitted {
+                background: #2563eb;
+            }
+
+            .session-status-text-reviewed {
+                color: #64748b;
+            }
+
+            .session-status-dot-reviewed {
+                background: #64748b;
+            }
+
+            .session-status-text-closed {
+                color: #059669;
+            }
+
+            .session-status-dot-closed {
+                background: #10b981;
+            }
+
+            .session-status-text-cancelled {
+                color: #e11d48;
+            }
+
+            .session-status-dot-cancelled {
+                background: #f43f5e;
+            }
+
+            .session-action-button {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                gap: 0.35rem;
+                border-radius: 0.7rem;
+                padding: 0.45rem 0.65rem;
+                font-size: 0.76rem;
+                font-weight: 800;
+                transition: background-color 180ms ease, border-color 180ms ease, color 180ms ease;
+            }
+
+            .session-action-button.edit {
+                border: 1px solid #fde68a;
+                background: #fffbeb;
+                color: #b45309;
+            }
+
+            .session-action-button.edit:hover {
+                background: #fef3c7;
+            }
+
+            .session-action-button.delete {
+                border: 1px solid #fecdd3;
+                background: #fff1f2;
+                color: #be123c;
+            }
+
+            .session-action-button.delete:hover {
+                background: #ffe4e6;
+            }
+
+            .session-pagination {
+                display: flex;
+                align-items: center;
+                gap: 0.4rem;
+            }
+
+            .session-pagination-link {
+                display: inline-flex;
+                height: 2rem;
+                min-width: 2rem;
+                align-items: center;
+                justify-content: center;
+                border-radius: 0.55rem;
+                font-size: 0.8rem;
+                font-weight: 800;
+                color: #667085;
+                transition: background-color 180ms ease, color 180ms ease;
+            }
+
+            .session-pagination-link:hover {
+                background: #eef2f8;
+            }
+
+            .session-pagination-link.active {
+                background: #153e8a;
+                color: #ffffff;
+                box-shadow: 0 10px 18px -14px rgba(21, 62, 138, 0.95);
+            }
+
+            .session-pagination-link.icon {
+                color: #9aa6bb;
+            }
+
+            @media (max-width: 1279px) {
+                .toolbar-grid {
+                    grid-template-columns: repeat(2, minmax(0, 1fr));
+                }
+
+                .toolbar-field-date {
+                    grid-column: span 1;
+                }
+            }
+
+            @media (max-width: 767px) {
+                .toolbar-grid {
+                    grid-template-columns: minmax(0, 1fr);
+                }
+
+                .date-range-combo {
+                    grid-template-columns: minmax(0, 1fr);
+                }
+
+                .date-range-separator {
+                    display: none;
+                }
+            }
+        </style>
+    </head>
+    <body class="font-display text-slate-900">
+        <div class="flex min-h-screen">
+            {{ template "sidebar" . }}
+
+            <div class="flex min-h-screen min-w-0 flex-1 flex-col">
+                {{ template "header" . }}
+
+                <main class="flex-1 px-4 py-6 lg:px-8">
+                    <div class="session-shell mx-auto w-full max-w-7xl">
+                        <section class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                            <div>
+                                <h1 class="text-[1.8rem] font-extrabold tracking-tight text-[#153e8a]">Session List</h1>
+                                <p class="mt-1 text-[13px] font-medium text-slate-500">Manage and track inventory reconciliation cycles</p>
+                            </div>
+
+                            <button type="button" class="session-create-button" data-modal-open="stockCheckSessionModal">
+                                <span class="session-create-button-icon">
+                                    <i class="bx bx-plus"></i>
+                                </span>
+                                <span>Create New Session</span>
+                            </button>
+                        </section>
+
+                        {{ if .Error }}
+                        <div class="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-600">
+                            {{ .Error }}
+                        </div>
+                        {{ end }}
+
+                        <section class="session-toolbar">
+                            <form method="get" action="{{ baseURL "/stock-check-sessions" }}" class="toolbar-grid">
+                                <div class="toolbar-field toolbar-field-date">
+                                    <label class="toolbar-label">Date Range</label>
+                                    <div class="date-range-combo">
+                                        <div class="toolbar-input-wrap">
+                                            <i class="bx bx-calendar toolbar-leading-icon"></i>
+                                            <input id="date-from-filter" type="date" name="date_from" value="{{ .Filters.DateFrom }}" class="toolbar-control">
+                                            <button type="button" class="toolbar-date-trigger" data-date-picker-target="date-from-filter" aria-label="Pilih tanggal mulai">
+                                                <i class="bx bx-chevron-down text-base"></i>
+                                            </button>
+                                        </div>
+                                        <span class="date-range-separator">-</span>
+                                        <div class="toolbar-input-wrap">
+                                            <i class="bx bx-calendar toolbar-leading-icon"></i>
+                                            <input id="date-to-filter" type="date" name="date_to" value="{{ .Filters.DateTo }}" class="toolbar-control">
+                                            <button type="button" class="toolbar-date-trigger" data-date-picker-target="date-to-filter" aria-label="Pilih tanggal akhir">
+                                                <i class="bx bx-chevron-down text-base"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="toolbar-field">
+                                    <label class="toolbar-label">Store Location</label>
+                                    <div class="toolbar-input-wrap">
+                                        <select name="store_id" class="toolbar-control">
+                                            <option value="">All Stores</option>
+                                            {{ range .Stores }}
+                                                <option value="{{ .StoreID }}" {{ if eq $.Filters.StoreID .StoreID }}selected{{ end }}>{{ .StoreName }}</option>
+                                            {{ end }}
+                                        </select>
+                                        <i class="bx bx-chevron-down toolbar-trailing-icon"></i>
+                                    </div>
+                                </div>
+
+                                <div class="toolbar-field">
+                                    <label class="toolbar-label">Supplier</label>
+                                    <div class="toolbar-input-wrap">
+                                        <select name="supplier_id" class="toolbar-control">
+                                            <option value="">All Suppliers</option>
+                                            {{ range .Suppliers }}
+                                                <option value="{{ .ID }}" {{ if eq $.Filters.SupplierID .ID }}selected{{ end }}>{{ .SupplierName }}</option>
+                                            {{ end }}
+                                        </select>
+                                        <i class="bx bx-chevron-down toolbar-trailing-icon"></i>
+                                    </div>
+                                </div>
+
+                                <div class="toolbar-field">
+                                    <label class="toolbar-label">Status</label>
+                                    <div class="toolbar-input-wrap">
+                                        <select name="status" class="toolbar-control">
+                                            <option value="">All Status</option>
+                                            <option value="draft" {{ if eq .Filters.Status "draft" }}selected{{ end }}>Draft</option>
+                                            <option value="in_progress" {{ if eq .Filters.Status "in_progress" }}selected{{ end }}>In Progress</option>
+                                            <option value="submitted" {{ if eq .Filters.Status "submitted" }}selected{{ end }}>Submitted</option>
+                                            <option value="reviewed" {{ if eq .Filters.Status "reviewed" }}selected{{ end }}>Reviewed</option>
+                                            <option value="closed" {{ if eq .Filters.Status "closed" }}selected{{ end }}>Closed</option>
+                                            <option value="cancelled" {{ if eq .Filters.Status "cancelled" }}selected{{ end }}>Cancelled</option>
+                                        </select>
+                                        <i class="bx bx-chevron-down toolbar-trailing-icon"></i>
+                                    </div>
+                                </div>
+
+                                <div class="toolbar-field self-end">
+                                    <div class="flex gap-2">
+                                        <button type="submit" class="toolbar-apply">
+                                            Apply
+                                        </button>
+                                        <a href="{{ baseURL "/stock-check-sessions" }}" class="toolbar-reset">
+                                            <i class="bx bx-reset text-base"></i>
+                                            <span>Reset</span>
+                                        </a>
+                                    </div>
+                                </div>
+                            </form>
+                        </section>
+
+                        <section class="session-table-card">
+                            <div class="overflow-x-auto">
+                                <table class="session-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Session No</th>
+                                            <th>Date</th>
+                                            <th>Store</th>
+                                            <th>Supplier</th>
+                                            <th>Status</th>
+                                            <th>Created By</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                                {{ range .Sessions }}
+                                            <tr class="transition hover:bg-[#f3f6fb]">
+                                                <td>
+                                                    <p class="max-w-[7rem] break-words text-[13px] font-extrabold leading-6 text-[#214a98]">{{ .SessionNumber }}</p>
+                                                </td>
+                                                <td>
+                                                    <div class="text-[13px] font-bold leading-5 text-slate-600">
+                                                        <p>{{ .SessionDateDay }} {{ .SessionDateMonthShort }} {{ .SessionDateYear }}</p>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <p class="max-w-[9rem] text-[13px] font-bold leading-6 text-slate-700">{{ .StoreName }}</p>
+                                                </td>
+                                                <td>
+                                                    <p class="max-w-[9rem] text-[13px] font-medium leading-6 text-slate-500">{{ .SupplierName }}</p>
+                                                </td>
+                                                <td>
+                                                    <span class="session-status {{ .StatusTextClass }}">
+                                                        <span class="session-status-dot {{ .StatusDotClass }}"></span>
+                                                        <span class="session-status-label {{ if eq .Status "in_progress" }}break{{ end }}">
+                                                            {{ .StatusLabel }}
+                                                        </span>
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <div class="flex items-start gap-2.5">
+                                                        <span class="inline-flex h-6 w-6 items-center justify-center rounded-full text-[9px] font-extrabold {{ .CreatedByAvatarClass }}">{{ .CreatedByInitials }}</span>
+                                                        <div>
+                                                            <p class="text-[13px] font-semibold leading-5 text-slate-700">{{ .CreatedByName }}</p>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <div class="flex flex-wrap items-center gap-2">
+                                                        <button
+                                                            type="button"
+                                                            class="session-action-button edit btn-edit-session"
+                                                            data-id="{{ .ID }}"
+                                                            data-session-number="{{ .SessionNumber }}"
+                                                            data-session-date="{{ .SessionDate }}"
+                                                            data-store-id="{{ .StoreID }}"
+                                                            data-supplier-id="{{ .SupplierID }}"
+                                                            data-initiation-type="{{ .InitiationType }}"
+                                                            data-status="{{ .Status }}"
+                                                            data-notes="{{ .Notes }}">
+                                                            <i class="bx bx-pencil text-sm"></i>
+                                                            Edit
+                                                        </button>
+                                                        <button
+                                                            type="button"
+                                                            class="session-action-button delete btn-delete-session"
+                                                            data-url="/stock-check-sessions/delete/{{ .ID }}"
+                                                            data-session-number="{{ .SessionNumber }}">
+                                                            <i class="bx bx-trash text-sm"></i>
+                                                            Delete
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        {{ else }}
+                                            <tr>
+                                                <td colspan="7" class="px-5 py-12 text-center">
+                                                    <div class="mx-auto max-w-md">
+                                                        <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 text-slate-400">
+                                                            <i class="bx bx-folder-open text-3xl"></i>
+                                                        </div>
+                                                        <p class="mt-4 text-[15px] font-bold text-slate-700">Belum ada session yang cocok dengan filter saat ini.</p>
+                                                        <p class="mt-1 text-[13px] font-medium text-slate-400">Coba ubah rentang tanggal, store, supplier, atau status.</p>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        {{ end }}
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <div class="flex flex-col gap-4 border-t border-[#edf1f7] px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
+                                <p class="text-[13px] font-semibold text-slate-500">
+                                    {{ if gt .Pagination.TotalItems 0 }}
+                                        Showing {{ .Pagination.StartItem }}-{{ .Pagination.EndItem }} of {{ .Pagination.TotalItems }} sessions
+                                    {{ else }}
+                                        No sessions found
+                                    {{ end }}
+                                </p>
+
+                                <div class="session-pagination">
+                                    {{ if .Pagination.HasPrev }}
+                                        <a href="{{ .Pagination.PrevURL }}" class="session-pagination-link icon">
+                                            <i class="bx bx-chevron-left text-lg"></i>
+                                        </a>
+                                    {{ else }}
+                                        <span class="session-pagination-link icon text-slate-300">
+                                            <i class="bx bx-chevron-left text-lg"></i>
+                                        </span>
+                                    {{ end }}
+
+                                    {{ range .Pagination.Pages }}
+                                        <a href="{{ .URL }}" class="session-pagination-link {{ if .Active }}active{{ end }}">
+                                            {{ .Number }}
+                                        </a>
+                                    {{ end }}
+
+                                    {{ if .Pagination.HasNext }}
+                                        <a href="{{ .Pagination.NextURL }}" class="session-pagination-link icon">
+                                            <i class="bx bx-chevron-right text-lg"></i>
+                                        </a>
+                                    {{ else }}
+                                        <span class="session-pagination-link icon text-slate-300">
+                                            <i class="bx bx-chevron-right text-lg"></i>
+                                        </span>
+                                    {{ end }}
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+                </main>
+
+                {{ template "footer" . }}
+            </div>
+        </div>
+
+        <div id="sidebar-overlay" class="fixed inset-0 z-40 hidden bg-slate-900/50 lg:hidden"></div>
+
+        <div data-modal class="fixed inset-0 z-50 hidden items-start justify-center overflow-y-auto p-4 sm:items-center sm:p-6" id="stockCheckSessionModal">
+            <div class="absolute inset-0 bg-slate-900/50" data-modal-close></div>
+            <div class="relative w-full max-w-4xl rounded-3xl bg-white p-5 shadow-xl sm:p-6">
+                <div class="flex items-center justify-between border-b border-slate-100 pb-4">
+                    <h2 class="text-lg font-semibold text-slate-900">Create Stock Check Session</h2>
+                    <button type="button" class="text-slate-400 transition hover:text-slate-600" data-modal-close>
+                        <i class="bx bx-x text-2xl"></i>
+                    </button>
+                </div>
+
+                <form action="/stock-check-sessions" method="post" class="mt-6 space-y-5">
+                    <div class="grid gap-5 md:grid-cols-2">
+                        <div class="space-y-4">
+                            <div>
+                                <label class="text-xs font-semibold uppercase tracking-wider text-slate-500">Session Number</label>
+                                <div class="mt-2 rounded-xl border border-slate-200 bg-slate-100 px-3 py-2.5 text-sm font-semibold text-slate-500">
+                                    Otomatis dibuat oleh sistem saat session disimpan
+                                </div>
+                            </div>
+
+                            <div>
+                                <label for="session_date" class="text-xs font-semibold uppercase tracking-wider text-slate-500">Session Date</label>
+                                <div class="toolbar-input-wrap mt-2">
+                                    <i class="bx bx-calendar toolbar-leading-icon"></i>
+                                    <input id="session_date" name="session_date" type="date" value="{{ if eq .FormMode "create" }}{{ .FormSession.SessionDate }}{{ end }}" class="toolbar-control" required>
+                                    <button type="button" class="toolbar-date-trigger" data-date-picker-target="session_date" aria-label="Pilih tanggal session">
+                                        <i class="bx bx-chevron-down text-base"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label for="session_store_id" class="text-xs font-semibold uppercase tracking-wider text-slate-500">Store</label>
+                                <select id="session_store_id" name="store_id" class="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none transition focus:border-[#153e8a]" required>
+                                    <option value="">Pilih Store</option>
+                                    {{ range .Stores }}
+                                    <option value="{{ .StoreID }}" {{ if and (eq $.FormMode "create") (eq $.FormSession.StoreID .StoreID) }}selected{{ end }}>{{ .StoreName }}</option>
+                                    {{ end }}
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="space-y-4">
+                            <div>
+                                <label for="session_supplier_id" class="text-xs font-semibold uppercase tracking-wider text-slate-500">Supplier</label>
+                                <select id="session_supplier_id" name="supplier_id" class="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none transition focus:border-[#153e8a]" required>
+                                    <option value="">Pilih Supplier</option>
+                                    {{ range .Suppliers }}
+                                    <option value="{{ .ID }}" {{ if and (eq $.FormMode "create") (eq $.FormSession.SupplierID .ID) }}selected{{ end }}>{{ .SupplierName }}</option>
+                                    {{ end }}
+                                </select>
+                            </div>
+
+                            <div>
+                                <label for="session_initiation_type" class="text-xs font-semibold uppercase tracking-wider text-slate-500">Type</label>
+                                <select id="session_initiation_type" name="initiation_type" class="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none transition focus:border-[#153e8a]" required>
+                                    <option value="">Pilih Type</option>
+                                    <option value="scheduled" {{ if and (eq .FormMode "create") (eq .FormSession.InitiationType "scheduled") }}selected{{ end }}>Scheduled</option>
+                                    <option value="checker_initiative" {{ if and (eq .FormMode "create") (eq .FormSession.InitiationType "checker_initiative") }}selected{{ end }}>Initiative</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label for="session_status" class="text-xs font-semibold uppercase tracking-wider text-slate-500">Status</label>
+                                <select id="session_status" name="status" class="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none transition focus:border-[#153e8a]" required>
+                                    <option value="">Pilih Status</option>
+                                    <option value="draft" {{ if and (eq .FormMode "create") (eq .FormSession.Status "draft") }}selected{{ end }}>Draft</option>
+                                    <option value="in_progress" {{ if and (eq .FormMode "create") (eq .FormSession.Status "in_progress") }}selected{{ end }}>In Progress</option>
+                                    <option value="submitted" {{ if and (eq .FormMode "create") (eq .FormSession.Status "submitted") }}selected{{ end }}>Submitted</option>
+                                    <option value="reviewed" {{ if and (eq .FormMode "create") (eq .FormSession.Status "reviewed") }}selected{{ end }}>Reviewed</option>
+                                    <option value="closed" {{ if and (eq .FormMode "create") (eq .FormSession.Status "closed") }}selected{{ end }}>Closed</option>
+                                    <option value="cancelled" {{ if and (eq .FormMode "create") (eq .FormSession.Status "cancelled") }}selected{{ end }}>Cancelled</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label for="session_notes" class="text-xs font-semibold uppercase tracking-wider text-slate-500">Notes</label>
+                        <textarea id="session_notes" name="notes" class="mt-2 h-28 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none transition focus:border-[#153e8a]">{{ if eq .FormMode "create" }}{{ .FormSession.Notes }}{{ end }}</textarea>
+                    </div>
+
+                    <div class="flex flex-col gap-3 border-t border-slate-100 pt-4 sm:flex-row sm:justify-end">
+                        <button type="button" class="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-50" data-modal-close>Batal</button>
+                        <button type="submit" class="session-create-button">
+                            <span class="session-create-button-icon"><i class="bx bx-plus"></i></span>
+                            <span>Simpan Session</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div data-modal class="fixed inset-0 z-50 hidden items-start justify-center overflow-y-auto p-4 sm:items-center sm:p-6" id="stockCheckSessionEditModal">
+            <div class="absolute inset-0 bg-slate-900/50" data-modal-close></div>
+            <div class="relative w-full max-w-4xl rounded-3xl bg-white p-5 shadow-xl sm:p-6">
+                <div class="flex items-center justify-between border-b border-slate-100 pb-4">
+                    <h2 class="text-lg font-semibold text-slate-900">Edit Stock Check Session</h2>
+                    <button type="button" class="text-slate-400 transition hover:text-slate-600" data-modal-close>
+                        <i class="bx bx-x text-2xl"></i>
+                    </button>
+                </div>
+
+                <form action="/stock-check-sessions/update" method="post" class="mt-6 space-y-5">
+                    <input type="hidden" name="id" id="edit_session_id" value="{{ if eq .FormMode "edit" }}{{ .FormSession.ID }}{{ end }}">
+                    <input type="hidden" name="session_number_display" id="edit_session_number_display" value="{{ if eq .FormMode "edit" }}{{ .FormSession.SessionNumber }}{{ end }}">
+                    <div class="grid gap-5 md:grid-cols-2">
+                        <div class="space-y-4">
+                            <div>
+                                <label for="edit_session_number" class="text-xs font-semibold uppercase tracking-wider text-slate-500">Session Number</label>
+                                <input id="edit_session_number" type="text" value="{{ if eq .FormMode "edit" }}{{ .FormSession.SessionNumber }}{{ end }}" class="mt-2 w-full rounded-xl border border-slate-200 bg-slate-100 px-3 py-2.5 text-sm font-semibold text-slate-500 outline-none" readonly>
+                            </div>
+
+                            <div>
+                                <label for="edit_session_date" class="text-xs font-semibold uppercase tracking-wider text-slate-500">Session Date</label>
+                                <div class="toolbar-input-wrap mt-2">
+                                    <i class="bx bx-calendar toolbar-leading-icon"></i>
+                                    <input id="edit_session_date" name="session_date" type="date" value="{{ if eq .FormMode "edit" }}{{ .FormSession.SessionDate }}{{ end }}" class="toolbar-control" required>
+                                    <button type="button" class="toolbar-date-trigger" data-date-picker-target="edit_session_date" aria-label="Pilih tanggal session edit">
+                                        <i class="bx bx-chevron-down text-base"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label for="edit_session_store_id" class="text-xs font-semibold uppercase tracking-wider text-slate-500">Store</label>
+                                <select id="edit_session_store_id" name="store_id" class="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none transition focus:border-[#153e8a]" required>
+                                    <option value="">Pilih Store</option>
+                                    {{ range .Stores }}
+                                    <option value="{{ .StoreID }}" {{ if and (eq $.FormMode "edit") (eq $.FormSession.StoreID .StoreID) }}selected{{ end }}>{{ .StoreName }}</option>
+                                    {{ end }}
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="space-y-4">
+                            <div>
+                                <label for="edit_session_supplier_id" class="text-xs font-semibold uppercase tracking-wider text-slate-500">Supplier</label>
+                                <select id="edit_session_supplier_id" name="supplier_id" class="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none transition focus:border-[#153e8a]" required>
+                                    <option value="">Pilih Supplier</option>
+                                    {{ range .Suppliers }}
+                                    <option value="{{ .ID }}" {{ if and (eq $.FormMode "edit") (eq $.FormSession.SupplierID .ID) }}selected{{ end }}>{{ .SupplierName }}</option>
+                                    {{ end }}
+                                </select>
+                            </div>
+
+                            <div>
+                                <label for="edit_session_initiation_type" class="text-xs font-semibold uppercase tracking-wider text-slate-500">Type</label>
+                                <select id="edit_session_initiation_type" name="initiation_type" class="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none transition focus:border-[#153e8a]" required>
+                                    <option value="">Pilih Type</option>
+                                    <option value="scheduled" {{ if and (eq .FormMode "edit") (eq .FormSession.InitiationType "scheduled") }}selected{{ end }}>Scheduled</option>
+                                    <option value="checker_initiative" {{ if and (eq .FormMode "edit") (eq .FormSession.InitiationType "checker_initiative") }}selected{{ end }}>Initiative</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label for="edit_session_status" class="text-xs font-semibold uppercase tracking-wider text-slate-500">Status</label>
+                                <select id="edit_session_status" name="status" class="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none transition focus:border-[#153e8a]" required>
+                                    <option value="">Pilih Status</option>
+                                    <option value="draft" {{ if and (eq .FormMode "edit") (eq .FormSession.Status "draft") }}selected{{ end }}>Draft</option>
+                                    <option value="in_progress" {{ if and (eq .FormMode "edit") (eq .FormSession.Status "in_progress") }}selected{{ end }}>In Progress</option>
+                                    <option value="submitted" {{ if and (eq .FormMode "edit") (eq .FormSession.Status "submitted") }}selected{{ end }}>Submitted</option>
+                                    <option value="reviewed" {{ if and (eq .FormMode "edit") (eq .FormSession.Status "reviewed") }}selected{{ end }}>Reviewed</option>
+                                    <option value="closed" {{ if and (eq .FormMode "edit") (eq .FormSession.Status "closed") }}selected{{ end }}>Closed</option>
+                                    <option value="cancelled" {{ if and (eq .FormMode "edit") (eq .FormSession.Status "cancelled") }}selected{{ end }}>Cancelled</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label for="edit_session_notes" class="text-xs font-semibold uppercase tracking-wider text-slate-500">Notes</label>
+                        <textarea id="edit_session_notes" name="notes" class="mt-2 h-28 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none transition focus:border-[#153e8a]">{{ if eq .FormMode "edit" }}{{ .FormSession.Notes }}{{ end }}</textarea>
+                    </div>
+
+                    <div class="flex flex-col gap-3 border-t border-slate-100 pt-4 sm:flex-row sm:justify-end">
+                        <button type="button" class="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-50" data-modal-close>Batal</button>
+                        <button type="submit" class="toolbar-apply">Update Session</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <script src="/assets/vendor/sweetalert2/sweetalert2.all.min.js"></script>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                var sidebar = document.getElementById('app-sidebar');
+                var overlay = document.getElementById('sidebar-overlay');
+                var toggleButtons = document.querySelectorAll('[data-sidebar-toggle]');
+
+                function closeSidebar() {
+                    if (!sidebar) return;
+                    sidebar.classList.add('-translate-x-full');
+                    if (overlay) overlay.classList.add('hidden');
+                    if (!document.querySelector('[data-modal].flex')) {
+                        document.body.classList.remove('overflow-hidden');
+                    }
+                }
+
+                function openSidebar() {
+                    if (!sidebar) return;
+                    sidebar.classList.remove('-translate-x-full');
+                    if (overlay) overlay.classList.remove('hidden');
+                    document.body.classList.add('overflow-hidden');
+                }
+
+                function openModal(modalId) {
+                    var modal = document.getElementById(modalId);
+                    if (!modal) return;
+                    modal.classList.remove('hidden');
+                    modal.classList.add('flex');
+                    document.body.classList.add('overflow-hidden');
+                }
+
+                function closeModal(modal) {
+                    if (!modal) return;
+                    modal.classList.add('hidden');
+                    modal.classList.remove('flex');
+                    if (sidebar && sidebar.classList.contains('-translate-x-full')) {
+                        document.body.classList.remove('overflow-hidden');
+                    }
+                }
+
+                toggleButtons.forEach(function (button) {
+                    button.addEventListener('click', function () {
+                        if (!sidebar) return;
+                        if (sidebar.classList.contains('-translate-x-full')) {
+                            openSidebar();
+                        } else {
+                            closeSidebar();
+                        }
+                    });
+                });
+
+                if (overlay) {
+                    overlay.addEventListener('click', closeSidebar);
+                }
+
+                document.querySelectorAll('[data-modal-open]').forEach(function (trigger) {
+                    trigger.addEventListener('click', function () {
+                        var target = trigger.getAttribute('data-modal-open');
+                        if (target) openModal(target);
+                    });
+                });
+
+                document.querySelectorAll('[data-modal-close]').forEach(function (close) {
+                    close.addEventListener('click', function () {
+                        closeModal(close.closest('[data-modal]'));
+                    });
+                });
+
+                document.addEventListener('keydown', function (event) {
+                    if (event.key !== 'Escape') return;
+                    document.querySelectorAll('[data-modal].flex').forEach(closeModal);
+                });
+
+                document.querySelectorAll('[data-date-picker-target]').forEach(function (button) {
+                    button.addEventListener('click', function () {
+                        var input = document.getElementById(button.getAttribute('data-date-picker-target'));
+                        if (!input) return;
+
+                        if (typeof input.showPicker === 'function') {
+                            input.showPicker();
+                            return;
+                        }
+
+                        input.focus();
+                        input.click();
+                    });
+                });
+
+                document.querySelectorAll('.btn-edit-session').forEach(function (btn) {
+                    btn.addEventListener('click', function () {
+                        var editModalEl = document.getElementById('stockCheckSessionEditModal');
+                        if (!editModalEl) return;
+
+                        editModalEl.querySelector('#edit_session_id').value = btn.getAttribute('data-id') || '';
+                        editModalEl.querySelector('#edit_session_number_display').value = btn.getAttribute('data-session-number') || '';
+                        editModalEl.querySelector('#edit_session_number').value = btn.getAttribute('data-session-number') || '';
+                        editModalEl.querySelector('#edit_session_date').value = btn.getAttribute('data-session-date') || '';
+                        editModalEl.querySelector('#edit_session_store_id').value = btn.getAttribute('data-store-id') || '';
+                        editModalEl.querySelector('#edit_session_supplier_id').value = btn.getAttribute('data-supplier-id') || '';
+                        editModalEl.querySelector('#edit_session_initiation_type').value = btn.getAttribute('data-initiation-type') || '';
+                        editModalEl.querySelector('#edit_session_status').value = btn.getAttribute('data-status') || '';
+                        editModalEl.querySelector('#edit_session_notes').value = btn.getAttribute('data-notes') || '';
+
+                        openModal('stockCheckSessionEditModal');
+                    });
+                });
+
+                document.querySelectorAll('.btn-delete-session').forEach(function (btn) {
+                    btn.addEventListener('click', function (event) {
+                        event.preventDefault();
+                        var sessionNumber = btn.getAttribute('data-session-number') || 'session';
+                        var targetUrl = btn.getAttribute('data-url');
+
+                        Swal.fire({
+                            title: 'Hapus session ini?',
+                            text: 'Session ' + sessionNumber + ' akan dihapus permanen.',
+                            icon: 'warning',
+                            showCancelButton: true,
+                            confirmButtonColor: '#d33',
+                            cancelButtonColor: '#6b7280',
+                            confirmButtonText: 'Ya, hapus',
+                            cancelButtonText: 'Batal'
+                        }).then(function (result) {
+                            if (result.isConfirmed && targetUrl) {
+                                window.location.href = targetUrl;
+                            }
+                        });
+                    });
+                });
+
+                {{ if eq .FormMode "create" }}
+                openModal('stockCheckSessionModal');
+                {{ end }}
+
+                {{ if eq .FormMode "edit" }}
+                openModal('stockCheckSessionEditModal');
+                {{ end }}
+            });
+        </script>
+    </body>
+</html>
