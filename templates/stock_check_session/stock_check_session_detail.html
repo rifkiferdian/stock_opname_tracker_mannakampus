@@ -256,6 +256,35 @@
                 box-shadow: 0 18px 38px -28px rgba(13, 45, 121, 0.85);
             }
 
+            .flash-banner {
+                display: flex;
+                align-items: flex-start;
+                gap: 0.8rem;
+                border-radius: 1rem;
+                padding: 0.95rem 1.05rem;
+                border: 1px solid transparent;
+                font-size: 0.84rem;
+                font-weight: 700;
+                box-shadow: 0 18px 36px -28px rgba(15, 31, 71, 0.3);
+            }
+
+            .flash-banner i {
+                font-size: 1.15rem;
+                line-height: 1;
+            }
+
+            .flash-banner.success {
+                border-color: #bfe6cc;
+                background: #edf9f1;
+                color: #1b8e54;
+            }
+
+            .flash-banner.error {
+                border-color: #f2bac7;
+                background: #fff4f6;
+                color: #c23a5f;
+            }
+
             .review-table-card {
                 overflow: hidden;
             }
@@ -515,6 +544,38 @@
                 font-weight: 800;
             }
 
+            .action-buttons {
+                display: flex;
+                justify-content: center;
+            }
+
+            .item-edit-button {
+                display: inline-flex;
+                align-items: center;
+                gap: 0.38rem;
+                border: 1px solid #cddbfb;
+                border-radius: 0.8rem;
+                background: linear-gradient(180deg, #ffffff 0%, #f6f9ff 100%);
+                padding: 0.58rem 0.82rem;
+                font-size: 0.73rem;
+                font-weight: 800;
+                color: #173f92;
+                box-shadow: 0 12px 24px -22px rgba(20, 61, 143, 0.95);
+                transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease, background 180ms ease;
+            }
+
+            .item-edit-button:hover {
+                border-color: #9fb9f4;
+                background: #eff5ff;
+                box-shadow: 0 16px 28px -22px rgba(20, 61, 143, 0.72);
+                transform: translateY(-1px);
+            }
+
+            .item-edit-button:focus-visible {
+                outline: 2px solid rgba(20, 61, 143, 0.25);
+                outline-offset: 2px;
+            }
+
             .item-status-approved {
                 background: #e8f0ff;
                 color: #20469a;
@@ -572,29 +633,37 @@
                 color: #12315f;
             }
 
-            .pager {
+            .session-pagination {
                 display: flex;
                 align-items: center;
-                gap: 0.35rem;
+                gap: 0.4rem;
             }
 
-            .pager a,
-            .pager span {
+            .session-pagination-link {
                 display: inline-flex;
-                height: 1.95rem;
-                min-width: 1.95rem;
+                height: 2rem;
+                min-width: 2rem;
                 align-items: center;
                 justify-content: center;
-                border-radius: 0.5rem;
-                background: #f1f5fb;
-                font-size: 0.78rem;
+                border-radius: 0.55rem;
+                font-size: 0.8rem;
                 font-weight: 800;
-                color: #738099;
+                color: #667085;
+                transition: background-color 180ms ease, color 180ms ease;
             }
 
-            .pager .active {
+            .session-pagination-link:hover {
+                background: #eef2f8;
+            }
+
+            .session-pagination-link.active {
                 background: var(--brand);
                 color: #ffffff;
+                box-shadow: 0 10px 18px -14px rgba(21, 62, 138, 0.95);
+            }
+
+            .session-pagination-link.icon {
+                color: #9aa6bb;
             }
 
             .summary-grid {
@@ -733,6 +802,161 @@
                 text-align: center;
             }
 
+            .modal-shell {
+                position: fixed;
+                inset: 0;
+                z-index: 60;
+                display: none;
+                align-items: center;
+                justify-content: center;
+                padding: 1.25rem;
+                background: rgba(15, 31, 71, 0.42);
+                backdrop-filter: blur(6px);
+            }
+
+            .modal-shell.flex {
+                display: flex;
+            }
+
+            .modal-card {
+                width: min(100%, 32rem);
+                border-radius: 1.4rem;
+                border: 1px solid rgba(231, 237, 246, 0.92);
+                background: rgba(255, 255, 255, 0.98);
+                box-shadow: 0 28px 68px -40px rgba(15, 31, 71, 0.5);
+                overflow: hidden;
+            }
+
+            .modal-head {
+                display: flex;
+                align-items: flex-start;
+                justify-content: space-between;
+                gap: 1rem;
+                padding: 1.2rem 1.25rem 0;
+            }
+
+            .modal-head h2 {
+                font-family: "Space Grotesk", sans-serif;
+                font-size: 1.1rem;
+                font-weight: 700;
+                color: #0e3786;
+            }
+
+            .modal-head p {
+                margin-top: 0.3rem;
+                font-size: 0.78rem;
+                line-height: 1.55;
+                color: #71819b;
+            }
+
+            .modal-close {
+                display: inline-flex;
+                height: 2.1rem;
+                width: 2.1rem;
+                align-items: center;
+                justify-content: center;
+                border: 1px solid #dbe4f1;
+                border-radius: 999px;
+                background: #ffffff;
+                color: #5d6b83;
+                transition: 180ms ease;
+            }
+
+            .modal-close:hover {
+                background: #f8fbff;
+                color: #173f92;
+            }
+
+            .modal-form {
+                padding: 1.15rem 1.25rem 1.25rem;
+            }
+
+            .modal-grid {
+                display: grid;
+                gap: 1rem;
+            }
+
+            .field-label {
+                display: block;
+                font-size: 0.66rem;
+                font-weight: 800;
+                letter-spacing: 0.14em;
+                text-transform: uppercase;
+                color: #7d8ca6;
+            }
+
+            .field-input,
+            .field-textarea {
+                width: 100%;
+                margin-top: 0.45rem;
+                border: 1px solid #d8e2f0;
+                border-radius: 0.95rem;
+                background: #ffffff;
+                padding: 0.78rem 0.92rem;
+                font-size: 0.9rem;
+                color: #142349;
+                transition: border-color 180ms ease, box-shadow 180ms ease;
+            }
+
+            .field-input:focus,
+            .field-textarea:focus {
+                outline: none;
+                border-color: #6d90de;
+                box-shadow: 0 0 0 4px rgba(20, 61, 143, 0.1);
+            }
+
+            .field-textarea {
+                min-height: 8.25rem;
+                resize: vertical;
+            }
+
+            .field-hint {
+                margin-top: 0.45rem;
+                font-size: 0.72rem;
+                font-weight: 700;
+                color: #8b99b0;
+            }
+
+            .modal-actions {
+                margin-top: 1.15rem;
+                display: flex;
+                justify-content: flex-end;
+                gap: 0.7rem;
+            }
+
+            .modal-button {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                border-radius: 0.9rem;
+                padding: 0.82rem 1.15rem;
+                font-size: 0.8rem;
+                font-weight: 800;
+                transition: 180ms ease;
+            }
+
+            .modal-button.secondary {
+                border: 1px solid #d7e0ee;
+                background: #ffffff;
+                color: #5d6b83;
+            }
+
+            .modal-button.secondary:hover {
+                background: #f8fbff;
+                color: #173f92;
+            }
+
+            .modal-button.primary {
+                border: 1px solid transparent;
+                background: linear-gradient(180deg, #153f95 0%, #0d2d79 100%);
+                color: #ffffff;
+                box-shadow: 0 20px 40px -28px rgba(13, 45, 121, 0.9);
+            }
+
+            .modal-button.primary:hover {
+                transform: translateY(-1px);
+            }
+
             @media (max-width: 1180px) {
                 .hero-grid,
                 .summary-grid {
@@ -765,6 +989,20 @@
 
                 <main class="min-w-0 flex-1 px-4 pb-6 pt-8 sm:px-6 lg:px-8">
                     <div class="detail-shell mx-auto w-full max-w-7xl">
+                        {{ if .Success }}
+                        <div class="flash-banner success">
+                            <i class="bx bx-check-circle"></i>
+                            <span>{{ .Success }}</span>
+                        </div>
+                        {{ end }}
+
+                        {{ if .Error }}
+                        <div class="flash-banner error">
+                            <i class="bx bx-error-circle"></i>
+                            <span>{{ .Error }}</span>
+                        </div>
+                        {{ end }}
+
                         <div class="flex items-center justify-between gap-4">
                             <a href="/stock-check-sessions" class="inline-flex items-center gap-2 text-sm font-extrabold text-[#123d8f] transition hover:text-[#214a98]">
                                 <i class="bx bx-arrow-back text-base"></i>
@@ -834,8 +1072,6 @@
                             </div>
 
                             <div class="toolbar-group">
-                                <button type="button" class="tool-button ghost">Reject Session</button>
-                                <button type="button" class="tool-button primary">Save Review</button>
                                 <button type="button" class="tool-button emphasis">
                                     <i class="bx bx-check-circle"></i>
                                     Approve All
@@ -852,9 +1088,9 @@
                                             <th>Checker Qty<br>(Shop / Wh / Total)</th>
                                             <th>Suggested</th>
                                             <th>Final Approve</th>
-                                            <th>Supplier</th>
                                             <th>Notes</th>
                                             <th>Status</th>
+                                            <th>Aksi</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -886,21 +1122,12 @@
                                                         <strong>{{ .TotalQtyDisplay }}</strong>
                                                     </div>
                                                 </div>
-                                                <p class="qty-hint">System total: {{ .SystemTotalQtyDisplay }} {{ .UnitName }}</p>
                                             </td>
                                             <td>
                                                 <p class="focus-number orange">{{ .SuggestBuyQtyDisplay }}</p>
-                                                <p class="sub-metric">{{ .SuggestLineValueDisplay }}</p>
                                             </td>
                                             <td>
                                                 <span class="approve-pill {{ if eq .Status "rejected" }}rejected{{ end }}">{{ .ApprovedBuyQtyDisplay }}</span>
-                                                <p class="sub-metric">{{ .ApprovedLineValueDisplay }}</p>
-                                            </td>
-                                            <td>
-                                                <span class="supplier-chip">
-                                                    <span>{{ .SelectedSupplierName }}</span>
-                                                    <i class="bx bx-chevron-down"></i>
-                                                </span>
                                             </td>
                                             <td>
                                                 <div class="note-block">
@@ -918,6 +1145,21 @@
                                             </td>
                                             <td>
                                                 <span class="status-pill {{ .StatusBadgeClass }}">{{ .StatusLabel }}</span>
+                                            </td>
+                                            <td>
+                                                <div class="action-buttons">
+                                                    <button
+                                                        type="button"
+                                                        class="item-edit-button btn-edit-review"
+                                                        data-item-id="{{ .ID }}"
+                                                        data-product-name="{{ .ProductName }}"
+                                                        data-approved-buy-qty="{{ if eq .Status "rejected" }}0{{ else if gt .ApprovedBuyQty 0.0 }}{{ .ApprovedBuyQty }}{{ else }}{{ .SuggestBuyQty }}{{ end }}"
+                                                        data-buyer-notes="{{ .BuyerNotes }}"
+                                                    >
+                                                        <i class="bx bx-edit-alt"></i>
+                                                        Edit
+                                                    </button>
+                                                </div>
                                             </td>
                                         </tr>
                                         {{ else }}
@@ -940,22 +1182,50 @@
                             <div class="table-footer">
                                 <div class="footer-stats">
                                     <div>
-                                        <span>Selected Items</span>
-                                        <strong>{{ .Session.ItemCount }} / {{ .Session.ItemCount }}</strong>
-                                    </div>
-                                    <div>
-                                        <span>Approved Total</span>
-                                        <strong>{{ .Session.FinalApprovedValueDisplay }}</strong>
+                                        <span>Showing Items</span>
+                                        {{ if gt .Pagination.TotalItems 0 }}
+                                        <strong>{{ .Pagination.StartItem }}-{{ .Pagination.EndItem }} of {{ .Pagination.TotalItems }} items</strong>
+                                        {{ else }}
+                                        <strong>No items found</strong>
+                                        {{ end }}
                                     </div>
                                 </div>
 
-                                <div class="pager">
-                                    <span><i class="bx bx-chevron-left"></i></span>
-                                    <span class="active">1</span>
-                                    <span>2</span>
-                                    <span>3</span>
-                                    <span><i class="bx bx-chevron-right"></i></span>
+                                {{ if gt .Pagination.TotalPages 0 }}
+                                <div class="session-pagination">
+                                    {{ if .Pagination.HasPrev }}
+                                    <a href="{{ .Pagination.PrevURL }}" class="session-pagination-link icon">
+                                        <i class="bx bx-chevron-left text-lg"></i>
+                                    </a>
+                                    {{ else }}
+                                    <span class="session-pagination-link icon text-slate-300">
+                                        <i class="bx bx-chevron-left text-lg"></i>
+                                    </span>
+                                    {{ end }}
+
+                                    {{ range .Pagination.Pages }}
+                                        {{ if .Active }}
+                                        <a href="{{ .URL }}" class="session-pagination-link active">
+                                            {{ .Number }}
+                                        </a>
+                                        {{ else }}
+                                        <a href="{{ .URL }}" class="session-pagination-link">
+                                            {{ .Number }}
+                                        </a>
+                                        {{ end }}
+                                    {{ end }}
+
+                                    {{ if .Pagination.HasNext }}
+                                    <a href="{{ .Pagination.NextURL }}" class="session-pagination-link icon">
+                                        <i class="bx bx-chevron-right text-lg"></i>
+                                    </a>
+                                    {{ else }}
+                                    <span class="session-pagination-link icon text-slate-300">
+                                        <i class="bx bx-chevron-right text-lg"></i>
+                                    </span>
+                                    {{ end }}
                                 </div>
+                                {{ end }}
                             </div>
                         </section>
 
@@ -1013,11 +1283,63 @@
 
         <div id="sidebar-overlay" class="fixed inset-0 z-40 hidden bg-slate-900/50 lg:hidden"></div>
 
+        <div data-modal class="modal-shell hidden" id="reviewItemEditModal">
+            <div class="modal-card">
+                <div class="modal-head">
+                    <div>
+                        <h2>Edit Review Item</h2>
+                        <p>Ubah nilai final approve dan buyer notes untuk item stock check ini.</p>
+                    </div>
+                    <button type="button" class="modal-close" data-modal-close aria-label="Close edit modal">
+                        <i class="bx bx-x text-xl"></i>
+                    </button>
+                </div>
+
+                <form method="POST" action="/stock-check-sessions/{{ .Session.ID }}/items/review{{ if gt .Pagination.CurrentPage 1 }}?page={{ .Pagination.CurrentPage }}{{ end }}" class="modal-form">
+                    <input type="hidden" name="item_id" id="review_item_id" value="{{ .ReviewForm.ItemID }}">
+
+                    <div class="modal-grid">
+                        <div>
+                            <label for="review_product_name" class="field-label">Item</label>
+                            <input type="text" id="review_product_name" class="field-input" value="" readonly>
+                        </div>
+
+                        <div>
+                            <label for="review_approved_buy_qty" class="field-label">Final Approve</label>
+                            <input
+                                type="number"
+                                step="0.01"
+                                min="0"
+                                id="review_approved_buy_qty"
+                                name="approved_buy_qty"
+                                class="field-input"
+                                value="{{ .ReviewForm.ApprovedBuyQty }}"
+                                required
+                            >
+                            <p class="field-hint">Isi `0` jika item harus ditolak.</p>
+                        </div>
+
+                        <div>
+                            <label for="review_buyer_notes" class="field-label">Notes</label>
+                            <textarea id="review_buyer_notes" name="buyer_notes" class="field-textarea" maxlength="255">{{ .ReviewForm.BuyerNotes }}</textarea>
+                            <p class="field-hint">Maksimal 255 karakter.</p>
+                        </div>
+                    </div>
+
+                    <div class="modal-actions">
+                        <button type="button" class="modal-button secondary" data-modal-close>Batal</button>
+                        <button type="submit" class="modal-button primary">Simpan Perubahan</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
         <script>
             document.addEventListener('DOMContentLoaded', function () {
                 var sidebar = document.getElementById('app-sidebar');
                 var overlay = document.getElementById('sidebar-overlay');
                 var toggleButtons = document.querySelectorAll('[data-sidebar-toggle]');
+                var reviewModalEl = document.getElementById('reviewItemEditModal');
 
                 function closeSidebar() {
                     if (!sidebar) return;
@@ -1031,6 +1353,22 @@
                     sidebar.classList.remove('-translate-x-full');
                     if (overlay) overlay.classList.remove('hidden');
                     document.body.classList.add('overflow-hidden');
+                }
+
+                function openModal(target) {
+                    var modal = typeof target === 'string' ? document.getElementById(target) : target;
+                    if (!modal) return;
+                    modal.classList.remove('hidden');
+                    modal.classList.add('flex');
+                    document.body.classList.add('overflow-hidden');
+                }
+
+                function closeModal(target) {
+                    var modal = typeof target === 'string' ? document.getElementById(target) : target;
+                    if (!modal) return;
+                    modal.classList.add('hidden');
+                    modal.classList.remove('flex');
+                    document.body.classList.remove('overflow-hidden');
                 }
 
                 toggleButtons.forEach(function (button) {
@@ -1047,6 +1385,58 @@
                 if (overlay) {
                     overlay.addEventListener('click', closeSidebar);
                 }
+
+                document.querySelectorAll('[data-modal-close]').forEach(function (button) {
+                    button.addEventListener('click', function () {
+                        closeModal(button.closest('[data-modal]'));
+                    });
+                });
+
+                document.querySelectorAll('[data-modal]').forEach(function (modal) {
+                    modal.addEventListener('click', function (event) {
+                        if (event.target === modal) {
+                            closeModal(modal);
+                        }
+                    });
+                });
+
+                document.addEventListener('keydown', function (event) {
+                    if (event.key !== 'Escape') return;
+                    document.querySelectorAll('[data-modal].flex').forEach(closeModal);
+                });
+
+                document.querySelectorAll('.btn-edit-review').forEach(function (button) {
+                    button.addEventListener('click', function () {
+                        if (!reviewModalEl) return;
+
+                        var itemIdInput = reviewModalEl.querySelector('#review_item_id');
+                        var productNameInput = reviewModalEl.querySelector('#review_product_name');
+                        var approvedQtyInput = reviewModalEl.querySelector('#review_approved_buy_qty');
+                        var buyerNotesInput = reviewModalEl.querySelector('#review_buyer_notes');
+
+                        if (itemIdInput) itemIdInput.value = button.getAttribute('data-item-id') || '';
+                        if (productNameInput) productNameInput.value = button.getAttribute('data-product-name') || '';
+                        if (approvedQtyInput) approvedQtyInput.value = button.getAttribute('data-approved-buy-qty') || '0';
+                        if (buyerNotesInput) buyerNotesInput.value = button.getAttribute('data-buyer-notes') || '';
+
+                        openModal(reviewModalEl);
+                    });
+                });
+
+                {{ if .ReviewForm.ItemID }}
+                (function () {
+                    if (!reviewModalEl) return;
+
+                    var reviewButton = document.querySelector('.btn-edit-review[data-item-id="{{ .ReviewForm.ItemID }}"]');
+                    var productNameInput = reviewModalEl.querySelector('#review_product_name');
+
+                    if (reviewButton && productNameInput) {
+                        productNameInput.value = reviewButton.getAttribute('data-product-name') || '';
+                    }
+
+                    openModal(reviewModalEl);
+                })();
+                {{ end }}
             });
         </script>
     </body>

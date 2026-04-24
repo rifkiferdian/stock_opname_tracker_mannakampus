@@ -61,9 +61,15 @@ func (s *StockCheckSessionService) GetSupplierOptions() ([]models.Supplier, erro
 	return s.Repo.GetSupplierOptions()
 }
 
-func (s *StockCheckSessionService) GetSessionDetailPage(id int) (models.StockCheckSessionDetailPage, error) {
+func (s *StockCheckSessionService) GetSessionDetailPage(id int, page int, limit int) (models.StockCheckSessionDetailPage, error) {
 	if id <= 0 {
 		return models.StockCheckSessionDetailPage{}, errors.New("session id tidak valid")
+	}
+	if page <= 0 {
+		page = 1
+	}
+	if limit <= 0 {
+		limit = 100
 	}
 
 	session, err := s.Repo.GetByID(id)
@@ -76,11 +82,30 @@ func (s *StockCheckSessionService) GetSessionDetailPage(id int) (models.StockChe
 		return models.StockCheckSessionDetailPage{}, err
 	}
 
+	totalItems := len(items)
+	totalPages := 0
+	if totalItems > 0 {
+		totalPages = (totalItems + limit - 1) / limit
+		if page > totalPages {
+			page = totalPages
+		}
+	}
+
+	pagedItems := items
+	if totalItems > 0 {
+		startIndex := (page - 1) * limit
+		endIndex := startIndex + limit
+		if endIndex > totalItems {
+			endIndex = totalItems
+		}
+		pagedItems = items[startIndex:endIndex]
+	}
+
 	detail := models.StockCheckSessionDetail{
 		StockCheckSession: session,
 		StageLabel:        stockCheckSessionStageLabel(session.Status),
 		StatusBadgeClass:  stockCheckSessionDetailStatusBadgeClass(session.Status),
-		ItemCount:         len(items),
+		ItemCount:         totalItems,
 	}
 
 	distinctSuppliers := map[string]struct{}{}
@@ -121,8 +146,14 @@ func (s *StockCheckSessionService) GetSessionDetailPage(id int) (models.StockChe
 
 	return models.StockCheckSessionDetailPage{
 		Session:       detail,
-		Items:         items,
+		Items:         pagedItems,
 		OverviewCards: buildStockCheckSessionOverviewCards(detail, alertItems),
+		Pagination: models.Pagination{
+			CurrentPage: page,
+			PageSize:    limit,
+			TotalItems:  totalItems,
+			TotalPages:  totalPages,
+		},
 	}, nil
 }
 
@@ -173,6 +204,52 @@ func (s *StockCheckSessionService) UpdateSession(input models.StockCheckSessionU
 	}
 
 	return s.Repo.Update(input)
+}
+
+func (s *StockCheckSessionService) UpdateReviewItem(input models.StockCheckSessionReviewItemUpdateInput) error {
+	input.BuyerNotes = strings.TrimSpace(input.BuyerNotes)
+
+	if input.SessionID <= 0 {
+		return errors.New("session id tidak valid")
+	}
+	if input.ItemID <= 0 {
+		return errors.New("item id tidak valid")
+	}
+	if input.ApprovedBuyQty < 0 {
+		return errors.New("final approve tidak boleh kurang dari 0")
+	}
+	if len(input.BuyerNotes) > 255 {
+		return errors.New("notes maksimal 255 karakter")
+	}
+	if input.ReviewedBy <= 0 {
+		return errors.New("user login tidak valid")
+	}
+	if input.UpdatedBy <= 0 {
+		input.UpdatedBy = input.ReviewedBy
+	}
+
+	sessionExists, err := s.Repo.ExistsByID(input.SessionID)
+	if err != nil {
+		return err
+	}
+	if !sessionExists {
+		return fmt.Errorf("session id %d tidak ditemukan", input.SessionID)
+	}
+
+	itemExists, err := s.Repo.ExistsReviewItem(input.SessionID, input.ItemID)
+	if err != nil {
+		return err
+	}
+	if !itemExists {
+		return fmt.Errorf("item review id %d tidak ditemukan", input.ItemID)
+	}
+
+	input.Status = "approved"
+	if input.ApprovedBuyQty == 0 {
+		input.Status = "rejected"
+	}
+
+	return s.Repo.UpdateReviewItem(input)
 }
 
 func (s *StockCheckSessionService) DeleteSession(id int) error {

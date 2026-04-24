@@ -58,32 +58,21 @@
                 </a>
             </li>
             <li class="space-y-1">
-                <button type="button" class="flex w-full items-center justify-between rounded-2xl px-3 py-3 text-left text-[14px] font-semibold text-slate-600 transition hover:bg-brand-50 hover:text-[#f26419] sm:px-4 sm:py-4 sm:text-[15px]" data-submenu-toggle="reports-submenu" aria-expanded="false" aria-controls="reports-submenu">
+                <button type="button" class="flex w-full items-center justify-between rounded-2xl px-3 py-3 text-left text-[14px] font-semibold transition hover:bg-brand-50 hover:text-[#f26419] sm:px-4 sm:py-4 sm:text-[15px] {{ if or (eq .Page "report_stock_opname") (eq .Page "report_stock_opname_detail") }}bg-brand-50 text-[#f26419]{{ else }}text-slate-600{{ end }}" data-submenu-toggle="reports-submenu" aria-expanded="{{ if or (eq .Page "report_stock_opname") (eq .Page "report_stock_opname_detail") }}true{{ else }}false{{ end }}" aria-controls="reports-submenu">
                     <span class="flex items-center gap-3 sm:gap-4">
                         <i class="bx bx-bar-chart-square text-xl"></i>
                         <span>Reports</span>
                     </span>
-                    <i class="bx bx-chevron-down text-xl text-slate-400" data-submenu-icon></i>
+                    <i class="bx {{ if or (eq .Page "report_stock_opname") (eq .Page "report_stock_opname_detail") }}bx-chevron-up{{ else }}bx-chevron-down{{ end }} text-xl text-slate-400" data-submenu-icon></i>
                 </button>
-                <ul id="reports-submenu" class="mt-1 hidden space-y-1 border-l border-slate-200 pl-4" style="margin-left: 1rem;">
+                <ul id="reports-submenu" class="mt-1 {{ if not (or (eq .Page "report_stock_opname") (eq .Page "report_stock_opname_detail")) }}hidden{{ end }} space-y-1 border-l border-slate-200 pl-4" style="margin-left: 1rem;">
                     <li>
-                        <a href="#" class="flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium text-slate-500 transition hover:bg-brand-50 hover:text-[#f26419]">
+                        <a href="{{ baseURL "/reports/stock-opname" }}" class="flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium transition hover:bg-brand-50 hover:text-[#f26419] {{ if or (eq .Page "report_stock_opname") (eq .Page "report_stock_opname_detail") }}bg-brand-50 text-[#f26419]{{ else }}text-slate-500{{ end }}">
                             <i class="bx bxs-circle text-[10px]"></i>
-                            <span>Daily Report</span>
+                            <span>SO Report</span>
                         </a>
                     </li>
-                    <li>
-                        <a href="#" class="flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium text-slate-500 transition hover:bg-brand-50 hover:text-[#f26419]">
-                            <i class="bx bxs-circle text-[10px]"></i>
-                            <span>Monthly Report</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="#" class="flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium text-slate-500 transition hover:bg-brand-50 hover:text-[#f26419]">
-                            <i class="bx bxs-circle text-[10px]"></i>
-                            <span>Yearly Report</span>
-                        </a>
-                    </li>
+                    
                 </ul>
             </li>
 

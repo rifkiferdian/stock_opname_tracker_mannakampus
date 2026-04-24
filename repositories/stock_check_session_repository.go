@@ -6,6 +6,7 @@ import (
 	helpers "gobase-app/helper"
 	"gobase-app/models"
 	"math"
+	"strconv"
 	"strings"
 )
 
@@ -315,6 +316,17 @@ func (r *StockCheckSessionRepository) ExistsBySessionNumber(sessionNumber string
 	return count > 0, err
 }
 
+func (r *StockCheckSessionRepository) ExistsReviewItem(sessionID int, itemID int) (bool, error) {
+	var count int
+	err := r.DB.QueryRow(`
+		SELECT COUNT(1)
+		FROM stock_check_session_items
+		WHERE stock_check_session_id = ? AND id = ?
+	`, sessionID, itemID).Scan(&count)
+
+	return count > 0, err
+}
+
 func (r *StockCheckSessionRepository) Create(input models.StockCheckSessionCreateInput) error {
 	_, err := r.DB.Exec(`
 		INSERT INTO stock_check_sessions (
@@ -362,6 +374,134 @@ func (r *StockCheckSessionRepository) Update(input models.StockCheckSessionUpdat
 		input.ID,
 	)
 
+	return err
+}
+
+func (r *StockCheckSessionRepository) UpdateReviewItem(input models.StockCheckSessionReviewItemUpdateInput) error {
+	tx, err := r.DB.Begin()
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if err != nil {
+			_ = tx.Rollback()
+		}
+	}()
+
+	var existing struct {
+		ProductID      int
+		ApprovedBuyQty sql.NullFloat64
+		BuyerNotes     sql.NullString
+		Status         string
+	}
+
+	err = tx.QueryRow(`
+		SELECT
+			product_id,
+			approved_buy_qty,
+			buyer_notes,
+			status
+		FROM stock_check_session_items
+		WHERE stock_check_session_id = ? AND id = ?
+		LIMIT 1
+	`,
+		input.SessionID,
+		input.ItemID,
+	).Scan(
+		&existing.ProductID,
+		&existing.ApprovedBuyQty,
+		&existing.BuyerNotes,
+		&existing.Status,
+	)
+	if err != nil {
+		return err
+	}
+
+	_, err = tx.Exec(`
+		UPDATE stock_check_session_items
+		SET
+			approved_buy_qty = ?,
+			buyer_notes = ?,
+			status = ?,
+			reviewed_by = ?,
+			reviewed_at = NOW(),
+			updated_by = ?
+		WHERE stock_check_session_id = ? AND id = ?
+	`,
+		input.ApprovedBuyQty,
+		nullableText(input.BuyerNotes),
+		input.Status,
+		input.ReviewedBy,
+		input.UpdatedBy,
+		input.SessionID,
+		input.ItemID,
+	)
+	if err != nil {
+		return err
+	}
+
+	histories := []struct {
+		FieldName    string
+		OldValue     string
+		NewValue     string
+		ChangeReason string
+		Notes        string
+	}{
+		{
+			FieldName:    "approved_buy_qty",
+			OldValue:     formatHistoryFloat(existing.ApprovedBuyQty),
+			NewValue:     formatHistoryDecimal(input.ApprovedBuyQty),
+			ChangeReason: "review item updated",
+			Notes:        "Perubahan final approve dari halaman detail stock check session.",
+		},
+		{
+			FieldName:    "buyer_notes",
+			OldValue:     formatHistoryText(existing.BuyerNotes),
+			NewValue:     strings.TrimSpace(input.BuyerNotes),
+			ChangeReason: "review item updated",
+			Notes:        "Perubahan buyer notes dari halaman detail stock check session.",
+		},
+		{
+			FieldName:    "status",
+			OldValue:     strings.TrimSpace(existing.Status),
+			NewValue:     strings.TrimSpace(input.Status),
+			ChangeReason: "review item updated",
+			Notes:        "Perubahan status approval dari halaman detail stock check session.",
+		},
+	}
+
+	for _, history := range histories {
+		if history.OldValue == history.NewValue {
+			continue
+		}
+
+		_, err = tx.Exec(`
+			INSERT INTO stock_check_session_item_histories (
+				stock_check_session_item_id,
+				product_id,
+				field_name,
+				old_value,
+				new_value,
+				change_reason,
+				notes,
+				changed_by
+			) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+		`,
+			input.ItemID,
+			existing.ProductID,
+			history.FieldName,
+			nullableHistoryValue(history.OldValue),
+			nullableHistoryValue(history.NewValue),
+			nullableText(history.ChangeReason),
+			nullableText(history.Notes),
+			input.ReviewedBy,
+		)
+		if err != nil {
+			return err
+		}
+	}
+
+	err = tx.Commit()
 	return err
 }
 
@@ -553,6 +693,32 @@ func nullableText(value string) interface{} {
 		return nil
 	}
 	return value
+}
+
+func nullableHistoryValue(value string) interface{} {
+	value = strings.TrimSpace(value)
+	if value == "" {
+		return nil
+	}
+	return value
+}
+
+func formatHistoryText(value sql.NullString) string {
+	if !value.Valid {
+		return ""
+	}
+	return strings.TrimSpace(value.String)
+}
+
+func formatHistoryFloat(value sql.NullFloat64) string {
+	if !value.Valid {
+		return ""
+	}
+	return formatHistoryDecimal(value.Float64)
+}
+
+func formatHistoryDecimal(value float64) string {
+	return strconv.FormatFloat(value, 'f', -1, 64)
 }
 
 func buildStockCheckSessionNumber(storeCode string, sessionDate string, sequence int) string {

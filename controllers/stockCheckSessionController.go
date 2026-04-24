@@ -3,6 +3,7 @@ package controllers
 import (
 	"database/sql"
 	"errors"
+	"fmt"
 	"gobase-app/config"
 	"gobase-app/models"
 	"gobase-app/repositories"
@@ -10,10 +11,13 @@ import (
 	"net/http"
 	"net/url"
 	"strconv"
+	"strings"
 
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 )
+
+const stockCheckSessionDetailItemLimit = 100
 
 func StockCheckSessionIndex(c *gin.Context) {
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
@@ -38,7 +42,62 @@ func StockCheckSessionDetail(c *gin.Context) {
 		return
 	}
 
-	renderStockCheckSessionDetailPage(c, buildStockCheckSessionService(), id)
+	renderStockCheckSessionDetailPage(c, buildStockCheckSessionService(), id, c.Query("success"), "", models.StockCheckSessionReviewItemEditForm{})
+}
+
+func StockCheckSessionReviewItemUpdate(c *gin.Context) {
+	type stockCheckSessionReviewItemForm struct {
+		ItemID         int    `form:"item_id" binding:"required"`
+		ApprovedBuyQty string `form:"approved_buy_qty" binding:"required"`
+		BuyerNotes     string `form:"buyer_notes"`
+	}
+
+	sessionID, err := strconv.Atoi(c.Param("id"))
+	if err != nil || sessionID <= 0 {
+		c.String(http.StatusBadRequest, "invalid stock check session id")
+		return
+	}
+
+	var form stockCheckSessionReviewItemForm
+	service := buildStockCheckSessionService()
+
+	if err := c.ShouldBind(&form); err != nil {
+		renderStockCheckSessionDetailPage(c, service, sessionID, "", "Form edit item tidak lengkap", models.StockCheckSessionReviewItemEditForm{
+			ItemID:         form.ItemID,
+			ApprovedBuyQty: form.ApprovedBuyQty,
+			BuyerNotes:     form.BuyerNotes,
+		})
+		return
+	}
+
+	approvedBuyQty, err := strconv.ParseFloat(strings.TrimSpace(form.ApprovedBuyQty), 64)
+	if err != nil {
+		renderStockCheckSessionDetailPage(c, service, sessionID, "", "Final approve harus berupa angka yang valid", models.StockCheckSessionReviewItemEditForm{
+			ItemID:         form.ItemID,
+			ApprovedBuyQty: form.ApprovedBuyQty,
+			BuyerNotes:     form.BuyerNotes,
+		})
+		return
+	}
+
+	err = service.UpdateReviewItem(models.StockCheckSessionReviewItemUpdateInput{
+		SessionID:      sessionID,
+		ItemID:         form.ItemID,
+		ApprovedBuyQty: approvedBuyQty,
+		BuyerNotes:     form.BuyerNotes,
+		ReviewedBy:     extractCurrentUserID(c),
+		UpdatedBy:      extractCurrentUserID(c),
+	})
+	if err != nil {
+		renderStockCheckSessionDetailPage(c, service, sessionID, "", err.Error(), models.StockCheckSessionReviewItemEditForm{
+			ItemID:         form.ItemID,
+			ApprovedBuyQty: form.ApprovedBuyQty,
+			BuyerNotes:     form.BuyerNotes,
+		})
+		return
+	}
+
+	c.Redirect(http.StatusSeeOther, buildStockCheckSessionDetailPageURL(sessionID, parsePositiveInt(c.Query("page"), 1), "Item review berhasil diperbarui"))
 }
 
 func StockCheckSessionStore(c *gin.Context) {
@@ -210,8 +269,9 @@ func renderStockCheckSessionPage(c *gin.Context, service *services.StockCheckSes
 	})
 }
 
-func renderStockCheckSessionDetailPage(c *gin.Context, service *services.StockCheckSessionService, id int) {
-	pageData, err := service.GetSessionDetailPage(id)
+func renderStockCheckSessionDetailPage(c *gin.Context, service *services.StockCheckSessionService, id int, successMessage string, errorMessage string, reviewForm models.StockCheckSessionReviewItemEditForm) {
+	currentPage := parsePositiveInt(c.Query("page"), 1)
+	pageData, err := service.GetSessionDetailPage(id, currentPage, stockCheckSessionDetailItemLimit)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			c.HTML(http.StatusNotFound, "error.html", gin.H{
@@ -224,6 +284,7 @@ func renderStockCheckSessionDetailPage(c *gin.Context, service *services.StockCh
 		c.String(http.StatusInternalServerError, err.Error())
 		return
 	}
+	pageData.Pagination = buildStockCheckSessionDetailPagination(id, pageData.Pagination)
 
 	Render(c, "stock_check_session_detail.html", gin.H{
 		"Title":       pageData.Session.SessionNumber,
@@ -231,8 +292,97 @@ func renderStockCheckSessionDetailPage(c *gin.Context, service *services.StockCh
 		"Session":     pageData.Session,
 		"Items":       pageData.Items,
 		"Overview":    pageData.OverviewCards,
+		"Pagination":  pageData.Pagination,
+		"Success":     successMessage,
+		"Error":       errorMessage,
+		"ReviewForm":  reviewForm,
 		"CurrentPath": c.Request.URL.Path,
 	})
+}
+
+func parsePositiveInt(value string, fallback int) int {
+	parsed, err := strconv.Atoi(value)
+	if err != nil || parsed <= 0 {
+		return fallback
+	}
+	return parsed
+}
+
+func buildStockCheckSessionDetailPagination(sessionID int, pagination models.Pagination) models.Pagination {
+	if pagination.CurrentPage <= 0 {
+		pagination.CurrentPage = 1
+	}
+	if pagination.PageSize <= 0 {
+		pagination.PageSize = stockCheckSessionDetailItemLimit
+	}
+	if pagination.TotalItems == 0 {
+		return pagination
+	}
+
+	if pagination.TotalPages <= 0 {
+		pagination.TotalPages = (pagination.TotalItems + pagination.PageSize - 1) / pagination.PageSize
+	}
+	if pagination.CurrentPage > pagination.TotalPages {
+		pagination.CurrentPage = pagination.TotalPages
+	}
+
+	pagination.StartItem = ((pagination.CurrentPage - 1) * pagination.PageSize) + 1
+	pagination.EndItem = pagination.StartItem + pagination.PageSize - 1
+	if pagination.EndItem > pagination.TotalItems {
+		pagination.EndItem = pagination.TotalItems
+	}
+
+	pagination.HasPrev = pagination.CurrentPage > 1
+	pagination.HasNext = pagination.CurrentPage < pagination.TotalPages
+	if pagination.HasPrev {
+		pagination.PrevURL = buildStockCheckSessionDetailPageURL(sessionID, pagination.CurrentPage-1, "")
+	}
+	if pagination.HasNext {
+		pagination.NextURL = buildStockCheckSessionDetailPageURL(sessionID, pagination.CurrentPage+1, "")
+	}
+
+	startPage := pagination.CurrentPage - 2
+	if startPage < 1 {
+		startPage = 1
+	}
+	endPage := startPage + 4
+	if endPage > pagination.TotalPages {
+		endPage = pagination.TotalPages
+	}
+	if endPage-startPage < 4 {
+		startPage = endPage - 4
+		if startPage < 1 {
+			startPage = 1
+		}
+	}
+
+	pagination.Pages = nil
+	for page := startPage; page <= endPage; page++ {
+		pagination.Pages = append(pagination.Pages, models.PaginationLink{
+			Number: page,
+			URL:    buildStockCheckSessionDetailPageURL(sessionID, page, ""),
+			Active: page == pagination.CurrentPage,
+		})
+	}
+
+	return pagination
+}
+
+func buildStockCheckSessionDetailPageURL(sessionID int, page int, successMessage string) string {
+	values := url.Values{}
+	if page > 1 {
+		values.Set("page", strconv.Itoa(page))
+	}
+	if successMessage != "" {
+		values.Set("success", successMessage)
+	}
+
+	baseURL := fmt.Sprintf("/stock-check-sessions/%d", sessionID)
+	encoded := values.Encode()
+	if encoded == "" {
+		return baseURL
+	}
+	return baseURL + "?" + encoded
 }
 
 func buildStockCheckSessionFilter(c *gin.Context) models.StockCheckSessionListFilter {

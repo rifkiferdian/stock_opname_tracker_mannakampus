@@ -59,10 +59,27 @@ type StockCheckSessionUpdateInput struct {
 	Notes          string
 }
 
+type StockCheckSessionReviewItemUpdateInput struct {
+	SessionID      int
+	ItemID         int
+	ApprovedBuyQty float64
+	BuyerNotes     string
+	Status         string
+	ReviewedBy     int
+	UpdatedBy      int
+}
+
+type StockCheckSessionReviewItemEditForm struct {
+	ItemID         int
+	ApprovedBuyQty string
+	BuyerNotes     string
+}
+
 type StockCheckSessionDetailPage struct {
 	Session       StockCheckSessionDetail
 	Items         []StockCheckSessionReviewItem
 	OverviewCards []StockCheckSessionOverviewCard
+	Pagination    Pagination
 }
 
 type StockCheckSessionDetail struct {
