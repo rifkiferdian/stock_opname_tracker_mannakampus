@@ -15,145 +15,157 @@
         <link rel="stylesheet" href="/assets/fonts/google/plus-jakarta-sans.css">
         <link rel="stylesheet" href="/assets/css/tailwind.css">
         <link href="/assets/vendor/boxicons/css/boxicons.min.css" rel="stylesheet" />
+
         <style>
+            :root {
+                --page-bg: #eef3fb;
+                --panel: #ffffff;
+                --line: #e5ebf6;
+                --text: #10244a;
+                --muted: #70809c;
+                --brand: #173f92;
+                --brand-soft: #edf3ff;
+                --danger: #d14343;
+                --warning: #c47a19;
+                --success: #1e8a59;
+                --shadow: 0 24px 48px -34px rgba(15, 31, 71, 0.28);
+            }
+
             body {
                 background:
-                    radial-gradient(circle at top left, rgba(255, 255, 255, 0.92) 0, rgba(255, 255, 255, 0.92) 14rem, transparent 14rem),
-                    linear-gradient(180deg, #f4f6fb 0%, #eef2f8 100%);
+                    radial-gradient(circle at top left, rgba(23, 63, 146, 0.08), transparent 28%),
+                    linear-gradient(180deg, #f8fbff 0%, var(--page-bg) 100%);
+                color: var(--text);
             }
 
             .report-shell {
                 display: flex;
                 flex-direction: column;
-                gap: 1.35rem;
+                gap: 1.1rem;
             }
 
-            .report-summary-grid {
-                display: grid;
-                gap: 0.95rem;
-                grid-template-columns: repeat(4, minmax(0, 1fr));
+            .panel-card {
+                border: 1px solid var(--line);
+                border-radius: 1.15rem;
+                background: var(--panel);
+                box-shadow: var(--shadow);
             }
 
-            .report-context-card {
+            .context-card {
                 display: flex;
                 flex-wrap: wrap;
                 align-items: center;
                 justify-content: space-between;
                 gap: 1rem;
-                border: 1px solid #edf1f7;
-                border-radius: 1rem;
-                background: linear-gradient(135deg, #ffffff 0%, #f8fbff 100%);
-                padding: 1rem 1.1rem;
-                box-shadow: 0 18px 42px -34px rgba(15, 23, 42, 0.3);
+                padding: 1.15rem;
             }
 
-            .report-context-overline {
-                font-size: 0.6rem;
+            .context-overline {
+                font-size: 0.65rem;
                 font-weight: 800;
                 letter-spacing: 0.16em;
                 text-transform: uppercase;
-                color: #8a96ab;
+                color: #8593ac;
             }
 
-            .report-context-title {
+            .context-title {
                 margin-top: 0.35rem;
-                font-size: 1.2rem;
+                font-size: 1.4rem;
                 font-weight: 800;
-                color: #103581;
+                color: #0f347d;
             }
 
-            .report-context-meta {
-                margin-top: 0.25rem;
+            .context-meta {
+                margin-top: 0.35rem;
                 display: flex;
                 flex-wrap: wrap;
-                gap: 0.85rem;
-                font-size: 0.76rem;
+                gap: 0.8rem;
+                font-size: 0.78rem;
                 font-weight: 700;
-                color: #607089;
+                color: var(--muted);
             }
 
-            .report-context-back {
+            .context-actions {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 0.65rem;
+            }
+
+            .link-button,
+            .filter-button {
                 display: inline-flex;
                 align-items: center;
                 justify-content: center;
                 gap: 0.45rem;
                 border-radius: 0.8rem;
-                border: 1px solid #dbe7ff;
-                background: #f4f8ff;
-                padding: 0.78rem 0.95rem;
-                font-size: 0.76rem;
+                border: 1px solid #d9e4fb;
+                background: #f5f8ff;
+                padding: 0.78rem 1rem;
+                font-size: 0.75rem;
                 font-weight: 800;
-                color: #123d8d;
+                color: var(--brand);
+                transition: 180ms ease;
             }
 
-            .report-context-back:hover {
-                background: #eaf1ff;
+            .link-button:hover,
+            .filter-button:hover {
+                background: #edf3ff;
             }
 
-            .report-summary-card {
-                border: 1px solid #edf1f7;
-                border-radius: 1rem;
-                background: #ffffff;
-                padding: 1rem 1rem 0.9rem;
-                box-shadow: 0 18px 42px -34px rgba(15, 23, 42, 0.3);
+            .summary-grid {
+                display: grid;
+                gap: 0.95rem;
+                grid-template-columns: repeat(4, minmax(0, 1fr));
             }
 
-            .report-summary-label {
-                font-size: 0.58rem;
+            .summary-card {
+                padding: 1rem 1rem 0.95rem;
+            }
+
+            .summary-label {
+                font-size: 0.62rem;
                 font-weight: 800;
                 letter-spacing: 0.16em;
                 text-transform: uppercase;
-                color: #7e8aa3;
+                color: #8392ab;
             }
 
-            .report-summary-body {
-                margin-top: 0.7rem;
-                display: flex;
-                align-items: flex-end;
-                gap: 0.55rem;
-            }
-
-            .report-summary-value {
+            .summary-value {
+                margin-top: 0.75rem;
                 font-size: 2rem;
                 font-weight: 800;
                 line-height: 1;
-                color: #143d8b;
+                color: var(--brand);
             }
 
-            .report-summary-card.danger .report-summary-value {
-                color: #d94141;
-            }
-
-            .report-summary-card.warning .report-summary-value {
-                color: #c77518;
-            }
-
-            .report-summary-note {
+            .summary-note {
+                margin-top: 0.45rem;
                 display: inline-flex;
                 align-items: center;
                 border-radius: 999px;
-                background: #eef2ff;
-                padding: 0.22rem 0.48rem;
-                font-size: 0.58rem;
+                background: #eef2fb;
+                padding: 0.3rem 0.6rem;
+                font-size: 0.64rem;
                 font-weight: 700;
-                color: #67748d;
+                color: #63748f;
             }
 
-            .report-summary-card.danger .report-summary-note {
-                background: #fff1f1;
-                color: #d94141;
+            .summary-card.danger .summary-value {
+                color: var(--danger);
             }
 
-            .report-summary-card.warning .report-summary-note {
-                background: #fff4e7;
-                color: #c77518;
+            .summary-card.danger .summary-note {
+                background: #fff0f0;
+                color: var(--danger);
             }
 
-            .report-card {
-                border: 1px solid #edf1f7;
-                border-radius: 1rem;
-                background: #ffffff;
-                box-shadow: 0 18px 42px -34px rgba(15, 23, 42, 0.3);
+            .summary-card.warning .summary-value {
+                color: var(--warning);
+            }
+
+            .summary-card.warning .summary-note {
+                background: #fff6e8;
+                color: var(--warning);
             }
 
             .report-card-head {
@@ -162,283 +174,438 @@
                 align-items: center;
                 justify-content: space-between;
                 gap: 1rem;
-                padding: 1.15rem 1rem 1rem;
+                padding: 1.1rem;
             }
 
             .report-card-title {
                 font-size: 1.05rem;
                 font-weight: 800;
-                color: #0f3279;
+                color: #0f347d;
             }
 
             .report-card-subtitle {
-                margin-top: 0.2rem;
+                margin-top: 0.18rem;
                 font-size: 0.78rem;
-                font-weight: 500;
-                color: #8692a8;
+                font-weight: 600;
+                color: var(--muted);
             }
 
-            .report-actions {
+            .report-toolbar {
                 display: flex;
                 flex-wrap: wrap;
-                gap: 0.6rem;
-            }
-
-            .report-button {
-                display: inline-flex;
                 align-items: center;
-                justify-content: center;
-                border: 1px solid #e5e9f2;
-                border-radius: 0.7rem;
-                background: #f5f7fb;
-                padding: 0.65rem 0.95rem;
-                font-size: 0.72rem;
-                font-weight: 800;
-                color: #4f5f79;
-                transition: background-color 180ms ease, color 180ms ease;
+                gap: 0.65rem;
             }
 
-            .report-button:hover {
-                background: #eef2f8;
-                color: #163f8f;
+            .filter-form {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 0.65rem;
+                align-items: center;
             }
 
-            .report-table-wrap {
+            .filter-select {
+                min-width: 14rem;
+                border: 1px solid var(--line);
+                border-radius: 0.8rem;
+                background: #ffffff;
+                padding: 0.78rem 0.9rem;
+                font-size: 0.76rem;
+                font-weight: 700;
+                color: #30425f;
+            }
+
+            .table-wrap {
                 overflow-x: auto;
-                border-top: 1px solid #edf1f7;
+                border-top: 1px solid var(--line);
             }
 
             .report-table {
                 width: 100%;
-                min-width: 1700px;
+                min-width: 1400px;
                 border-collapse: collapse;
             }
 
-            .report-table th:nth-child(1),
-            .report-table td:nth-child(1) {
+            .report-table th:first-child,
+            .report-table td:first-child {
                 position: sticky;
                 left: 0;
+                z-index: 3;
                 min-width: 18rem;
                 background: #ffffff;
-                z-index: 3;
             }
 
-            .report-table th:nth-child(2),
-            .report-table td:nth-child(2) {
-                position: sticky;
-                left: 18rem;
-                min-width: 8.5rem;
-                background: #ffffff;
-                z-index: 3;
-                box-shadow: 12px 0 18px -18px rgba(15, 23, 42, 0.25);
+            .report-table th,
+            .report-table td {
+                padding: 0.95rem 0.9rem;
+                border-bottom: 1px solid var(--line);
+                vertical-align: top;
             }
 
             .report-table thead th {
-                background: #ffffff;
-                padding: 0.9rem 1rem;
-                text-align: left;
+                background: #fbfcff;
                 font-size: 0.62rem;
                 font-weight: 800;
-                letter-spacing: 0.16em;
+                letter-spacing: 0.14em;
                 text-transform: uppercase;
-                color: #153e8a;
+                color: #204184;
                 white-space: nowrap;
             }
 
-            .report-table thead th:nth-child(1),
-            .report-table thead th:nth-child(2) {
+            .report-table thead th:first-child {
                 z-index: 5;
-            }
-
-            .report-table tbody td {
-                padding: 1rem;
-                vertical-align: top;
-                border-top: 1px solid #edf1f7;
+                background: #fbfcff;
+                box-shadow: 12px 0 18px -18px rgba(15, 23, 42, 0.28);
             }
 
             .report-table tbody tr:hover {
-                background: #fafbfe;
+                background: #fafcff;
             }
 
-            .report-table tbody tr:hover td:nth-child(1),
-            .report-table tbody tr:hover td:nth-child(2) {
-                background: #fafbfe;
+            .report-table tbody tr:hover td:first-child {
+                background: #fafcff;
             }
 
-            .report-item {
+            .item-cell {
                 display: flex;
                 gap: 0.8rem;
-                align-items: center;
+                align-items: flex-start;
             }
 
-            .report-item-thumb {
+            .item-avatar {
                 display: inline-flex;
-                height: 2.7rem;
-                width: 2.7rem;
+                height: 2.8rem;
+                width: 2.8rem;
                 flex: none;
                 align-items: center;
                 justify-content: center;
-                border-radius: 0.65rem;
-                color: #ffffff;
-                font-size: 1.2rem;
-                box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18);
-            }
-
-            .report-item-thumb.neutral {
-                background: linear-gradient(180deg, #d7dee9 0%, #8ea1b8 100%);
-                color: #18243f;
-            }
-
-            .report-item-thumb.accent {
-                background: linear-gradient(135deg, #111827 0%, #193b8f 60%, #f26419 100%);
-            }
-
-            .report-item-thumb.dark {
-                background: linear-gradient(135deg, #05070b 0%, #374151 100%);
-            }
-
-            .report-item-name {
+                border-radius: 0.85rem;
                 font-size: 0.88rem;
+                font-weight: 800;
+                color: #ffffff;
+            }
+
+            .tone-ocean {
+                background: linear-gradient(135deg, #163f92 0%, #2f67d8 100%);
+            }
+
+            .tone-ember {
+                background: linear-gradient(135deg, #9b3f1d 0%, #e07a33 100%);
+            }
+
+            .tone-mint {
+                background: linear-gradient(135deg, #0f6d61 0%, #22a689 100%);
+            }
+
+            .tone-slate {
+                background: linear-gradient(135deg, #364258 0%, #72829e 100%);
+            }
+
+            .item-name {
+                font-size: 0.9rem;
                 font-weight: 800;
                 color: #0f172a;
             }
 
-            .report-item-sku {
+            .item-meta {
                 margin-top: 0.18rem;
-                font-size: 0.66rem;
-                font-weight: 600;
-                color: #7d899f;
+                font-size: 0.68rem;
+                font-weight: 700;
+                color: #7b8aa3;
             }
 
-            .report-status-box {
+            .status-box {
                 display: flex;
                 flex-direction: column;
                 gap: 0.55rem;
-                align-items: center;
-                border-radius: 0.85rem;
-                background: #f5f8ff;
-                padding: 0.75rem 0.85rem;
-                min-width: 7.25rem;
+                min-width: 8rem;
+                border-radius: 0.95rem;
+                background: #f6f8fc;
+                padding: 0.75rem;
             }
 
-            .report-status-meta {
+            .status-grid {
                 display: grid;
-                grid-template-columns: repeat(2, minmax(0, 1fr));
-                gap: 0.55rem;
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+                gap: 0.35rem;
                 align-items: start;
-                width: 100%;
             }
 
-            .report-status-stat {
-                display: flex;
-                flex-direction: column;
-                gap: 0.18rem;
+            .status-metric {
                 min-width: 0;
-                align-items: center;
+                padding: 0.1rem 0.15rem;
                 text-align: center;
             }
 
-            .report-status-label {
-                font-size: 0.6rem;
+            .status-metric span,
+            .history-metric span {
+                display: block;
+                font-size: 0.55rem;
                 font-weight: 800;
-                letter-spacing: 0.05em;
+                letter-spacing: 0.1em;
                 text-transform: uppercase;
-                color: #7a88a1;
+                color: #8a99b0;
             }
 
-            .report-status-value {
-                font-size: 0.88rem;
+            .status-metric strong,
+            .history-metric strong {
+                display: block;
+                margin-top: 0.12rem;
+                font-size: 0.8rem;
                 font-weight: 800;
-                line-height: 1.1;
-                color: #153e8a;
+                color: #18315f;
             }
 
-            .report-status-pill {
+            .history-pill {
                 display: inline-flex;
                 width: fit-content;
                 align-items: center;
                 border-radius: 999px;
-                padding: 0.28rem 0.55rem;
+                padding: 0.28rem 0.58rem;
                 font-size: 0.6rem;
                 font-weight: 800;
-                letter-spacing: 0.06em;
+                letter-spacing: 0.05em;
                 text-transform: uppercase;
             }
 
-            .report-status-box.low {
-                background: #fff4f4;
+            .status-box.stable {
+                background: #eef6f1;
             }
 
-            .report-status-box.low .report-status-value {
-                color: #d94141;
+            .status-box.input {
+                background: #f4f7ff;
             }
 
-            .report-status-box.low .report-status-pill {
-                background: #ffe1e1;
-                color: #d94141;
+            .status-box.low {
+                background: #fff5f5;
             }
 
-            .report-status-box.input .report-status-pill {
-                background: #e5efff;
-                color: #2350b5;
-            }
-
-            .report-status-box.stable .report-status-pill {
-                background: #e9eef7;
-                color: #73819a;
-            }
-
-            .report-history {
+            .history-box {
                 display: flex;
                 flex-direction: column;
+                gap: 0.55rem;
+                min-width: 6.2rem;
+            }
+
+            .history-grid {
+                display: grid;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
                 gap: 0.45rem;
-                min-width: 6rem;
-                align-items: center;
-                text-align: center;
             }
 
-            .report-history-meta {
+            .history-pill {
+                background: #eef3ff;
+                color: #3658b2;
+            }
+
+            .history-pill-action {
+                cursor: pointer;
+                border: 1px solid #d8e4fb;
+                transition: 180ms ease;
+            }
+
+            .history-pill-action:hover {
+                background: #dfe9ff;
+                color: #173f92;
+            }
+
+            button.history-pill-action {
+                appearance: none;
+            }
+
+            a.history-pill-action {
+                text-decoration: none;
+            }
+
+            .po-trend-cell {
+                min-width: 11rem;
+            }
+
+            .po-trend-card {
                 display: flex;
-                gap: 0.6rem;
-                font-size: 0.68rem;
-                font-weight: 700;
-                color: #7f8ba3;
+                flex-direction: column;
+                gap: 0.4rem;
+                min-width: 10rem;
             }
 
-            .report-history-meta strong {
-                margin-left: 0.12rem;
-                color: #334155;
+            .po-trend-head {
+                display: flex;
+                align-items: baseline;
+                justify-content: space-between;
+                gap: 0.5rem;
             }
 
-            .report-history-tag {
-                display: inline-flex;
-                width: fit-content;
-                align-items: center;
-                border-radius: 0.2rem;
-                background: #eef2ff;
-                padding: 0.2rem 0.42rem;
-                font-size: 0.63rem;
+            .po-trend-label {
+                font-size: 0.58rem;
                 font-weight: 800;
-                color: #3757b5;
+                letter-spacing: 0.1em;
+                text-transform: uppercase;
+                color: #8392ab;
             }
 
-            .report-action {
+            .po-trend-total {
+                font-size: 0.82rem;
+                font-weight: 800;
+                color: #173f92;
+            }
+
+            .po-trend-chart {
+                height: 46px;
+                width: 100%;
+            }
+
+            .flash-banner {
+                display: flex;
+                align-items: flex-start;
+                gap: 0.8rem;
+                border-radius: 1rem;
+                padding: 0.95rem 1.05rem;
+                border: 1px solid transparent;
+                font-size: 0.84rem;
+                font-weight: 700;
+                box-shadow: 0 18px 36px -28px rgba(15, 31, 71, 0.3);
+            }
+
+            .flash-banner i {
+                font-size: 1.15rem;
+                line-height: 1;
+            }
+
+            .flash-banner.success {
+                border-color: #bfe6cc;
+                background: #edf9f1;
+                color: #1b8e54;
+            }
+
+            .flash-banner.error {
+                border-color: #f2bac7;
+                background: #fff4f6;
+                color: #c23a5f;
+            }
+
+            .modal-shell {
+                position: fixed;
+                inset: 0;
+                z-index: 60;
+                display: none;
+                align-items: center;
+                justify-content: center;
+                background: rgba(15, 23, 42, 0.45);
+                padding: 1rem;
+            }
+
+            .modal-card {
+                width: 100%;
+                max-width: 34rem;
+                border-radius: 1.15rem;
+                background: #ffffff;
+                box-shadow: 0 28px 64px -34px rgba(15, 23, 42, 0.45);
+            }
+
+            .modal-head {
+                display: flex;
+                justify-content: space-between;
+                gap: 1rem;
+                padding: 1rem 1rem 0.8rem;
+            }
+
+            .modal-head h2 {
+                font-size: 1rem;
+                font-weight: 800;
+                color: #0f347d;
+            }
+
+            .modal-head p {
+                margin-top: 0.2rem;
+                font-size: 0.74rem;
+                color: #6d7d96;
+            }
+
+            .modal-close {
                 display: inline-flex;
                 align-items: center;
                 justify-content: center;
-                gap: 0.35rem;
-                border-radius: 0.75rem;
-                border: 1px solid #dbe7ff;
-                background: #f4f8ff;
-                padding: 0.6rem 0.8rem;
-                font-size: 0.68rem;
-                font-weight: 800;
-                color: #153e8a;
-                transition: background-color 180ms ease, color 180ms ease;
+                border-radius: 0.7rem;
+                background: #f4f7fc;
+                padding: 0.55rem;
+                color: #5d6d87;
             }
 
-            .report-action:hover {
-                background: #eaf1ff;
+            .modal-form {
+                padding: 0 1rem 1rem;
+            }
+
+            .modal-grid {
+                display: grid;
+                gap: 0.9rem;
+            }
+
+            .field-label {
+                display: block;
+                margin-bottom: 0.35rem;
+                font-size: 0.7rem;
+                font-weight: 800;
+                color: #4f607a;
+            }
+
+            .field-input,
+            .field-textarea,
+            .field-readonly {
+                width: 100%;
+                border: 1px solid #dbe3f3;
+                border-radius: 0.8rem;
+                background: #ffffff;
+                padding: 0.8rem 0.9rem;
+                font-size: 0.78rem;
+                color: #1b2b4a;
+            }
+
+            .field-readonly {
+                background: #f8fbff;
+            }
+
+            .field-textarea {
+                min-height: 6rem;
+                resize: vertical;
+            }
+
+            .field-hint {
+                margin-top: 0.35rem;
+                font-size: 0.66rem;
+                color: #8593ac;
+            }
+
+            .modal-actions {
+                display: flex;
+                justify-content: flex-end;
+                gap: 0.6rem;
+                margin-top: 1rem;
+            }
+
+            .modal-button {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                border-radius: 0.8rem;
+                padding: 0.72rem 0.95rem;
+                font-size: 0.74rem;
+                font-weight: 800;
+            }
+
+            .modal-button.secondary {
+                background: #f3f6fb;
+                color: #5a6983;
+            }
+
+            .modal-button.primary {
+                background: #173f92;
+                color: #ffffff;
+            }
+
+            .table-empty {
+                padding: 3rem 1.5rem;
+                text-align: center;
+                color: var(--muted);
             }
 
             .report-card-foot {
@@ -447,215 +614,136 @@
                 align-items: center;
                 justify-content: space-between;
                 gap: 1rem;
-                padding: 1rem;
-                border-top: 1px solid #edf1f7;
+                padding: 1rem 1.1rem;
             }
 
-            .report-foot-text {
-                font-size: 0.68rem;
-                font-weight: 600;
-                color: #7b879d;
+            .foot-text {
+                font-size: 0.72rem;
+                font-weight: 700;
+                color: var(--muted);
             }
 
-            .report-pagination {
+            .pagination {
                 display: flex;
                 align-items: center;
                 gap: 0.35rem;
             }
 
-            .report-page-link {
+            .pagination-link {
                 display: inline-flex;
-                height: 1.9rem;
-                min-width: 1.9rem;
+                min-width: 2rem;
+                height: 2rem;
                 align-items: center;
                 justify-content: center;
-                border-radius: 0.4rem;
-                border: 1px solid #edf1f7;
+                border-radius: 0.55rem;
+                border: 1px solid var(--line);
                 background: #ffffff;
-                font-size: 0.72rem;
+                font-size: 0.78rem;
                 font-weight: 800;
-                color: #7c88a0;
+                color: #66768f;
             }
 
-            .report-page-link.active {
-                border-color: #153e8a;
-                background: #153e8a;
+            .pagination-link.active {
+                border-color: var(--brand);
+                background: var(--brand);
                 color: #ffffff;
             }
 
-            .report-bottom-grid {
+            .bottom-grid {
                 display: grid;
                 gap: 1rem;
-                grid-template-columns: minmax(0, 1.75fr) minmax(18rem, 0.82fr);
+                grid-template-columns: minmax(0, 1fr);
             }
 
-            .report-trend-card {
-                padding: 1rem;
+            .trend-card {
+                padding: 1.05rem;
             }
 
-            .report-trend-title {
-                display: flex;
-                align-items: center;
-                gap: 0.45rem;
-                font-size: 0.88rem;
+            .section-title {
+                font-size: 0.98rem;
                 font-weight: 800;
-                color: #153e8a;
+                color: #0f347d;
             }
 
-            .report-trend-chart {
-                margin-top: 0.9rem;
-                border-radius: 0.9rem;
-                background: linear-gradient(180deg, #f8faff 0%, #f5f7fb 100%);
-                padding: 1rem 0.8rem 0.8rem;
+            .section-copy {
+                margin-top: 0.2rem;
+                font-size: 0.75rem;
+                font-weight: 600;
+                color: var(--muted);
             }
 
-            .report-trend-bars {
+            .trend-chart {
+                margin-top: 1rem;
                 display: grid;
-                align-items: end;
                 gap: 0.45rem;
+                align-items: end;
                 grid-template-columns: repeat(12, minmax(0, 1fr));
-                height: 13rem;
+                height: 14rem;
             }
 
-            .report-trend-column {
+            .trend-column {
                 display: flex;
                 flex-direction: column;
                 align-items: center;
                 justify-content: flex-end;
-                gap: 0.45rem;
+                gap: 0.4rem;
                 height: 100%;
             }
 
-            .report-trend-value {
+            .trend-value {
                 font-size: 0.62rem;
                 font-weight: 800;
-                color: #607089;
+                color: #6e7e98;
             }
 
-            .report-trend-bar {
+            .trend-bar {
                 width: 100%;
                 max-width: 2.8rem;
-                border-radius: 0.35rem;
-                background: linear-gradient(180deg, #cfd7ea 0%, #b9c4df 100%);
+                border-radius: 0.45rem;
+                background: linear-gradient(180deg, #cad6ef 0%, #afbddf 100%);
             }
 
-            .report-trend-bar.current {
-                background: linear-gradient(180deg, #3550a2 0%, #233d8d 100%);
+            .trend-bar.current {
+                background: linear-gradient(180deg, #2f5fca 0%, #173f92 100%);
             }
 
-            .report-trend-label {
-                font-size: 0.5rem;
+            .trend-label {
+                font-size: 0.55rem;
                 font-weight: 800;
-                text-transform: uppercase;
                 text-align: center;
-                color: #92a0b7;
+                color: #8796ad;
             }
 
-            .report-trend-label.current {
-                color: #153e8a;
-            }
-
-            .report-audit-panel {
-                display: flex;
-                flex-direction: column;
-                gap: 0.9rem;
-                border-radius: 0.95rem;
-                background: linear-gradient(180deg, #103581 0%, #0d2c6b 100%);
-                padding: 1rem;
-                color: #ffffff;
-                box-shadow: 0 26px 48px -28px rgba(13, 44, 107, 0.65);
-            }
-
-            .report-audit-title {
-                font-size: 1rem;
-                font-weight: 800;
-            }
-
-            .report-audit-copy {
-                font-size: 0.78rem;
-                line-height: 1.55;
-                color: rgba(255, 255, 255, 0.78);
-            }
-
-            .report-audit-item {
-                display: flex;
-                gap: 0.7rem;
-                align-items: center;
-                border-radius: 0.8rem;
-                background: rgba(255, 255, 255, 0.08);
-                padding: 0.8rem;
-            }
-
-            .report-audit-icon {
-                display: inline-flex;
-                height: 2rem;
-                width: 2rem;
-                flex: none;
-                align-items: center;
-                justify-content: center;
-                border-radius: 0.65rem;
-                background: rgba(255, 255, 255, 0.08);
-                color: #f9a34c;
-            }
-
-            .report-audit-item:last-of-type .report-audit-icon {
-                color: #60d394;
-            }
-
-            .report-audit-item-title {
-                font-size: 0.75rem;
-                font-weight: 800;
-            }
-
-            .report-audit-item-sku {
-                margin-top: 0.18rem;
-                font-size: 0.6rem;
-                font-weight: 700;
-                color: rgba(255, 255, 255, 0.7);
-            }
-
-            .report-audit-cta {
-                display: inline-flex;
-                align-items: center;
-                justify-content: center;
-                border-radius: 0.75rem;
-                background: #ffffff;
-                padding: 0.85rem 1rem;
-                font-size: 0.74rem;
-                font-weight: 800;
-                letter-spacing: 0.06em;
-                text-transform: uppercase;
-                color: #0f3279;
-            }
-
-            .report-audit-cta:hover {
-                background: #edf2ff;
+            .trend-label.current {
+                color: var(--brand);
             }
 
             @media (max-width: 1199px) {
-                .report-summary-grid {
+                .summary-grid,
+                .bottom-grid {
                     grid-template-columns: repeat(2, minmax(0, 1fr));
                 }
 
-                .report-bottom-grid {
+                .bottom-grid {
                     grid-template-columns: minmax(0, 1fr);
                 }
             }
 
             @media (max-width: 767px) {
-                .report-summary-grid {
+                .summary-grid {
                     grid-template-columns: minmax(0, 1fr);
                 }
 
+                .context-card,
                 .report-card-head,
-                .report-card-foot {
-                    padding-left: 0.85rem;
-                    padding-right: 0.85rem;
+                .report-card-foot,
+                .trend-card {
+                    padding-left: 0.9rem;
+                    padding-right: 0.9rem;
                 }
 
-                .report-trend-card,
-                .report-audit-panel {
-                    padding: 0.9rem;
+                .filter-select {
+                    min-width: 100%;
                 }
             }
         </style>
@@ -669,104 +757,190 @@
 
                 <main class="flex-1 px-4 py-6 lg:px-8">
                     <div class="report-shell mx-auto w-full max-w-7xl">
-                        <section class="report-context-card">
+                        <section class="panel-card context-card">
                             <div>
-                                <p class="report-context-overline">Supplier Terpilih</p>
-                                <h1 class="report-context-title">{{ .Supplier.SupplierName }}</h1>
-                                <div class="report-context-meta">
+                                <p class="context-overline">Supplier Report</p>
+                                <h1 class="context-title">{{ .Supplier.SupplierName }}</h1>
+                                <div class="context-meta">
                                     <span>{{ .Supplier.SupplierCode }}</span>
                                     <span>PIC: {{ if .Supplier.PICName }}{{ .Supplier.PICName }}{{ else }}-{{ end }}</span>
                                     <span>Telepon: {{ if .Supplier.Phone }}{{ .Supplier.Phone }}{{ else }}-{{ end }}</span>
+                                    <span>Kategori: {{ .Report.CurrentCategoryLabel }}</span>
                                 </div>
                             </div>
 
-                            <a href="{{ baseURL "/reports/stock-opname" }}" class="report-context-back">
-                                <i class="bx bx-arrow-back"></i>
-                                <span>Kembali ke Daftar Supplier</span>
-                            </a>
+                            <div class="context-actions">
+                                <a href="/reports/stock-opname" class="link-button">
+                                    <i class="bx bx-arrow-back"></i>
+                                    <span>Kembali</span>
+                                </a>
+                                <a href="{{ .Report.ReviewListURL }}" class="link-button">
+                                    <i class="bx bx-spreadsheet"></i>
+                                    <span>Daftar Sesi</span>
+                                </a>
+                            </div>
                         </section>
 
-                        <section class="report-summary-grid">
-                            {{ range .SummaryCards }}
-                            <article class="report-summary-card {{ .Tone }}">
-                                <p class="report-summary-label">{{ .Label }}</p>
-                                <div class="report-summary-body">
-                                    <p class="report-summary-value">{{ .Value }}</p>
-                                    <span class="report-summary-note">{{ .Note }}</span>
-                                </div>
+                        <section class="summary-grid">
+                            {{ range .Report.SummaryCards }}
+                            <article class="panel-card summary-card {{ .Tone }}">
+                                <p class="summary-label">{{ .Label }}</p>
+                                <p class="summary-value">{{ .Value }}</p>
+                                <span class="summary-note">{{ .Note }}</span>
                             </article>
                             {{ end }}
                         </section>
 
-                        <section class="report-card">
+                        {{ if .Success }}
+                        <div class="flash-banner success">
+                            <i class="bx bx-check-circle"></i>
+                            <span>{{ .Success }}</span>
+                        </div>
+                        {{ end }}
+
+                        {{ if .Error }}
+                        <div class="flash-banner error">
+                            <i class="bx bx-error-circle"></i>
+                            <span>{{ .Error }}</span>
+                        </div>
+                        {{ end }}
+
+                        <section class="panel-card">
                             <div class="report-card-head">
                                 <div>
-                                    <h1 class="report-card-title">Matriks Perbandingan Pengadaan</h1>
-                                    <p class="report-card-subtitle">Data performa historis untuk 12 tanggal stock opname terbaru</p>
+                                    <h2 class="report-card-title">Matriks Perbandingan Pengadaan</h2>
+                                    <p class="report-card-subtitle">
+                                        Kolom pertama menampilkan data pada SO terbaru tanggal {{ .Report.CurrentDateLabel }}, lalu kolom berikutnya menampilkan histori SO sebelum tanggal tersebut.
+                                    </p>
                                 </div>
 
-                                <div class="report-actions">
-                                    <button type="button" class="report-button">Filter per Kategori</button>
-                                    <button type="button" class="report-button">Ekspor Laporan</button>
+                                <div class="report-toolbar">
+                                    <form method="get" action="/reports/stock-opname/{{ .Supplier.ID }}" class="filter-form">
+                                        <select name="category_id" class="filter-select">
+                                            <option value="0">Semua kategori</option>
+                                            {{ range .Report.Categories }}
+                                            <option value="{{ .ID }}" {{ if eq $.Report.Filter.CategoryID .ID }}selected{{ end }}>{{ .CategoryName }}</option>
+                                            {{ end }}
+                                        </select>
+                                        <button type="submit" class="filter-button">
+                                            <i class="bx bx-filter-alt"></i>
+                                            <span>Filter</span>
+                                        </button>
+                                    </form>
+
+                                    <a href="{{ .Report.ExportURL }}" class="link-button">
+                                        <i class="bx bx-export"></i>
+                                        <span>Ekspor CSV</span>
+                                    </a>
                                 </div>
                             </div>
 
-                            <div class="report-table-wrap">
+                            <div class="table-wrap">
                                 <table class="report-table">
                                     <thead>
                                         <tr>
-                                            <th>Detail Item</th>
-                                            <th><center>Status Saat Ini <br> 28 Feb 2026</center></th>
-                                            {{ range .ReportDates }}
-                                            <th><center>{{ . }}</center></th>
+                                            <th>Produk</th>
+                                            <th>SO Terbaru <br>({{ .Report.CurrentDateLabel }})</th>
+                                            <th>PO / Bulan</th>
+                                            {{ range .Report.HistoryDateLabels }}
+                                            <th>SO Sebelumnya <br>({{ . }})</th>
                                             {{ end }}
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {{ range .ReportRows }}
+                                        {{ range .Report.ReportRows }}
                                         <tr>
                                             <td>
-                                                <div class="report-item">
-                                                    <span class="report-item-thumb {{ .ThumbnailTone }}">
-                                                        <i class="{{ .IconClass }}"></i>
-                                                    </span>
-                                                    <div>
-                                                        <p class="report-item-name">{{ .Name }}</p>
-                                                        <p class="report-item-sku">{{ .SKU }}</p>
-                                                        <p class="report-item-sku">Barcode: 2342342342343</p>
-                                                        <p class="report-item-sku">default_lead_time_days: 3 day</p>
+                                                <div class="item-cell">
+                                                    <span class="item-avatar {{ .AvatarClass }}">{{ .AvatarText }}</span>
+                                                    <div class="min-w-0">
+                                                        <p class="item-name">{{ .Name }}</p>
+                                                        <p class="item-meta">SKU: {{ .SKU }}</p>
+                                                        <p class="item-meta">Barcode: {{ .Barcode }}</p>
+                                                        <p class="item-meta">{{ .CategoryName }} • Lead time {{ .LeadTimeLabel }}</p>
                                                     </div>
                                                 </div>
                                             </td>
                                             <td>
-                                                <div class="report-status-box {{ .StatusTone }}">
+                                                <div class="status-box {{ .StatusTone }}">
                                                     <center>
-                                                    <div class="report-status-meta">
-                                                        <div class="report-status-stat">
-                                                            <span class="report-status-label">Toko</span>
-                                                            <span class="report-status-value">{{ .CurrentShop }}</span>
+                                                    <div class="status-grid">
+                                                        <div class="status-metric">
+                                                            <span>Toko</span>
+                                                            <strong>{{ .CurrentShop }}</strong>
                                                         </div>
-                                                        <div class="report-status-stat">
-                                                            <span class="report-status-label">Gud</span>
-                                                            <span class="report-status-value">{{ .CurrentWH }}</span>
+                                                        <div class="status-metric">
+                                                            <span>Gud</span>
+                                                            <strong>{{ .CurrentWH }}</strong>
+                                                        </div>
+                                                        <div class="status-metric">
+                                                            <span>Suggest</span>
+                                                            <strong>{{ .CurrentSuggestQty }}</strong>
                                                         </div>
                                                     </div>
-                                                        <span class="report-history-tag">PO: 123</span>
+                                                    {{ if .CanInlineApprove }}
+                                                    <button
+                                                        type="button"
+                                                        class="history-pill history-pill-action btn-edit-review"
+                                                        data-session-id="{{ .CurrentSessionID }}"
+                                                        data-item-id="{{ .CurrentItemID }}"
+                                                        data-product-name="{{ .Name }}"
+                                                        data-approved-buy-qty="{{ .CurrentApproveSeed }}"
+                                                        data-buyer-notes="{{ .CurrentBuyerNotes }}"
+                                                        data-checker-notes="{{ .CurrentCheckerNote }}"
+                                                        data-suggest-buy-qty="{{ .CurrentSuggestQty }}"
+                                                    >
+                                                        PO : {{ .CurrentPO }}
+                                                    </button>
+                                                    {{ else if .ActionURL }}
+                                                    <a href="{{ .ActionURL }}" class="history-pill history-pill-action">
+                                                        PO : {{ .CurrentPO }}
+                                                    </a>
+                                                    {{ else }}
+                                                    <span class="history-pill">PO : {{ .CurrentPO }}</span>
+                                                    {{ end }}
                                                     </center>
+                                                </div>
+                                            </td>
+                                            <td class="po-trend-cell">
+                                                <div class="po-trend-card">
+                                                    <div class="po-trend-head">
+                                                        <span class="po-trend-label">Trend PO 6 Bulan</span>
+                                                        <span class="po-trend-total">{{ .POTrendTotalLabel }}</span>
+                                                    </div>
+                                                    <div
+                                                        class="po-trend-chart"
+                                                        data-po-trend
+                                                        data-series='{{ .POTrendSeriesJSON }}'
+                                                        data-labels='{{ .POTrendLabelsJSON }}'
+                                                    ></div>
                                                 </div>
                                             </td>
                                             {{ range .History }}
                                             <td>
-                                                <div class="report-history">
-                                                    <div class="report-history-meta">
-                                                        <span>Toko: <br><strong>{{ .ShopCount }}</strong></span>
-                                                        <span>Gud: <br><strong>{{ .WHSCount }}</strong></span>
+                                                <div class="history-box">
+                                                    <center>
+                                                    <div class="history-grid">
+                                                        <div class="history-metric">
+                                                            <span>Toko</span>
+                                                            <strong>{{ .ShopCount }}</strong>
+                                                        </div>
+                                                        <div class="history-metric">
+                                                            <span>Gudang</span>
+                                                            <strong>{{ .WHSCount }}</strong>
+                                                        </div>
                                                     </div>
-                                                    <span class="report-history-tag">PO: {{ .Approx }}</span>
+                                                    <span class="history-pill">PO : {{ .POCount }}</span>
+                                                    </center>
                                                 </div>
                                             </td>
                                             {{ end }}
-                                            
+                                        </tr>
+                                        {{ else }}
+                                        <tr>
+                                            <td colspan="99" class="table-empty">
+                                                Belum ada data stock opname untuk supplier ini dengan filter yang dipilih.
+                                            </td>
                                         </tr>
                                         {{ end }}
                                     </tbody>
@@ -774,61 +948,31 @@
                             </div>
 
                             <div class="report-card-foot">
-                                <p class="report-foot-text">Menampilkan 1-100 dari 142 item</p>
-                                <div class="report-pagination">
-                                    <a href="#" class="report-page-link" aria-label="Previous page">
-                                        <i class="bx bx-chevron-left"></i>
-                                    </a>
-                                    <a href="#" class="report-page-link active">1</a>
-                                    <a href="#" class="report-page-link">2</a>
-                                    <a href="#" class="report-page-link">3</a>
-                                    <a href="#" class="report-page-link" aria-label="Next page">
-                                        <i class="bx bx-chevron-right"></i>
-                                    </a>
-                                </div>
+                                <p class="foot-text">
+                                    {{ if gt .Report.Pagination.TotalItems 0 }}
+                                        Menampilkan {{ .Report.Pagination.StartItem }}-{{ .Report.Pagination.EndItem }} dari {{ .Report.Pagination.TotalItems }} produk.
+                                    {{ else }}
+                                        Tidak ada produk untuk ditampilkan.
+                                    {{ end }}
+                                </p>
                             </div>
                         </section>
 
-                        <section class="report-bottom-grid">
-                            <article class="report-card report-trend-card">
-                                <h2 class="report-trend-title">
-                                    <i class="bx bx-trending-up"></i>
-                                    <span>Approval per Bulan dalam 12 Bulan Terakhir</span>
-                                </h2>
+                        <section class="bottom-grid">
+                            <article class="panel-card trend-card">
+                                <h2 class="section-title">Approval per Bulan</h2>
+                                <p class="section-copy">Jumlah item yang sudah approved atau sudah dibuatkan PO selama 12 bulan terakhir.</p>
 
-                                <div class="report-trend-chart">
-                                    <div class="report-trend-bars">
-                                        {{ range .TrendBars }}
-                                        <div class="report-trend-column">
-                                            <span class="report-trend-value">{{ .Value }}</span>
-                                            <div class="report-trend-bar {{ if .IsCurrent }}current{{ end }}" style="height: {{ .Height }};"></div>
-                                            <span class="report-trend-label {{ if .IsCurrent }}current{{ end }}">{{ .Label }}</span>
-                                        </div>
-                                        {{ end }}
+                                <div class="trend-chart">
+                                    {{ range .Report.TrendBars }}
+                                    <div class="trend-column">
+                                        <span class="trend-value">{{ .Value }}</span>
+                                        <div class="trend-bar {{ if .IsCurrent }}current{{ end }}" style="height: {{ .Height }};"></div>
+                                        <span class="trend-label {{ if .IsCurrent }}current{{ end }}">{{ .Label }}</span>
                                     </div>
+                                    {{ end }}
                                 </div>
                             </article>
-
-                            <aside class="report-audit-panel">
-                                <div>
-                                    <h2 class="report-audit-title">Ringkasan Audit Otomatis</h2>
-                                    <p class="report-audit-copy">Sistem mengidentifikasi 12 item dengan varians historis mencurigakan (&gt;15%).</p>
-                                </div>
-
-                                {{ range .AuditFindings }}
-                                <div class="report-audit-item">
-                                    <span class="report-audit-icon">
-                                        <i class="{{ .Icon }} text-lg"></i>
-                                    </span>
-                                    <div>
-                                        <p class="report-audit-item-title">{{ .Title }}</p>
-                                        <p class="report-audit-item-sku">{{ .SKU }}</p>
-                                    </div>
-                                </div>
-                                {{ end }}
-
-                                <button type="button" class="report-audit-cta">Mulai Review Detail</button>
-                            </aside>
                         </section>
                     </div>
                 </main>
@@ -837,11 +981,72 @@
 
         <div id="sidebar-overlay" class="fixed inset-0 z-40 hidden bg-slate-900/50 lg:hidden"></div>
 
+        <div data-modal class="modal-shell" id="reportReviewItemEditModal">
+            <div class="modal-card">
+                <div class="modal-head">
+                    <div>
+                        <h2>Approve Item dari Report</h2>
+                        <p>Gunakan nilai suggest checker sebagai referensi lalu simpan final approve tanpa keluar dari halaman report.</p>
+                    </div>
+                    <button type="button" class="modal-close" data-modal-close aria-label="Close edit modal">
+                        <i class="bx bx-x text-xl"></i>
+                    </button>
+                </div>
+
+                <form method="POST" action="" class="modal-form" id="reportReviewItemEditForm">
+                    <input type="hidden" name="item_id" id="report_review_item_id" value="">
+                    <input type="hidden" name="redirect_to" id="report_review_redirect_to" value="">
+
+                    <div class="modal-grid">
+                        <div>
+                            <label for="report_review_product_name" class="field-label">Item</label>
+                            <input type="text" id="report_review_product_name" class="field-readonly" value="" readonly>
+                        </div>
+
+                        <div>
+                            <label for="report_review_checker_info" class="field-label">Suggest Checker</label>
+                            <input type="text" id="report_review_checker_info" class="field-readonly" value="" readonly>
+                            <p class="field-hint" id="report_review_checker_note">-</p>
+                        </div>
+
+                        <div>
+                            <label for="report_review_approved_buy_qty" class="field-label">Final Approve</label>
+                            <input
+                                type="number"
+                                step="0.01"
+                                min="0"
+                                id="report_review_approved_buy_qty"
+                                name="approved_buy_qty"
+                                class="field-input"
+                                value=""
+                                required
+                            >
+                            <p class="field-hint">Isi `0` jika item harus ditolak.</p>
+                        </div>
+
+                        <div>
+                            <label for="report_review_buyer_notes" class="field-label">Buyer Notes</label>
+                            <textarea id="report_review_buyer_notes" name="buyer_notes" class="field-textarea" maxlength="255"></textarea>
+                            <p class="field-hint">Maksimal 255 karakter.</p>
+                        </div>
+                    </div>
+
+                    <div class="modal-actions">
+                        <button type="button" class="modal-button secondary" data-modal-close>Batal</button>
+                        <button type="submit" class="modal-button primary">Simpan Approval</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
         <script>
             document.addEventListener('DOMContentLoaded', function () {
                 var sidebar = document.getElementById('app-sidebar');
                 var overlay = document.getElementById('sidebar-overlay');
                 var toggleButtons = document.querySelectorAll('[data-sidebar-toggle]');
+                var reviewModalEl = document.getElementById('reportReviewItemEditModal');
+                var reviewForm = document.getElementById('reportReviewItemEditForm');
 
                 function closeSidebar() {
                     if (!sidebar) return;
@@ -855,6 +1060,20 @@
                     sidebar.classList.remove('-translate-x-full');
                     if (overlay) overlay.classList.remove('hidden');
                     document.body.classList.add('overflow-hidden');
+                }
+
+                function openModal(target) {
+                    var modal = typeof target === 'string' ? document.getElementById(target) : target;
+                    if (!modal) return;
+                    modal.style.display = 'flex';
+                    document.body.classList.add('overflow-hidden');
+                }
+
+                function closeModal(target) {
+                    var modal = typeof target === 'string' ? document.getElementById(target) : target;
+                    if (!modal) return;
+                    modal.style.display = 'none';
+                    document.body.classList.remove('overflow-hidden');
                 }
 
                 toggleButtons.forEach(function (button) {
@@ -871,6 +1090,109 @@
                 if (overlay) {
                     overlay.addEventListener('click', closeSidebar);
                 }
+
+                document.querySelectorAll('[data-modal-close]').forEach(function (button) {
+                    button.addEventListener('click', function () {
+                        closeModal(button.closest('[data-modal]'));
+                    });
+                });
+
+                document.querySelectorAll('[data-modal]').forEach(function (modal) {
+                    modal.addEventListener('click', function (event) {
+                        if (event.target === modal) {
+                            closeModal(modal);
+                        }
+                    });
+                });
+
+                document.addEventListener('keydown', function (event) {
+                    if (event.key !== 'Escape') return;
+                    document.querySelectorAll('[data-modal]').forEach(closeModal);
+                });
+
+                document.querySelectorAll('.btn-edit-review').forEach(function (button) {
+                    button.addEventListener('click', function () {
+                        if (!reviewModalEl || !reviewForm) return;
+
+                        var sessionId = button.getAttribute('data-session-id') || '';
+                        var itemId = button.getAttribute('data-item-id') || '';
+                        var productName = button.getAttribute('data-product-name') || '';
+                        var approvedQty = button.getAttribute('data-approved-buy-qty') || '0';
+                        var buyerNotes = button.getAttribute('data-buyer-notes') || '';
+                        var checkerNotes = button.getAttribute('data-checker-notes') || '-';
+                        var suggestBuyQty = button.getAttribute('data-suggest-buy-qty') || '-';
+
+                        reviewForm.setAttribute('action', '/stock-check-sessions/' + sessionId + '/items/review');
+                        reviewModalEl.querySelector('#report_review_item_id').value = itemId;
+                        reviewModalEl.querySelector('#report_review_redirect_to').value = window.location.pathname + window.location.search;
+                        reviewModalEl.querySelector('#report_review_product_name').value = productName;
+                        reviewModalEl.querySelector('#report_review_checker_info').value = 'Suggest ' + suggestBuyQty;
+                        reviewModalEl.querySelector('#report_review_checker_note').textContent = checkerNotes;
+                        reviewModalEl.querySelector('#report_review_approved_buy_qty').value = approvedQty;
+                        reviewModalEl.querySelector('#report_review_buyer_notes').value = buyerNotes;
+
+                        openModal(reviewModalEl);
+                    });
+                });
+
+                document.querySelectorAll('[data-po-trend]').forEach(function (element) {
+                    var series = [];
+                    var labels = [];
+
+                    try {
+                        series = JSON.parse(element.getAttribute('data-series') || '[]');
+                        labels = JSON.parse(element.getAttribute('data-labels') || '[]');
+                    } catch (error) {
+                        series = [];
+                        labels = [];
+                    }
+
+                    if (!window.ApexCharts) return;
+
+                    var chart = new ApexCharts(element, {
+                        chart: {
+                            type: 'line',
+                            height: 46,
+                            sparkline: { enabled: true },
+                            toolbar: { show: false },
+                            animations: { enabled: false }
+                        },
+                        series: [{
+                            name: 'PO',
+                            data: series
+                        }],
+                        xaxis: {
+                            categories: labels
+                        },
+                        stroke: {
+                            curve: 'smooth',
+                            width: 2
+                        },
+                        colors: ['#173f92'],
+                        grid: {
+                            show: false
+                        },
+                        markers: {
+                            size: 0,
+                            hover: {
+                                size: 4
+                            }
+                        },
+                        tooltip: {
+                            theme: 'light',
+                            x: {
+                                show: true
+                            },
+                            y: {
+                                formatter: function (value) {
+                                    return 'PO ' + value;
+                                }
+                            }
+                        }
+                    });
+
+                    chart.render();
+                });
             });
         </script>
     </body>

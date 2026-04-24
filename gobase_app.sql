@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Apr 20, 2026 at 04:09 AM
+-- Generation Time: Apr 24, 2026 at 09:47 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -88,7 +88,8 @@ INSERT INTO `permissions` (`id`, `name`, `group`, `guard_name`, `created_at`, `u
 (13, 'user_edit', 'user', 'web', '2025-09-30 20:23:01', '2025-09-30 20:23:01'),
 (14, 'user_delete', 'user', 'web', '2025-09-30 20:23:01', '2025-09-30 20:23:01'),
 (15, 'system_settings_access', 'system_settings', 'web', '2025-09-30 20:23:01', '2025-09-30 20:23:01'),
-(16, 'app_settings_manage', 'app_settings', 'web', '2025-09-30 20:23:01', '2025-09-30 20:23:01');
+(16, 'app_settings_manage', 'app_settings', 'web', '2025-09-30 20:23:01', '2025-09-30 20:23:01'),
+(53, 'buyer-approve-qty-item', 'permission', 'web', NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -305,7 +306,13 @@ CREATE TABLE `stock_check_sessions` (
 --
 
 INSERT INTO `stock_check_sessions` (`id`, `session_number`, `session_date`, `store_id`, `supplier_id`, `initiation_type`, `status`, `created_by`, `notes`, `submitted_at`, `reviewed_at`, `closed_at`, `created_at`, `updated_at`) VALUES
-(1, 'SCS-MK1-20260418-001', '2026-04-18', 1, 1, 'scheduled', 'in_progress', 1, 'Stock opname supplier ABC Food untuk MK1', NULL, NULL, NULL, '2026-04-18 04:52:25', '2026-04-18 04:52:25');
+(1, 'SCS-MK1-20260418-001', '2026-04-18', 1, 1, 'scheduled', 'closed', 1, 'Stock opname supplier ABC Food untuk MK1 .', NULL, NULL, NULL, '2026-04-18 04:52:25', '2026-04-24 02:30:30'),
+(2, 'SCS-MK1-20260423-001', '2026-04-23', 1, 4, 'scheduled', 'draft', 1, NULL, NULL, NULL, NULL, '2026-04-23 02:35:53', '2026-04-23 02:35:53'),
+(3, 'SCS-MK1-20260424-001', '2026-04-24', 1, 1, 'scheduled', 'draft', 1, NULL, NULL, NULL, NULL, '2026-04-24 07:02:10', '2026-04-24 07:02:10'),
+(4, 'SCS-MK1-20260414-001', '2026-04-14', 1, 1, 'scheduled', 'submitted', 1, 'Stock opname supplier ABC Food untuk MK1 tanggal 14 April 2026', NULL, NULL, NULL, '2026-04-24 07:11:33', '2026-04-24 07:11:33'),
+(5, 'SCS-MK1-20260415-001', '2026-04-15', 1, 1, 'scheduled', 'submitted', 1, 'Stock opname supplier ABC Food untuk MK1 tanggal 15 April 2026', NULL, NULL, NULL, '2026-04-24 07:11:33', '2026-04-24 07:11:33'),
+(6, 'SCS-MK1-20260416-001', '2026-04-16', 1, 1, 'scheduled', 'submitted', 1, 'Stock opname supplier ABC Food untuk MK1 tanggal 16 April 2026', NULL, NULL, NULL, '2026-04-24 07:11:33', '2026-04-24 07:11:33'),
+(7, 'SCS-MK1-20260417-001', '2026-04-17', 1, 1, 'scheduled', 'submitted', 1, 'Stock opname supplier ABC Food untuk MK1 tanggal 17 April 2026', NULL, NULL, NULL, '2026-04-24 07:11:33', '2026-04-24 07:11:33');
 
 -- --------------------------------------------------------
 
@@ -343,9 +350,21 @@ CREATE TABLE `stock_check_session_items` (
 --
 
 INSERT INTO `stock_check_session_items` (`id`, `stock_check_session_id`, `product_id`, `system_qty_store`, `system_qty_warehouse`, `qty_store`, `qty_warehouse`, `total_qty`, `suggest_buy_qty`, `approved_buy_qty`, `suggested_supplier_id`, `approved_supplier_id`, `condition_status`, `status`, `checker_notes`, `buyer_notes`, `reviewed_by`, `reviewed_at`, `created_by`, `updated_by`, `created_at`, `updated_at`) VALUES
-(7, 1, 1, 15.00, 50.00, 12.00, 40.00, 52.00, 20.00, NULL, 1, NULL, 'empty_rack', 'submitted', 'Rak toko mulai kosong', NULL, NULL, NULL, 1, 1, '2026-04-18 05:16:07', '2026-04-18 05:16:07'),
-(8, 1, 2, 8.00, 20.00, 7.00, 18.00, 25.00, 15.00, NULL, 1, NULL, 'good', 'submitted', 'Stok menipis', NULL, NULL, NULL, 1, 1, '2026-04-18 05:16:07', '2026-04-18 05:16:07'),
-(9, 1, 3, 5.00, 12.00, 4.00, 10.00, 14.00, 25.00, NULL, 1, NULL, 'good', 'submitted', 'Perlu restock', NULL, NULL, NULL, 1, 1, '2026-04-18 05:16:07', '2026-04-18 05:16:07');
+(7, 1, 1, 15.00, 50.00, 12.00, 40.00, 52.00, 20.00, 15.00, 1, NULL, 'empty_rack', 'approved', 'Rak toko mulai kosong', NULL, 1, '2026-04-24 09:31:26', 1, 1, '2026-04-18 05:16:07', '2026-04-24 02:31:26'),
+(8, 1, 2, 8.00, 20.00, 7.00, 18.00, 25.00, 15.00, 15.00, 1, NULL, 'good', 'approved', 'Stok menipis', 'oke', 1, '2026-04-23 14:40:41', 1, 1, '2026-04-18 05:16:07', '2026-04-23 07:40:41'),
+(9, 1, 3, 5.00, 12.00, 4.00, 10.00, 14.00, 25.00, NULL, 1, NULL, 'good', 'submitted', 'Perlu restock', NULL, NULL, NULL, 1, 1, '2026-04-18 05:16:07', '2026-04-18 05:16:07'),
+(22, 5, 1, 18.00, 55.00, 14.00, 45.00, 59.00, 12.00, 10.00, 1, 1, 'good', 'approved', 'Stok masih aman', 'Disesuaikan buyer', 1, '2026-04-14 10:30:00', 1, 1, '2026-04-24 07:13:27', '2026-04-24 07:13:27'),
+(23, 5, 2, 10.00, 25.00, 8.00, 20.00, 28.00, 10.00, 8.00, 1, 1, 'good', 'approved', 'Stok menurun', 'Approve sebagian', 1, '2026-04-14 10:35:00', 1, 1, '2026-04-24 07:13:27', '2026-04-24 07:13:27'),
+(24, 5, 3, 6.00, 15.00, 5.00, 12.00, 17.00, 18.00, 15.00, 1, 1, 'good', 'approved', 'Perlu restock ringan', 'Approve buyer', 1, '2026-04-14 10:40:00', 1, 1, '2026-04-24 07:13:27', '2026-04-24 07:13:27'),
+(28, 6, 1, 17.00, 52.00, 13.00, 43.00, 56.00, 15.00, 12.00, 1, 1, 'good', 'approved', 'Rak depan mulai berkurang', 'Approve buyer', 1, '2026-04-15 10:30:00', 1, 1, '2026-04-24 07:14:00', '2026-04-24 07:14:00'),
+(29, 6, 2, 9.00, 22.00, 7.00, 18.00, 25.00, 12.00, 10.00, 1, 1, 'good', 'approved', 'Stok stabil', 'Approve buyer', 1, '2026-04-15 10:35:00', 1, 1, '2026-04-24 07:14:00', '2026-04-24 07:14:00'),
+(30, 6, 3, 5.00, 13.00, 4.00, 10.00, 14.00, 20.00, 18.00, 1, 1, 'empty_rack', 'approved', 'Rak mulai kosong', 'Prioritas restock', 1, '2026-04-15 10:40:00', 1, 1, '2026-04-24 07:14:00', '2026-04-24 07:14:00'),
+(31, 7, 1, 16.00, 50.00, 12.00, 41.00, 53.00, 18.00, 15.00, 1, 1, 'good', 'approved', 'Stok turun perlahan', 'Approve buyer', 1, '2026-04-16 10:30:00', 1, 1, '2026-04-24 07:14:35', '2026-04-24 07:14:35'),
+(32, 7, 2, 8.00, 20.00, 6.00, 16.00, 22.00, 14.00, 12.00, 1, 1, 'good', 'approved', 'Perlu tambahan', 'Approve buyer', 1, '2026-04-16 10:35:00', 1, 1, '2026-04-24 07:14:35', '2026-04-24 07:14:35'),
+(33, 7, 3, 4.00, 11.00, 3.00, 9.00, 12.00, 22.00, 20.00, 1, 1, 'empty_rack', 'approved', 'Stok toko rendah', 'Tingkatkan pembelian', 1, '2026-04-16 10:40:00', 1, 1, '2026-04-24 07:14:35', '2026-04-24 07:14:35'),
+(34, 4, 1, 15.00, 48.00, 11.00, 40.00, 51.00, 20.00, 18.00, 1, 1, 'empty_rack', 'approved', 'Rak toko hampir kosong', 'Disesuaikan kebutuhan pembelian', 1, '2026-04-17 10:30:00', 1, 1, '2026-04-24 07:15:13', '2026-04-24 07:15:13'),
+(35, 4, 2, 7.00, 18.00, 5.00, 15.00, 20.00, 16.00, 14.00, 1, 1, 'good', 'approved', 'Stok menurun', 'Approve buyer', 1, '2026-04-17 10:35:00', 1, 1, '2026-04-24 07:15:13', '2026-04-24 07:15:13'),
+(36, 4, 3, 3.00, 10.00, 2.00, 8.00, 10.00, 25.00, 22.00, 1, 1, 'empty_rack', 'approved', 'Rak hampir habis', 'Prioritas order', 1, '2026-04-17 10:40:00', 1, 1, '2026-04-24 07:15:13', '2026-04-24 07:15:13');
 
 -- --------------------------------------------------------
 
@@ -365,6 +384,20 @@ CREATE TABLE `stock_check_session_item_histories` (
   `changed_by` int(11) DEFAULT NULL,
   `changed_at` datetime NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `stock_check_session_item_histories`
+--
+
+INSERT INTO `stock_check_session_item_histories` (`id`, `stock_check_session_item_id`, `product_id`, `field_name`, `old_value`, `new_value`, `change_reason`, `notes`, `changed_by`, `changed_at`) VALUES
+(8, 7, 1, 'approved_buy_qty', '10', '11', 'review item updated', 'Perubahan final approve dari halaman detail stock check session.', 1, '2026-04-23 14:34:57'),
+(9, 8, 2, 'approved_buy_qty', NULL, '15', 'review item updated', 'Perubahan final approve dari halaman detail stock check session.', 1, '2026-04-23 14:35:10'),
+(10, 8, 2, 'status', 'submitted', 'approved', 'review item updated', 'Perubahan status approval dari halaman detail stock check session.', 1, '2026-04-23 14:35:10'),
+(11, 8, 2, 'approved_buy_qty', '15', '11', 'review item updated', 'Perubahan final approve dari halaman detail stock check session.', 1, '2026-04-23 14:36:42'),
+(12, 8, 2, 'buyer_notes', NULL, 'oke', 'review item updated', 'Perubahan buyer notes dari halaman detail stock check session.', 1, '2026-04-23 14:36:55'),
+(13, 8, 2, 'approved_buy_qty', '11', '12', 'review item updated', 'Perubahan final approve dari halaman detail stock check session.', 1, '2026-04-23 14:40:26'),
+(14, 8, 2, 'approved_buy_qty', '12', '15', 'review item updated', 'Perubahan final approve dari halaman detail stock check session.', 1, '2026-04-23 14:40:41'),
+(15, 7, 1, 'approved_buy_qty', '11', '15', 'review item updated', 'Perubahan final approve dari halaman detail stock check session.', 1, '2026-04-24 09:31:26');
 
 -- --------------------------------------------------------
 
@@ -425,7 +458,7 @@ CREATE TABLE `suppliers` (
 --
 
 INSERT INTO `suppliers` (`id`, `supplier_group_id`, `supplier_code`, `supplier_name`, `supplier_type`, `address`, `phone`, `email`, `pic_name`, `payment_term_days`, `is_active`, `created_at`, `updated_at`) VALUES
-(1, 1, 'ABC-FOOD', 'ABC Food', 'Food', 'Yogyakarta', '0811111111', NULL, 'Budi', 14, 1, '2026-04-17 04:23:38', '2026-04-17 04:23:38'),
+(1, 1, 'ABC-FOOD', 'ABC Food', 'Food', 'Yogyakarta', '0857018054489', NULL, 'Budi', 14, 1, '2026-04-17 04:23:38', '2026-04-24 07:19:14'),
 (2, 1, 'ABC-TOY', 'ABC Toiletries', 'Toiletries', 'Yogyakarta', '0822222222', NULL, 'Sari', 14, 1, '2026-04-17 04:23:38', '2026-04-17 04:23:38'),
 (3, 1, 'ABC-DEPT', 'ABC Dept Store', 'Dept Store', 'Yogyakarta', '0833333333', NULL, 'Andi', 14, 1, '2026-04-17 04:23:38', '2026-04-17 04:23:38'),
 (4, 2, 'XYZ-FOOD', 'XYZ Food', 'Food', 'Sleman', '0844444444', NULL, 'Rina', 7, 1, '2026-04-17 04:23:38', '2026-04-17 04:23:38');
@@ -451,8 +484,8 @@ CREATE TABLE `supplier_groups` (
 --
 
 INSERT INTO `supplier_groups` (`id`, `group_code`, `group_name`, `description`, `is_active`, `created_at`, `updated_at`) VALUES
-(1, 'ABC', 'ABC', NULL, 1, '2026-04-17 04:23:38', '2026-04-17 04:23:38'),
-(2, 'XYZ', 'XYZ', NULL, 1, '2026-04-17 04:23:38', '2026-04-17 04:23:38');
+(1, 'ABC', 'ABC', NULL, 1, '2026-04-17 04:23:38', '2026-04-24 06:42:32'),
+(2, 'XYZ', 'XYZ', NULL, 1, '2026-04-17 04:23:38', '2026-04-24 06:42:37');
 
 -- --------------------------------------------------------
 
@@ -689,7 +722,7 @@ ALTER TABLE `user_stores`
 -- AUTO_INCREMENT for table `permissions`
 --
 ALTER TABLE `permissions`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=53;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=54;
 
 --
 -- AUTO_INCREMENT for table `products`
@@ -725,19 +758,19 @@ ALTER TABLE `roles`
 -- AUTO_INCREMENT for table `stock_check_sessions`
 --
 ALTER TABLE `stock_check_sessions`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT for table `stock_check_session_items`
 --
 ALTER TABLE `stock_check_session_items`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=37;
 
 --
 -- AUTO_INCREMENT for table `stock_check_session_item_histories`
 --
 ALTER TABLE `stock_check_session_item_histories`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
 
 --
 -- AUTO_INCREMENT for table `suppliers`

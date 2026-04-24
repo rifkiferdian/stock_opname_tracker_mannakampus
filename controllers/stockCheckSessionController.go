@@ -50,6 +50,7 @@ func StockCheckSessionReviewItemUpdate(c *gin.Context) {
 		ItemID         int    `form:"item_id" binding:"required"`
 		ApprovedBuyQty string `form:"approved_buy_qty" binding:"required"`
 		BuyerNotes     string `form:"buyer_notes"`
+		RedirectTo     string `form:"redirect_to"`
 	}
 
 	sessionID, err := strconv.Atoi(c.Param("id"))
@@ -62,6 +63,10 @@ func StockCheckSessionReviewItemUpdate(c *gin.Context) {
 	service := buildStockCheckSessionService()
 
 	if err := c.ShouldBind(&form); err != nil {
+		if redirectTo := sanitizeRedirectTarget(form.RedirectTo); redirectTo != "" {
+			c.Redirect(http.StatusSeeOther, appendRedirectMessage(redirectTo, "error", "Form edit item tidak lengkap"))
+			return
+		}
 		renderStockCheckSessionDetailPage(c, service, sessionID, "", "Form edit item tidak lengkap", models.StockCheckSessionReviewItemEditForm{
 			ItemID:         form.ItemID,
 			ApprovedBuyQty: form.ApprovedBuyQty,
@@ -72,6 +77,10 @@ func StockCheckSessionReviewItemUpdate(c *gin.Context) {
 
 	approvedBuyQty, err := strconv.ParseFloat(strings.TrimSpace(form.ApprovedBuyQty), 64)
 	if err != nil {
+		if redirectTo := sanitizeRedirectTarget(form.RedirectTo); redirectTo != "" {
+			c.Redirect(http.StatusSeeOther, appendRedirectMessage(redirectTo, "error", "Final approve harus berupa angka yang valid"))
+			return
+		}
 		renderStockCheckSessionDetailPage(c, service, sessionID, "", "Final approve harus berupa angka yang valid", models.StockCheckSessionReviewItemEditForm{
 			ItemID:         form.ItemID,
 			ApprovedBuyQty: form.ApprovedBuyQty,
@@ -89,11 +98,20 @@ func StockCheckSessionReviewItemUpdate(c *gin.Context) {
 		UpdatedBy:      extractCurrentUserID(c),
 	})
 	if err != nil {
+		if redirectTo := sanitizeRedirectTarget(form.RedirectTo); redirectTo != "" {
+			c.Redirect(http.StatusSeeOther, appendRedirectMessage(redirectTo, "error", err.Error()))
+			return
+		}
 		renderStockCheckSessionDetailPage(c, service, sessionID, "", err.Error(), models.StockCheckSessionReviewItemEditForm{
 			ItemID:         form.ItemID,
 			ApprovedBuyQty: form.ApprovedBuyQty,
 			BuyerNotes:     form.BuyerNotes,
 		})
+		return
+	}
+
+	if redirectTo := sanitizeRedirectTarget(form.RedirectTo); redirectTo != "" {
+		c.Redirect(http.StatusSeeOther, appendRedirectMessage(redirectTo, "success", "Item review berhasil diperbarui"))
 		return
 	}
 
@@ -383,6 +401,28 @@ func buildStockCheckSessionDetailPageURL(sessionID int, page int, successMessage
 		return baseURL
 	}
 	return baseURL + "?" + encoded
+}
+
+func sanitizeRedirectTarget(value string) string {
+	value = strings.TrimSpace(value)
+	if value == "" {
+		return ""
+	}
+	if !strings.HasPrefix(value, "/") || strings.HasPrefix(value, "//") {
+		return ""
+	}
+	return value
+}
+
+func appendRedirectMessage(target string, key string, message string) string {
+	parsed, err := url.Parse(target)
+	if err != nil {
+		return target
+	}
+	values := parsed.Query()
+	values.Set(key, message)
+	parsed.RawQuery = values.Encode()
+	return parsed.String()
 }
 
 func buildStockCheckSessionFilter(c *gin.Context) models.StockCheckSessionListFilter {

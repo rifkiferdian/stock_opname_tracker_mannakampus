@@ -1,57 +1,21 @@
 package controllers
 
 import (
+	"bytes"
 	"database/sql"
+	"encoding/csv"
 	"errors"
 	"fmt"
+	"gobase-app/config"
 	"gobase-app/models"
+	"gobase-app/repositories"
 	"gobase-app/services"
 	"net/http"
 	"net/url"
 	"strconv"
-	"time"
 
 	"github.com/gin-gonic/gin"
 )
-
-type stockOpnameSummaryCard struct {
-	Label string
-	Value string
-	Note  string
-	Tone  string
-}
-
-type stockOpnameHistoryPoint struct {
-	ShopCount string
-	WHSCount  string
-	Approx    string
-}
-
-type stockOpnameReportRow struct {
-	Name           string
-	SKU            string
-	IconClass      string
-	ThumbnailTone  string
-	CurrentShop    string
-	CurrentWH      string
-	CurrentSuggest string
-	StatusTone     string
-	History        []stockOpnameHistoryPoint
-	ActionLabel    string
-}
-
-type stockOpnameTrendBar struct {
-	Label     string
-	Height    string
-	IsCurrent bool
-	Value     string
-}
-
-type stockOpnameAuditFinding struct {
-	Title string
-	SKU   string
-	Icon  string
-}
 
 func StockOpnameReportIndex(c *gin.Context) {
 	supplierService := buildSupplierService()
@@ -89,16 +53,110 @@ func StockOpnameReportDetail(c *gin.Context) {
 		return
 	}
 
-	Render(c, "stock_opname_report.html", gin.H{
-		"Title":         "Laporan Stock Opname",
-		"Page":          "report_stock_opname_detail",
-		"Supplier":      supplier,
-		"SummaryCards":  stockOpnameSummaryCards(),
-		"ReportDates":   stockOpnameReportDates(),
-		"ReportRows":    stockOpnameReportRows(),
-		"TrendBars":     stockOpnameTrendBars(),
-		"AuditFindings": stockOpnameAuditFindings(),
+	categoryID, _ := strconv.Atoi(c.DefaultQuery("category_id", "0"))
+	reportService := buildStockOpnameReportService()
+
+	if c.Query("export") == "csv" {
+		exportPage, err := reportService.GetDetailPage(id, models.StockOpnameReportFilter{
+			CategoryID: categoryID,
+		})
+		if err != nil {
+			c.String(http.StatusInternalServerError, err.Error())
+			return
+		}
+		renderStockOpnameReportCSV(c, supplier, exportPage)
+		return
+	}
+
+	reportPage, err := reportService.GetDetailPage(id, models.StockOpnameReportFilter{
+		CategoryID: categoryID,
 	})
+	if err != nil {
+		c.String(http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	reportPage.ExportURL = buildStockOpnameReportExportURL(id, reportPage.Filter)
+	reportPage.CurrentCategoryLabel = findStockOpnameReportCategoryLabel(reportPage.Categories, reportPage.Filter.CategoryID)
+
+	Render(c, "stock_opname_report.html", gin.H{
+		"Title":    "Laporan Stock Opname",
+		"Page":     "report_stock_opname_detail",
+		"Supplier": supplier,
+		"Report":   reportPage,
+		"Success":  c.Query("success"),
+		"Error":    c.Query("error"),
+	})
+}
+
+func buildStockOpnameReportService() *services.StockOpnameReportService {
+	repo := &repositories.StockOpnameReportRepository{DB: config.DB}
+	return &services.StockOpnameReportService{Repo: repo}
+}
+
+func renderStockOpnameReportCSV(c *gin.Context, supplier models.Supplier, page models.StockOpnameReportPage) {
+	var buffer bytes.Buffer
+	writer := csv.NewWriter(&buffer)
+
+	headers := []string{
+		"Product Code",
+		"Product Name",
+		"Barcode",
+		"Category",
+		"Lead Time",
+		"Current Date",
+		"Shop Qty",
+		"Warehouse Qty",
+		"PO Qty",
+		"Latest Status",
+	}
+	for _, label := range page.HistoryDateLabels {
+		headers = append(headers,
+			fmt.Sprintf("%s Date", label),
+			fmt.Sprintf("%s Shop Qty", label),
+			fmt.Sprintf("%s Warehouse Qty", label),
+			fmt.Sprintf("%s PO Qty", label),
+		)
+	}
+
+	if err := writer.Write(headers); err != nil {
+		c.String(http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	for _, row := range page.ReportRows {
+		record := []string{
+			row.SKU,
+			row.Name,
+			row.Barcode,
+			row.CategoryName,
+			row.LeadTimeLabel,
+			page.CurrentDateLabel,
+			row.CurrentShop,
+			row.CurrentWH,
+			row.CurrentPO,
+			row.CurrentStatus,
+		}
+
+		for _, history := range row.History {
+			record = append(record, history.DateLabel, history.ShopCount, history.WHSCount, history.POCount)
+		}
+
+		if err := writer.Write(record); err != nil {
+			c.String(http.StatusInternalServerError, err.Error())
+			return
+		}
+	}
+
+	writer.Flush()
+	if err := writer.Error(); err != nil {
+		c.String(http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	filename := fmt.Sprintf("stock-opname-report-%s.csv", supplier.SupplierCode)
+	c.Header("Content-Disposition", fmt.Sprintf("attachment; filename=%q", filename))
+	c.Data(http.StatusOK, "text/csv; charset=utf-8", buffer.Bytes())
 }
 
 func renderStockOpnameReportSupplierPage(c *gin.Context, supplierService *services.SupplierService, message string, filter models.SupplierListFilter) {
@@ -229,136 +287,25 @@ func buildStockOpnameReportPageURL(filter models.SupplierListFilter, page int) s
 	return "/reports/stock-opname?" + encoded
 }
 
-func stockOpnameSummaryCards() []stockOpnameSummaryCard {
-	return []stockOpnameSummaryCard{
-		{Label: "Total item dalam review", Value: "142", Note: "+12 pagi ini", Tone: "info"},
-		{Label: "Tingkat selisih", Value: "4.2%", Note: "Di atas target", Tone: "danger"},
-		{Label: "Menunggu persetujuan", Value: "28", Note: "Jatuh tempo hari ini", Tone: "info"},
+func buildStockOpnameReportExportURL(supplierID int, filter models.StockOpnameReportFilter) string {
+	values := url.Values{}
+	if filter.CategoryID > 0 {
+		values.Set("category_id", strconv.Itoa(filter.CategoryID))
 	}
+	values.Set("export", "csv")
+	return fmt.Sprintf("/reports/stock-opname/%d?%s", supplierID, values.Encode())
 }
 
-func stockOpnameReportRows() []stockOpnameReportRow {
-	return []stockOpnameReportRow{
-		{
-			Name:           "Ultra-Lite Trainer",
-			SKU:            "SKU: FTW-9902-WH",
-			IconClass:      "bx bx-body",
-			ThumbnailTone:  "neutral",
-			CurrentShop:    "12",
-			CurrentWH:      "10",
-			CurrentSuggest: "Periksa Input",
-			StatusTone:     "input",
-			ActionLabel:    "Tinjau",
-			History: []stockOpnameHistoryPoint{
-				{ShopCount: "12", WHSCount: "10", Approx: "422"},
-				{ShopCount: "08", WHSCount: "325", Approx: "403"},
-				{ShopCount: "05", WHSCount: "512", Approx: "537"},
-				{ShopCount: "15", WHSCount: "480", Approx: "495"},
-				{ShopCount: "11", WHSCount: "468", Approx: "479"},
-				{ShopCount: "09", WHSCount: "446", Approx: "455"},
-				{ShopCount: "14", WHSCount: "438", Approx: "452"},
-				{ShopCount: "10", WHSCount: "410", Approx: "420"},
-				{ShopCount: "06", WHSCount: "398", Approx: "404"},
-				{ShopCount: "07", WHSCount: "385", Approx: "392"},
-				{ShopCount: "13", WHSCount: "372", Approx: "385"},
-				{ShopCount: "08", WHSCount: "360", Approx: "368"},
-			},
-		},
-		{
-			Name:           "AeroStride Pro 7",
-			SKU:            "SKU: FTW-8812-RD",
-			IconClass:      "bx bx-run",
-			ThumbnailTone:  "accent",
-			CurrentShop:    "2",
-			CurrentWH:      "115",
-			CurrentSuggest: "Stok Menipis",
-			StatusTone:     "low",
-			ActionLabel:    "Eskalasi",
-			History: []stockOpnameHistoryPoint{
-				{ShopCount: "02", WHSCount: "115", Approx: "117"},
-				{ShopCount: "05", WHSCount: "140", Approx: "145"},
-				{ShopCount: "01", WHSCount: "190", Approx: "191"},
-				{ShopCount: "08", WHSCount: "220", Approx: "228"},
-				{ShopCount: "04", WHSCount: "205", Approx: "209"},
-				{ShopCount: "03", WHSCount: "198", Approx: "201"},
-				{ShopCount: "06", WHSCount: "184", Approx: "190"},
-				{ShopCount: "02", WHSCount: "176", Approx: "178"},
-				{ShopCount: "03", WHSCount: "168", Approx: "171"},
-				{ShopCount: "02", WHSCount: "159", Approx: "161"},
-				{ShopCount: "01", WHSCount: "152", Approx: "153"},
-				{ShopCount: "03", WHSCount: "147", Approx: "150"},
-			},
-		},
-		{
-			Name:           "SonicMaster Studio",
-			SKU:            "SKU: EL-4431-BLK",
-			IconClass:      "bx bx-headphone",
-			ThumbnailTone:  "dark",
-			CurrentShop:    "5",
-			CurrentWH:      "200",
-			CurrentSuggest: "Stabil",
-			StatusTone:     "stable",
-			ActionLabel:    "Periksa",
-			History: []stockOpnameHistoryPoint{
-				{ShopCount: "05", WHSCount: "200", Approx: "205"},
-				{ShopCount: "03", WHSCount: "218", Approx: "221"},
-				{ShopCount: "12", WHSCount: "195", Approx: "207"},
-				{ShopCount: "02", WHSCount: "240", Approx: "242"},
-				{ShopCount: "04", WHSCount: "231", Approx: "235"},
-				{ShopCount: "06", WHSCount: "224", Approx: "230"},
-				{ShopCount: "05", WHSCount: "215", Approx: "220"},
-				{ShopCount: "03", WHSCount: "209", Approx: "212"},
-				{ShopCount: "04", WHSCount: "202", Approx: "206"},
-				{ShopCount: "02", WHSCount: "196", Approx: "198"},
-				{ShopCount: "05", WHSCount: "188", Approx: "193"},
-				{ShopCount: "03", WHSCount: "182", Approx: "185"},
-			},
-		},
-	}
-}
-
-func stockOpnameReportDates() []string {
-	return []string{
-		"20 Oct 2023",
-		"05 Oct 2023",
-		"20 Sep 2023",
-		"05 Sep 2023",
-		"20 Aug 2023",
-		"05 Aug 2023",
-		"20 Jul 2023",
-		"05 Jul 2023",
-		"20 Jun 2023",
-		"05 Jun 2023",
-		"20 May 2023",
-		"05 May 2023",
-	}
-}
-
-func stockOpnameTrendBars() []stockOpnameTrendBar {
-	monthNames := []string{"Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"}
-	approvalCounts := []int{28, 32, 30, 35, 38, 36, 41, 39, 44, 47, 45, 52}
-	maxApproval := 52
-	now := time.Now()
-
-	bars := make([]stockOpnameTrendBar, 0, 12)
-	for index, count := range approvalCounts {
-		monthTime := now.AddDate(0, -(len(approvalCounts) - 1 - index), 0)
-		height := 28 + (count * 56 / maxApproval)
-
-		bars = append(bars, stockOpnameTrendBar{
-			Label:     fmt.Sprintf("%s %d", monthNames[int(monthTime.Month())-1], monthTime.Year()),
-			Height:    fmt.Sprintf("%d%%", height),
-			IsCurrent: index == len(approvalCounts)-1,
-			Value:     strconv.Itoa(count),
-		})
+func findStockOpnameReportCategoryLabel(categories []models.ProductCategory, categoryID int) string {
+	if categoryID <= 0 {
+		return "Semua kategori"
 	}
 
-	return bars
-}
-
-func stockOpnameAuditFindings() []stockOpnameAuditFinding {
-	return []stockOpnameAuditFinding{
-		{Title: "Input Tidak Konsisten", SKU: "SKU: FTW-8812-RD", Icon: "bx bx-error"},
-		{Title: "Kecocokan Presisi Tinggi", SKU: "SKU: EL-4431-BLK", Icon: "bx bx-check-shield"},
+	for _, category := range categories {
+		if category.ID == categoryID {
+			return category.CategoryName
+		}
 	}
+
+	return "Kategori terpilih"
 }
