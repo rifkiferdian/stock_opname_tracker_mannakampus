@@ -25,10 +25,15 @@
                 font-family: "Manrope", sans-serif;
             }
 
+            .checker-shell {
+                display: grid;
+                gap: 1rem;
+            }
+
             .hero-grid {
                 display: grid;
                 gap: 1rem;
-                grid-template-columns: minmax(0, 1.95fr) minmax(17rem, 0.95fr);
+                grid-template-columns: minmax(0, 1fr);
             }
 
             .panel-card {
@@ -42,7 +47,7 @@
             .headline-card {
                 position: relative;
                 overflow: hidden;
-                padding: 1.35rem 1.4rem 1.3rem 1.45rem;
+                padding: 0.95rem 1rem 1rem 1rem;
             }
 
             .headline-card::before {
@@ -53,103 +58,168 @@
                 background: linear-gradient(180deg, #123c8c 0%, #315ec0 100%);
             }
 
-            .eyebrow {
-                font-size: 0.59rem;
-                font-weight: 800;
-                letter-spacing: 0.18em;
-                text-transform: uppercase;
-                color: #7383a4;
-            }
-
             .headline-title {
-                margin-top: 0.45rem;
                 font-family: "Space Grotesk", sans-serif;
-                font-size: 2rem;
+                font-size: 1.45rem;
                 font-weight: 700;
-                line-height: 1.05;
+                line-height: 1.1;
                 color: #0e3786;
             }
 
             .headline-subtitle {
-                margin-top: 0.85rem;
+                margin-top: 0.6rem;
                 display: flex;
                 flex-wrap: wrap;
-                gap: 0.85rem;
-                color: #67748e;
-                font-size: 0.88rem;
-                font-weight: 600;
+                gap: 0.55rem;
             }
 
-            .headline-meta {
-                display: flex;
-                justify-content: space-between;
-                gap: 1rem;
-            }
-
-            .headline-time {
-                text-align: right;
-                font-size: 0.68rem;
+            .headline-subtitle span {
+                display: inline-flex;
+                align-items: center;
+                border-radius: 9999px;
+                background: #f3f7fd;
+                padding: 0.38rem 0.72rem;
+                color: #5f6f8a;
+                font-size: 0.76rem;
                 font-weight: 700;
-                color: #7b88a1;
             }
 
-            .headline-time strong {
-                display: block;
-                margin-top: 0.3rem;
-                color: #41516f;
+            .summary-strip {
+                margin-top: 0.85rem;
+                display: grid;
+                gap: 0.65rem;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
             }
 
-            .session-note {
-                margin-top: 1rem;
-                max-width: 42rem;
+            .summary-item {
                 border-radius: 1rem;
                 background: #f8fbff;
-                padding: 0.95rem 1rem;
-                font-size: 0.84rem;
-                line-height: 1.65;
-                color: #526178;
+                padding: 0.78rem 0.85rem;
             }
 
-            .metric-card {
-                background: linear-gradient(180deg, #153f95 0%, #0c2d78 100%);
-                color: #ffffff;
-                padding: 1.3rem 1.4rem;
-            }
-
-            .metric-label {
-                font-size: 0.71rem;
-                font-weight: 800;
-                letter-spacing: 0.08em;
-                text-transform: uppercase;
-                color: rgba(255, 255, 255, 0.72);
-            }
-
-            .metric-value {
-                margin-top: 0.35rem;
-                font-family: "Space Grotesk", sans-serif;
-                font-size: 2rem;
-                font-weight: 700;
-                line-height: 1;
-                color: #ffffff;
-            }
-
-            .metric-grid {
-                margin-top: 1.2rem;
-                display: grid;
-                grid-template-columns: repeat(2, minmax(0, 1fr));
-                gap: 1rem;
-            }
-
-            .metric-grid strong {
+            .summary-item span {
                 display: block;
-                margin-top: 0.2rem;
-                font-size: 1rem;
-                color: #ffffff;
+                font-size: 0.62rem;
+                font-weight: 800;
+                letter-spacing: 0.15em;
+                text-transform: uppercase;
+                color: #8491a7;
             }
 
-            @media (max-width: 1279px) {
-                .hero-grid {
-                    grid-template-columns: minmax(0, 1fr);
+            .summary-item strong {
+                display: block;
+                margin-top: 0.3rem;
+                font-size: 0.92rem;
+                font-weight: 800;
+                color: #10224a;
+            }
+
+            .hero-actions {
+                display: grid;
+                gap: 0.65rem;
+            }
+
+            .section-head {
+                display: flex;
+                flex-direction: column;
+                gap: 0.9rem;
+            }
+
+            .session-filter-grid {
+                display: grid;
+                gap: 0.75rem;
+            }
+
+            .session-filter-actions {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 0.65rem;
+            }
+
+            .mobile-session-card {
+                padding: 1rem;
+            }
+
+            .mobile-session-meta {
+                display: grid;
+                gap: 0.7rem;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .mobile-session-meta > div {
+                border-radius: 1rem;
+                background: #f8fbff;
+                padding: 0.75rem 0.8rem;
+            }
+
+            .mobile-session-meta span {
+                display: block;
+                font-size: 0.62rem;
+                font-weight: 800;
+                letter-spacing: 0.16em;
+                text-transform: uppercase;
+                color: #8491a7;
+            }
+
+            .mobile-session-meta strong {
+                display: block;
+                margin-top: 0.35rem;
+                font-size: 0.9rem;
+                font-weight: 800;
+                color: #10224a;
+            }
+
+            .session-table {
+                min-width: 960px;
+            }
+
+            .modal-panel {
+                border-radius: 1.75rem;
+            }
+
+            .modal-actions {
+                display: grid;
+                gap: 0.75rem;
+            }
+
+            @media (min-width: 640px) {
+                .headline-card {
+                    padding: 1.15rem 1.2rem 1.2rem 1.25rem;
+                }
+
+                .headline-title {
+                    font-size: 1.7rem;
+                }
+
+                .hero-actions {
+                    display: flex;
+                    flex-wrap: wrap;
+                }
+
+                .summary-strip {
+                    grid-template-columns: repeat(4, minmax(0, 1fr));
+                }
+
+                .session-filter-grid {
+                    grid-template-columns: minmax(0, 1fr) auto;
+                    align-items: end;
+                }
+
+                .section-head {
+                    flex-direction: row;
+                    align-items: end;
+                    justify-content: space-between;
+                }
+
+                .modal-actions {
+                    display: flex;
+                    justify-content: flex-end;
+                }
+            }
+
+            @media (min-width: 1280px) {
+                .headline-title {
+                    font-size: 1.85rem;
                 }
             }
         </style>
@@ -162,71 +232,52 @@
             <div class="flex min-h-screen min-w-0 flex-1 flex-col">
                 {{ template "header" . }}
 
-                <main class="min-w-0 flex-1 px-4 py-5 sm:px-6 lg:px-8">
-                    <div class="mx-auto flex w-full max-w-7xl flex-col gap-5">
+                <main class="min-w-0 flex-1 px-3 py-4 sm:px-6 sm:py-5 lg:px-8">
+                    <div class="mx-auto flex w-full max-w-7xl flex-col checker-shell">
                         <section class="hero-grid">
                             <article class="panel-card headline-card">
-                                <div class="headline-meta">
-                                    <div class="min-w-0">
-                                        <p class="eyebrow">Detail Supplier</p>
-                                        <h1 class="headline-title">{{ .Supplier.SupplierName }}</h1>
-                                        <div class="headline-subtitle">
-                                            <span>{{ .Supplier.SupplierCode }}</span>
-                                            <span>{{ if .Supplier.SupplierType }}{{ .Supplier.SupplierType }}{{ else }}Umum{{ end }}</span>
-                                        </div>
+                                <div class="min-w-0">
+                                    <h1 class="headline-title">{{ .Supplier.SupplierName }}</h1>
+                                    <div class="headline-subtitle">
+                                        <span>{{ .Supplier.SupplierCode }}</span>
+                                        <span>{{ if .Supplier.SupplierType }}{{ .Supplier.SupplierType }}{{ else }}Umum{{ end }}</span>
                                     </div>
+                                </div>
 
-                                    <div class="headline-time">
-                                        <span>Tanggal SO Terakhir</span>
+                                <div class="summary-strip">
+                                    <div class="summary-item">
+                                        <span>Session</span>
+                                        <strong>{{ .TotalItems }}</strong>
+                                    </div>
+                                    <div class="summary-item">
+                                        <span>Status</span>
+                                        <strong>{{ .Supplier.StatusLabel }}</strong>
+                                    </div>
+                                    <div class="summary-item">
+                                        <span>Produk</span>
+                                        <strong>{{ .Supplier.ProductCount }} item</strong>
+                                    </div>
+                                    <div class="summary-item">
+                                        <span>SO Terakhir</span>
                                         <strong>{{ .Supplier.LastSODateDisplay }}</strong>
                                     </div>
                                 </div>
 
-                                <div class="session-note">
-                                    {{ if .Supplier.Address }}
-                                        {{ .Supplier.Address }}
-                                    {{ else }}
-                                        Alamat supplier belum tersedia.
-                                    {{ end }}
-                                </div>
-
-                                <div class="mt-4 flex flex-wrap gap-3">
-                                    <a href="/stock-checker" class="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-5 py-3 text-sm font-extrabold text-slate-600 transition hover:bg-slate-50">
+                                <div class="hero-actions mt-4">
+                                    <a href="/stock-checker" class="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-5 py-3 text-sm font-extrabold text-slate-600 transition hover:bg-slate-50">
                                         <i class="bx bx-arrow-back"></i>
                                         <span>Kembali</span>
                                     </a>
-                                    <button type="button" data-modal-open="stockCheckSessionModal" class="inline-flex items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-extrabold text-white transition hover:bg-[#1c4ca7]" style="background-color: #153e8a;">
-                                        <i class="bx bx-plus"></i>
-                                        <span>Tambah Session Baru</span>
-                                    </button>
-                                </div>
-                            </article>
-
-                            <article class="panel-card metric-card">
-                                <p class="metric-label">Ringkasan Session</p>
-                                <p class="metric-value">{{ .TotalItems }}</p>
-                                <p class="mt-2 text-sm font-semibold text-white/70">Total sesi stock opname untuk supplier ini.</p>
-
-                                <div class="metric-grid">
-                                    <div>
-                                        <span class="metric-label">Status</span>
-                                        <strong>{{ .Supplier.StatusLabel }}</strong>
-                                    </div>
-                                    <div>
-                                        <span class="metric-label">Produk</span>
-                                        <strong>{{ .Supplier.ProductCount }} item</strong>
-                                    </div>
-                                    <div>
-                                        <span class="metric-label">Termin</span>
-                                        <strong>{{ .Supplier.PaymentTermDays }} hari</strong>
-                                    </div>
-                                    <div>
-                                        <span class="metric-label">Supplier</span>
-                                        <strong>{{ .Supplier.SupplierCode }}</strong>
-                                    </div>
                                 </div>
                             </article>
                         </section>
+
+                        <div class="flex justify-center">
+                            <button type="button" data-modal-open="stockCheckSessionModal" class="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-[#f26419] px-5 py-3 text-sm font-extrabold text-white transition hover:bg-[#de5b16]">
+                                <i class="bx bx-plus"></i>
+                                <span>Tambah Session Baru</span>
+                            </button>
+                        </div>
 
                         {{ if .Error }}
                         <div class="rounded-[1.35rem] border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-600">
@@ -240,15 +291,14 @@
                         </div>
                         {{ end }}
 
-                        <section class="rounded-[1.75rem] bg-white p-5 shadow-sm">
-                            <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                        <section class="panel-card p-4 sm:p-5">
+                            <div class="section-head">
                                 <div>
                                     <h2 class="text-xl font-extrabold text-[#153e8a]">Daftar Session SO</h2>
-                                    <p class="mt-1 text-sm font-medium text-slate-500">Pilih sesi untuk melihat detail pemeriksaan atau lanjut ke halaman manajemen session.</p>
                                 </div>
 
-                                <form action="/stock-checker/{{ .Supplier.ID }}" method="get" class="flex flex-col gap-3 sm:flex-row sm:items-center">
-                                    <select name="status" class="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-extrabold text-[#153e8a] outline-none transition focus:border-[#153e8a] focus:bg-white">
+                                <form action="/stock-checker/{{ .Supplier.ID }}" method="get" class="session-filter-grid">
+                                    <select name="status" class="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-extrabold text-[#153e8a] outline-none transition focus:border-[#153e8a] focus:bg-white">
                                         <option value="">Semua Status</option>
                                         <option value="draft" {{ if eq .Filters.Status "draft" }}selected{{ end }}>Draft</option>
                                         <option value="in_progress" {{ if eq .Filters.Status "in_progress" }}selected{{ end }}>In Progress</option>
@@ -258,13 +308,13 @@
                                         <option value="cancelled" {{ if eq .Filters.Status "cancelled" }}selected{{ end }}>Cancelled</option>
                                     </select>
 
-                                    <div class="flex gap-2">
-                                        <button type="submit" class="inline-flex items-center justify-center gap-2 rounded-xl bg-[#153e8a] px-5 py-3 text-sm font-extrabold text-white transition hover:bg-[#1c4ca7]">
+                                    <div class="session-filter-actions">
+                                        <button type="submit" class="inline-flex min-h-[48px] flex-1 items-center justify-center gap-2 rounded-xl bg-[#153e8a] px-5 py-3 text-sm font-extrabold text-white transition hover:bg-[#1c4ca7] sm:flex-none">
                                             <i class="bx bx-filter-alt"></i>
                                             <span>Filter</span>
                                         </button>
                                         {{ if .Filters.Status }}
-                                        <a href="/stock-checker/{{ .Supplier.ID }}" class="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-5 py-3 text-sm font-extrabold text-slate-600 transition hover:bg-slate-50">
+                                        <a href="/stock-checker/{{ .Supplier.ID }}" class="inline-flex min-h-[48px] flex-1 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-5 py-3 text-sm font-extrabold text-slate-600 transition hover:bg-slate-50 sm:flex-none">
                                             <i class="bx bx-reset"></i>
                                             <span>Reset</span>
                                         </a>
@@ -273,8 +323,57 @@
                                 </form>
                             </div>
 
-                            <div class="mt-5 overflow-x-auto">
-                                <table class="w-full text-sm" style="min-width: 960px;">
+                            {{ if .Sessions }}
+                            <div class="mt-5 space-y-3 md:hidden">
+                                {{ range .Sessions }}
+                                <article class="panel-card mobile-session-card">
+                                    <div class="flex flex-col gap-3">
+                                        <div class="flex flex-wrap items-start justify-between gap-3">
+                                            <div class="min-w-0">
+                                                <p class="text-base font-extrabold text-slate-800">{{ .SessionNumber }}</p>
+                                                <p class="mt-1 text-sm font-medium text-slate-500">{{ .SessionDateDisplay }}{{ if .StoreName }} - {{ .StoreName }}{{ end }}</p>
+                                            </div>
+                                            <div>
+                                                {{ if eq .Status "draft" }}
+                                                <span class="inline-flex rounded-full bg-slate-100 px-3 py-1 text-[11px] font-extrabold uppercase text-slate-600">Draft</span>
+                                                {{ else if eq .Status "in_progress" }}
+                                                <span class="inline-flex rounded-full bg-amber-50 px-3 py-1 text-[11px] font-extrabold uppercase text-amber-600">In Progress</span>
+                                                {{ else if eq .Status "submitted" }}
+                                                <span class="inline-flex rounded-full bg-blue-50 px-3 py-1 text-[11px] font-extrabold uppercase text-blue-600">Submitted</span>
+                                                {{ else if eq .Status "reviewed" }}
+                                                <span class="inline-flex rounded-full bg-violet-50 px-3 py-1 text-[11px] font-extrabold uppercase text-violet-600">Reviewed</span>
+                                                {{ else if eq .Status "closed" }}
+                                                <span class="inline-flex rounded-full bg-emerald-50 px-3 py-1 text-[11px] font-extrabold uppercase text-emerald-600">Closed</span>
+                                                {{ else if eq .Status "cancelled" }}
+                                                <span class="inline-flex rounded-full bg-rose-50 px-3 py-1 text-[11px] font-extrabold uppercase text-rose-600">Cancelled</span>
+                                                {{ else }}
+                                                <span class="inline-flex rounded-full bg-slate-100 px-3 py-1 text-[11px] font-extrabold uppercase text-slate-500">{{ .StatusLabel }}</span>
+                                                {{ end }}
+                                            </div>
+                                        </div>
+
+                                        <div class="mobile-session-meta">
+                                            <div>
+                                                <span>Store</span>
+                                                <strong>{{ if .StoreName }}{{ .StoreName }}{{ else }}-{{ end }}</strong>
+                                            </div>
+                                            <div>
+                                                <span>Dibuat Oleh</span>
+                                                <strong>{{ if .CreatedByName }}{{ .CreatedByName }}{{ else }}-{{ end }}</strong>
+                                            </div>
+                                        </div>
+
+                                        <a href="/stock-checker/sessions/{{ .ID }}/input?location=store" class="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-extrabold text-white transition" style="background-color: #38bdf8;">
+                                            <span>Lihat Detail</span>
+                                            <i class="bx bx-right-arrow-alt text-lg"></i>
+                                        </a>
+                                    </div>
+                                </article>
+                                {{ end }}
+                            </div>
+
+                            <div class="mt-5 hidden overflow-x-auto md:block">
+                                <table class="session-table w-full text-sm">
                                     <thead class="bg-slate-50 text-[10px] font-extrabold uppercase tracking-[0.18em] text-[#153e8a]">
                                         <tr>
                                             <th class="px-5 py-4 text-left">Session</th>
@@ -290,7 +389,6 @@
                                         <tr class="hover:bg-slate-50/70">
                                             <td class="px-5 py-4">
                                                 <p class="font-extrabold text-slate-800">{{ .SessionNumber }}</p>
-                                                <p class="mt-1 text-xs font-semibold text-slate-400">{{ if .Notes }}{{ .Notes }}{{ else }}Tanpa catatan{{ end }}</p>
                                             </td>
                                             <td class="px-5 py-4 font-semibold text-slate-600">{{ .SessionDateDisplay }}</td>
                                             <td class="px-5 py-4 font-semibold text-slate-700">{{ .StoreName }}</td>
@@ -313,32 +411,31 @@
                                             </td>
                                             <td class="px-5 py-4 font-semibold text-slate-600">{{ .CreatedByName }}</td>
                                             <td class="px-5 py-4">
-                                                <a href="/stock-checker/sessions/{{ .ID }}/input?location=store" class="inline-flex items-center gap-2 rounded-xl bg-[#153e8a] px-4 py-2.5 text-sm font-extrabold text-white transition hover:bg-[#1c4ca7]">
+                                                <a href="/stock-checker/sessions/{{ .ID }}/input?location=store" class="inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-extrabold text-white transition" style="background-color: #38bdf8;">
                                                     <span>Lihat Detail</span>
                                                     <i class="bx bx-right-arrow-alt text-lg"></i>
                                                 </a>
-                                            </td>
-                                        </tr>
-                                        {{ else }}
-                                        <tr>
-                                            <td colspan="6" class="px-5 py-14 text-center">
-                                                <div class="mx-auto max-w-md">
-                                                    <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-slate-100 text-slate-400">
-                                                        <i class="bx bx-clipboard text-3xl"></i>
-                                                    </div>
-                                                    <h3 class="mt-4 text-lg font-extrabold text-[#153e8a]">Belum ada session untuk supplier ini</h3>
-                                                    <p class="mt-2 text-sm font-medium text-slate-500">Checker bisa langsung membuat sesi baru dari halaman supplier ini.</p>
-                                                    <button type="button" data-modal-open="stockCheckSessionModal" class="mt-5 inline-flex items-center gap-2 rounded-xl bg-[#f26419] px-5 py-3 text-sm font-extrabold text-white transition hover:bg-[#de5b16]">
-                                                        <i class="bx bx-plus"></i>
-                                                        <span>Buat Session Baru</span>
-                                                    </button>
-                                                </div>
                                             </td>
                                         </tr>
                                         {{ end }}
                                     </tbody>
                                 </table>
                             </div>
+                            {{ else }}
+                            <div class="px-3 py-10 sm:px-5 sm:py-14">
+                                <div class="mx-auto max-w-md text-center">
+                                    <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-slate-100 text-slate-400">
+                                        <i class="bx bx-clipboard text-3xl"></i>
+                                    </div>
+                                    <h3 class="mt-4 text-lg font-extrabold text-[#153e8a]">Belum ada session untuk supplier ini</h3>
+                                    <p class="mt-2 text-sm font-medium text-slate-500">Checker bisa langsung membuat sesi baru dari halaman supplier ini.</p>
+                                    <button type="button" data-modal-open="stockCheckSessionModal" class="mt-5 inline-flex min-h-[48px] items-center gap-2 rounded-xl bg-[#f26419] px-5 py-3 text-sm font-extrabold text-white transition hover:bg-[#de5b16]">
+                                        <i class="bx bx-plus"></i>
+                                        <span>Buat Session Baru</span>
+                                    </button>
+                                </div>
+                            </div>
+                            {{ end }}
 
                             {{ if gt .Pagination.TotalPages 1 }}
                             <div class="mt-5 flex flex-col gap-3 border-t border-slate-100 pt-4 sm:flex-row sm:items-center sm:justify-between">
@@ -348,19 +445,19 @@
 
                                 <div class="flex flex-wrap items-center gap-2">
                                     {{ if .Pagination.HasPrev }}
-                                    <a href="{{ .Pagination.PrevURL }}" class="inline-flex h-9 min-w-9 items-center justify-center rounded-xl border border-slate-200 px-3 text-sm font-extrabold text-slate-500 transition hover:bg-slate-50">
+                                    <a href="{{ .Pagination.PrevURL }}" class="inline-flex h-10 min-w-10 items-center justify-center rounded-xl border border-slate-200 px-3 text-sm font-extrabold text-slate-500 transition hover:bg-slate-50">
                                         <i class="bx bx-chevron-left"></i>
                                     </a>
                                     {{ end }}
 
                                     {{ range .Pagination.Pages }}
-                                    <a href="{{ .URL }}" class="inline-flex h-9 min-w-9 items-center justify-center rounded-xl px-3 text-sm font-extrabold transition {{ if .Active }}bg-[#153e8a] text-white{{ else }}border border-slate-200 text-slate-500 hover:bg-slate-50{{ end }}">
+                                    <a href="{{ .URL }}" class="inline-flex h-10 min-w-10 items-center justify-center rounded-xl px-3 text-sm font-extrabold transition {{ if .Active }}bg-[#153e8a] text-white{{ else }}border border-slate-200 text-slate-500 hover:bg-slate-50{{ end }}">
                                         {{ .Number }}
                                     </a>
                                     {{ end }}
 
                                     {{ if .Pagination.HasNext }}
-                                    <a href="{{ .Pagination.NextURL }}" class="inline-flex h-9 min-w-9 items-center justify-center rounded-xl border border-slate-200 px-3 text-sm font-extrabold text-slate-500 transition hover:bg-slate-50">
+                                    <a href="{{ .Pagination.NextURL }}" class="inline-flex h-10 min-w-10 items-center justify-center rounded-xl border border-slate-200 px-3 text-sm font-extrabold text-slate-500 transition hover:bg-slate-50">
                                         <i class="bx bx-chevron-right"></i>
                                     </a>
                                     {{ end }}
@@ -375,8 +472,8 @@
 
         <div data-modal class="fixed inset-0 z-50 hidden items-start justify-center overflow-y-auto p-4 sm:items-center sm:p-6" id="stockCheckSessionModal">
             <div class="absolute inset-0 bg-slate-900/50" data-modal-close></div>
-            <div class="relative w-full max-w-4xl rounded-3xl bg-white p-5 shadow-xl sm:p-6">
-                <div class="flex items-center justify-between border-b border-slate-100 pb-4">
+            <div class="modal-panel relative w-full max-w-4xl bg-white p-4 shadow-xl sm:p-6">
+                <div class="flex items-center justify-between gap-3 border-b border-slate-100 pb-4">
                     <h2 class="text-lg font-semibold text-slate-900">Create Stock Check Session</h2>
                     <button type="button" class="text-slate-400 transition hover:text-slate-600" data-modal-close>
                         <i class="bx bx-x text-2xl"></i>
@@ -448,9 +545,9 @@
                         <textarea id="session_notes" name="notes" class="mt-2 h-28 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none transition focus:border-[#153e8a]">{{ if eq .FormMode "create" }}{{ .FormSession.Notes }}{{ end }}</textarea>
                     </div>
 
-                    <div class="flex flex-col gap-3 border-t border-slate-100 pt-4 sm:flex-row sm:justify-end">
-                        <button type="button" class="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-50" data-modal-close>Batal</button>
-                        <button type="submit" class="inline-flex items-center justify-center gap-2 rounded-xl bg-[#153e8a] px-5 py-3 text-sm font-extrabold text-white transition hover:bg-[#1c4ca7]" {{ if not .Stores }}disabled{{ end }}>
+                    <div class="modal-actions border-t border-slate-100 pt-4">
+                        <button type="button" class="min-h-[46px] rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-50" data-modal-close>Batal</button>
+                        <button type="submit" class="inline-flex min-h-[46px] items-center justify-center gap-2 rounded-xl bg-[#153e8a] px-5 py-3 text-sm font-extrabold text-white transition hover:bg-[#1c4ca7]" {{ if not .Stores }}disabled{{ end }}>
                             <i class="bx bx-plus"></i>
                             <span>Simpan Session</span>
                         </button>
