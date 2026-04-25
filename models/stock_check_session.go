@@ -11,6 +11,7 @@ type StockCheckSession struct {
 	StoreID                  int
 	StoreName                string
 	SupplierID               int
+	SupplierCode             string
 	SupplierName             string
 	InitiationType           string
 	InitiationTypeLabel      string

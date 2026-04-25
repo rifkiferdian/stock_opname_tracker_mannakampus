@@ -90,22 +90,8 @@
 
             .item-preview {
                 display: grid;
-                gap: 0.85rem;
-                grid-template-columns: 5.2rem minmax(0, 1fr);
+                gap: 0.3rem;
                 align-items: center;
-            }
-
-            .item-thumb {
-                display: flex;
-                height: 5.2rem;
-                width: 5.2rem;
-                align-items: center;
-                justify-content: center;
-                border-radius: 1rem;
-                background: linear-gradient(180deg, #0f172a 0%, #334155 100%);
-                color: #fff;
-                font-size: 1.45rem;
-                font-weight: 800;
             }
 
             .status-dot {
@@ -216,6 +202,101 @@
                 box-shadow: 0 20px 34px -24px rgba(41, 72, 162, 0.95);
             }
 
+            .modal-panel {
+                border-radius: 1.5rem;
+                background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+                box-shadow: 0 28px 56px -34px rgba(15, 23, 42, 0.4);
+            }
+
+            @media (max-width: 639px) {
+                .modal-panel {
+                    border-radius: 1.15rem;
+                }
+
+                .qty-summary-grid {
+                    gap: 0.35rem;
+                }
+
+                .qty-summary-card {
+                    border-radius: 0.72rem;
+                    padding: 0.42rem 0.3rem;
+                }
+
+                .qty-summary-card span {
+                    font-size: 0.52rem;
+                }
+
+                .qty-summary-card strong {
+                    font-size: 0.8rem;
+                }
+
+                .control-panel {
+                    padding: 0.85rem;
+                }
+
+                .location-button {
+                    padding: 0.62rem 0.7rem;
+                    font-size: 0.76rem;
+                }
+
+                .qty-stepper {
+                    grid-template-columns: 2.7rem minmax(0, 1fr) 2.7rem;
+                    gap: 0.55rem;
+                    max-width: 14rem;
+                }
+
+                .qty-button {
+                    height: 2.7rem;
+                    width: 2.7rem;
+                    border-radius: 0.85rem;
+                    font-size: 1.15rem;
+                }
+
+                .qty-field {
+                    border-radius: 0.9rem;
+                    padding: 0.8rem 0.85rem;
+                    font-size: 1.45rem;
+                }
+
+                .submit-button {
+                    min-height: 3.25rem;
+                    border-radius: 0.85rem;
+                    font-size: 0.92rem;
+                }
+            }
+
+            .qty-summary-grid {
+                display: grid;
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+                gap: 0.5rem;
+            }
+
+            .qty-summary-card {
+                border-radius: 0.8rem;
+                background: #f8fafc;
+                border: 1px solid #e2e8f0;
+                padding: 0.5rem 0.4rem;
+                text-align: center;
+            }
+
+            .qty-summary-card span {
+                display: block;
+                font-size: 0.58rem;
+                font-weight: 800;
+                letter-spacing: 0.07em;
+                text-transform: uppercase;
+                color: #64748b;
+            }
+
+            .qty-summary-card strong {
+                display: block;
+                margin-top: 0.12rem;
+                font-size: 0.88rem;
+                line-height: 1.1;
+                font-weight: 800;
+                color: #153e8a;
+            }
+
             .compact-list {
                 display: grid;
                 gap: 0.55rem;
@@ -237,19 +318,19 @@
             .compact-qty {
                 display: grid;
                 grid-template-columns: repeat(3, minmax(0, 1fr));
-                gap: 0.4rem;
+                gap: 0.3rem;
             }
 
             .compact-qty div {
-                border-radius: 0.8rem;
+                border-radius: 0.65rem;
                 background: #f8fafc;
-                padding: 0.45rem 0.35rem;
+                padding: 0.32rem 0.2rem;
                 text-align: center;
             }
 
             .compact-qty span {
                 display: block;
-                font-size: 0.62rem;
+                font-size: 0.54rem;
                 font-weight: 800;
                 letter-spacing: 0.05em;
                 text-transform: uppercase;
@@ -258,8 +339,9 @@
 
             .compact-qty strong {
                 display: block;
-                margin-top: 0.18rem;
-                font-size: 0.92rem;
+                margin-top: 0.08rem;
+                font-size: 0.78rem;
+                line-height: 1.1;
                 font-weight: 800;
                 color: #153e8a;
             }
@@ -293,8 +375,8 @@
                             <div class="flex items-start justify-between gap-3">
                                 <div class="min-w-0">
                                     <p class="text-[11px] font-extrabold uppercase tracking-[0.18em] text-slate-400">Checker Input</p>
-                                    <h1 class="mt-1 truncate text-xl font-extrabold text-[#153e8a]">{{ .Session.SessionNumber }}</h1>
-                                    <p class="mt-2 text-xs font-semibold text-slate-500">{{ .Session.SupplierName }} &middot; {{ .Session.StoreName }} &middot; {{ .Session.SessionDateDisplay }}</p>
+                                    <h1 class="mt-1 truncate text-xl font-extrabold text-[#153e8a]">{{ .Session.SupplierName }}</h1>
+                                    <p class="mt-2 text-xs font-semibold text-slate-500">{{ if .Session.SupplierCode }}{{ .Session.SupplierCode }} &middot; {{ end }}{{ .Session.StoreName }} &middot; <br> {{ .Session.SessionDateDisplay }}</p>
                                 </div>
 
                                 <a href="/stock-checker/{{ .Session.SupplierID }}" class="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-extrabold text-slate-600 transition hover:bg-slate-50">
@@ -324,12 +406,13 @@
                                 <h2 class="mt-4 text-2xl font-extrabold">External Scanner Active</h2>
                                 <p class="mt-1 text-sm font-semibold text-white/65">Connected ready to scan barcode item session</p>
 
-                                <form action="/stock-checker/sessions/{{ .Session.ID }}/input" method="post" class="mt-5 w-full max-w-xl space-y-4">
+                                <form id="scannerForm" action="/stock-checker/sessions/{{ .Session.ID }}/input" method="post" class="mt-5 w-full max-w-xl space-y-4">
                                     <input type="hidden" name="location" id="scan_location" value="{{ if eq .ScanForm.Location "warehouse" }}warehouse{{ else }}store{{ end }}">
+                                    <input type="hidden" name="barcode" id="selected_barcode" value="{{ .ScanForm.Barcode }}">
 
                                     <div class="scanner-input-shell">
                                         <i class="bx bx-search-alt-2 text-xl text-white/80"></i>
-                                        <input id="scan_barcode" name="barcode" type="text" value="{{ .ScanForm.Barcode }}" class="scanner-input" placeholder="Manual SKU/Barcode Entry..." autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" required>
+                                        <input id="scan_barcode" type="text" class="scanner-input" placeholder="Scan barcode item..." autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" autofocus>
                                         <i class="bx bx-corner-down-left text-xl text-white/70"></i>
                                     </div>
 
@@ -337,48 +420,81 @@
                                         Scan barcode untuk menampilkan detail item.
                                     </div>
 
-                                    <section id="selectedItemCard" class="surface-card p-4 text-left text-slate-800">
-                                        <div class="item-preview">
-                                            <div id="selectedItemThumb" class="item-thumb">IT</div>
-                                            <div class="min-w-0">
-                                                <p class="text-[11px] font-extrabold uppercase tracking-[0.16em] text-slate-400">SKU: <span id="selectedItemSKU">-</span></p>
-                                                <h3 id="selectedItemName" class="mt-1 truncate text-2xl font-extrabold text-[#153e8a]">Menunggu scan item</h3>
-                                                <p class="mt-1 truncate text-sm font-semibold text-slate-500">Barcode: <span id="selectedItemBarcode">-</span></p>
-                                                <div class="mt-3 inline-flex items-center gap-2 text-sm font-semibold text-slate-600">
-                                                    <span class="status-dot"></span>
-                                                    <span id="selectedItemStatus">Item session siap diinput.</span>
+                                    <div data-modal class="fixed inset-0 hidden items-start justify-center overflow-y-auto px-3 pb-4 pt-20 sm:items-center sm:p-6" id="scannerItemModal" style="z-index: 90;">
+                                        <div class="absolute inset-0 bg-slate-900/60" data-scan-modal-close></div>
+
+                                        <div class="modal-panel relative z-10 max-h-[calc(100dvh-6rem)] w-full max-w-[22rem] overflow-y-auto overflow-x-hidden border border-slate-200 sm:max-h-none sm:max-w-lg sm:overflow-visible">
+                                            <div class="flex items-start justify-between gap-3 border-b border-slate-200 px-4 py-3.5 sm:gap-4 sm:px-6 sm:py-4">
+                                                <div>
+                                                    <p class="text-[11px] font-extrabold uppercase tracking-[0.18em] text-slate-400">Scanner Item</p>
+                                                    <h3 class="mt-1 text-lg font-extrabold text-[#153e8a] sm:text-xl">Input Qty Item</h3>
+                                                    <p class="mt-1 text-xs font-semibold text-slate-500 sm:text-sm">Detail item hasil scan muncul di sini.</p>
                                                 </div>
+
+                                                <button type="button" class="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-400 transition hover:text-slate-600 sm:h-10 sm:w-10" data-scan-modal-close aria-label="Tutup modal">
+                                                    <i class="bx bx-x text-2xl"></i>
+                                                </button>
+                                            </div>
+
+                                            <div class="space-y-4 px-4 py-4 sm:space-y-5 sm:px-6 sm:py-5">
+                                                <section class="surface-card p-3 text-left text-slate-800 sm:p-3.5">
+                                                    <div class="item-preview">
+                                                        <div class="min-w-0">
+                                                            <p class="text-[11px] font-extrabold uppercase tracking-[0.16em] text-slate-400">SKU: <span id="selectedItemSKU">-</span></p>
+                                                            <h3 id="selectedItemName" class="mt-0.5 truncate text-lg font-extrabold text-[#153e8a] sm:text-xl">Menunggu scan item</h3>
+                                                            <p class="mt-1 truncate text-xs font-semibold text-slate-500 sm:text-sm">Barcode: <span id="selectedItemBarcode">-</span></p>
+                                                        </div>
+                                                    </div>
+                                                </section>
+
+                                                <div class="qty-summary-grid">
+                                                    <div class="qty-summary-card">
+                                                        <span>Toko</span>
+                                                        <strong id="selectedItemQtyStore">0</strong>
+                                                    </div>
+                                                    <div class="qty-summary-card">
+                                                        <span>Gudang</span>
+                                                        <strong id="selectedItemQtyWarehouse">0</strong>
+                                                    </div>
+                                                    <div class="qty-summary-card">
+                                                        <span>Total</span>
+                                                        <strong id="selectedItemQtyTotal">0</strong>
+                                                    </div>
+                                                </div>
+
+                                                <section class="control-panel">
+                                                    <div class="flex items-center justify-between gap-3">
+                                                        <div>
+                                                            <p class="text-sm font-extrabold text-[#153e8a]">Adjust Stock Quantity</p>
+                                                            <p id="selectedLocationHelper" class="mt-1 text-xs font-semibold text-slate-500">Qty akan disimpan ke area toko.</p>
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="location-switch mt-4">
+                                                        <button type="button" class="location-button active" data-location-button="store">Shop Floor</button>
+                                                        <button type="button" class="location-button" data-location-button="warehouse">Warehouse</button>
+                                                    </div>
+
+                                                    <div class="qty-block mt-5">
+                                                        <p id="selectedLocationLabel" class="text-sm font-semibold text-slate-500">Front display units</p>
+                                                        <div class="qty-stepper">
+                                                            <button type="button" id="qtyMinusButton" class="qty-button" aria-label="Kurangi qty">-</button>
+                                                            <input id="scan_qty" name="qty" type="number" step="1" min="0" value="{{ if .ScanForm.Qty }}{{ .ScanForm.Qty }}{{ else }}0{{ end }}" class="qty-field" inputmode="numeric" required>
+                                                            <button type="button" id="qtyPlusButton" class="qty-button" aria-label="Tambah qty">+</button>
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="mt-6 flex flex-col gap-3">
+                                                        <button type="submit" id="submitScanButton" class="submit-button sm:w-auto sm:px-6">
+                                                            <i class="bx bx-sync text-xl"></i>
+                                                            <span>Simpan Qty</span>
+                                                        </button>
+                                                        <button type="button" class="rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-600 transition hover:bg-slate-50" data-scan-modal-close>Batal</button>
+                                                    </div>
+                                                </section>
                                             </div>
                                         </div>
-                                    </section>
-
-                                    <section class="control-panel">
-                                        <div class="flex items-center justify-between gap-3">
-                                            <div>
-                                                <p class="text-sm font-extrabold text-[#153e8a]">Adjust Stock Quantity</p>
-                                                <p id="selectedLocationHelper" class="mt-1 text-xs font-semibold text-slate-500">Qty akan disimpan ke area toko.</p>
-                                            </div>
-                                        </div>
-
-                                        <div class="location-switch mt-4">
-                                            <button type="button" class="location-button active" data-location-button="store">Shop Floor</button>
-                                            <button type="button" class="location-button" data-location-button="warehouse">Warehouse</button>
-                                        </div>
-
-                                        <div class="qty-block mt-5">
-                                            <p id="selectedLocationLabel" class="text-sm font-semibold text-slate-500">Front display units</p>
-                                            <div class="qty-stepper">
-                                                <button type="button" id="qtyMinusButton" class="qty-button" aria-label="Kurangi qty">-</button>
-                                                <input id="scan_qty" name="qty" type="number" step="1" min="0" value="{{ if .ScanForm.Qty }}{{ .ScanForm.Qty }}{{ else }}0{{ end }}" class="qty-field" inputmode="numeric" required>
-                                                <button type="button" id="qtyPlusButton" class="qty-button" aria-label="Tambah qty">+</button>
-                                            </div>
-                                        </div>
-
-                                        <button type="submit" id="submitScanButton" class="submit-button mt-6">
-                                            <i class="bx bx-sync text-xl"></i>
-                                            <span>Update Inventory Records</span>
-                                        </button>
-                                    </section>
+                                    </div>
                                 </form>
                             </div>
                         </section>
@@ -470,6 +586,9 @@
                                 data-barcode="{{ .Barcode }}"
                                 data-status="{{ .StatusLabel }}"
                                 data-thumb="{{ printf "%.2s" .ProductName }}"
+                                data-store="{{ .QtyStoreDisplay }}"
+                                data-warehouse="{{ .QtyWarehouseDisplay }}"
+                                data-total="{{ .TotalQtyDisplay }}"
                             ></div>
                             {{ end }}
                         </div>
@@ -487,7 +606,11 @@
                 var sidebar = document.getElementById('app-sidebar');
                 var overlay = document.getElementById('sidebar-overlay');
                 var toggleButtons = document.querySelectorAll('[data-sidebar-toggle]');
+                var scannerForm = document.getElementById('scannerForm');
+                var scanModal = document.getElementById('scannerItemModal');
+                var scanModalCloses = document.querySelectorAll('[data-scan-modal-close]');
                 var barcodeInput = document.getElementById('scan_barcode');
+                var selectedBarcodeInput = document.getElementById('selected_barcode');
                 var qtyInput = document.getElementById('scan_qty');
                 var qtyMinusButton = document.getElementById('qtyMinusButton');
                 var qtyPlusButton = document.getElementById('qtyPlusButton');
@@ -500,8 +623,11 @@
                 var itemSKU = document.getElementById('selectedItemSKU');
                 var itemName = document.getElementById('selectedItemName');
                 var itemBarcode = document.getElementById('selectedItemBarcode');
-                var itemStatus = document.getElementById('selectedItemStatus');
-                var itemThumb = document.getElementById('selectedItemThumb');
+                var itemQtyStore = document.getElementById('selectedItemQtyStore');
+                var itemQtyWarehouse = document.getElementById('selectedItemQtyWarehouse');
+                var itemQtyTotal = document.getElementById('selectedItemQtyTotal');
+                var initialQtyValue = qtyInput ? (qtyInput.value || '0') : '0';
+                var scanCommitTimer = null;
 
                 var items = {};
                 document.querySelectorAll('[data-item]').forEach(function (node) {
@@ -512,26 +638,66 @@
                         code: node.getAttribute('data-code') || '-',
                         barcode: node.getAttribute('data-barcode') || '-',
                         status: node.getAttribute('data-status') || 'Item session siap diinput.',
-                        thumb: (node.getAttribute('data-thumb') || 'IT').trim().toUpperCase()
+                        qtyStore: node.getAttribute('data-store') || '0',
+                        qtyWarehouse: node.getAttribute('data-warehouse') || '0',
+                        totalQty: node.getAttribute('data-total') || '0'
                     };
                 });
+
+                function updateBodyScrollState() {
+                    var sidebarOpen = sidebar && !sidebar.classList.contains('-translate-x-full');
+                    var modalOpen = scanModal && scanModal.classList.contains('flex');
+                    document.body.classList.toggle('overflow-hidden', Boolean(sidebarOpen || modalOpen));
+                }
 
                 function closeSidebar() {
                     if (!sidebar) return;
                     sidebar.classList.add('-translate-x-full');
                     if (overlay) overlay.classList.add('hidden');
-                    document.body.classList.remove('overflow-hidden');
+                    updateBodyScrollState();
                 }
 
                 function openSidebar() {
                     if (!sidebar) return;
                     sidebar.classList.remove('-translate-x-full');
                     if (overlay) overlay.classList.remove('hidden');
-                    document.body.classList.add('overflow-hidden');
+                    updateBodyScrollState();
                 }
 
                 function normalizeBarcode(value) {
                     return (value || '').trim().toLowerCase();
+                }
+
+                function getSelectedBarcode() {
+                    return selectedBarcodeInput ? (selectedBarcodeInput.value || '').trim() : '';
+                }
+
+                function setSelectedBarcode(value) {
+                    if (!selectedBarcodeInput) return;
+                    selectedBarcodeInput.value = (value || '').trim();
+                }
+
+                function clearScannerInput() {
+                    if (!barcodeInput) return;
+                    barcodeInput.value = '';
+                    if (scanCommitTimer) {
+                        window.clearTimeout(scanCommitTimer);
+                        scanCommitTimer = null;
+                    }
+                }
+
+                function focusScannerInput() {
+                    if (!barcodeInput) return;
+                    barcodeInput.focus();
+                    if (typeof barcodeInput.setSelectionRange === 'function') {
+                        var length = barcodeInput.value.length;
+                        barcodeInput.setSelectionRange(length, length);
+                    }
+                }
+
+                function resetQty(value) {
+                    if (!qtyInput) return;
+                    qtyInput.value = value || '0';
                 }
 
                 function updateLocationUI() {
@@ -549,13 +715,35 @@
                     }
                 }
 
+                function openScanModal() {
+                    if (!scanModal) return;
+                    scanModal.classList.remove('hidden');
+                    scanModal.classList.add('flex');
+                    updateBodyScrollState();
+                }
+
+                function closeScanModal(resetSelection) {
+                    if (!scanModal) return;
+                    scanModal.classList.add('hidden');
+                    scanModal.classList.remove('flex');
+                    if (resetSelection) {
+                        setSelectedBarcode('');
+                        clearScannerInput();
+                        resetQty('0');
+                        setPreviewEmpty();
+                    }
+                    updateBodyScrollState();
+                    focusScannerInput();
+                }
+
                 function setPreviewEmpty() {
                     itemSKU.textContent = '-';
                     itemName.textContent = 'Menunggu scan item';
                     itemBarcode.textContent = '-';
-                    itemStatus.textContent = 'Item session siap diinput.';
-                    itemThumb.textContent = 'IT';
-                    statusLabel.textContent = 'Scan barcode untuk menampilkan detail item.';
+                    itemQtyStore.textContent = '0';
+                    itemQtyWarehouse.textContent = '0';
+                    itemQtyTotal.textContent = '0';
+                    statusLabel.textContent = 'Scan barcode untuk barang berikutnya.';
                     qtyInput.disabled = true;
                     qtyMinusButton.disabled = true;
                     qtyPlusButton.disabled = true;
@@ -566,9 +754,10 @@
                     itemSKU.textContent = item.code;
                     itemName.textContent = item.name;
                     itemBarcode.textContent = item.barcode;
-                    itemStatus.textContent = item.status;
-                    itemThumb.textContent = item.thumb || 'IT';
-                    statusLabel.textContent = 'Item ditemukan. Lanjut isi qty lalu simpan.';
+                    itemQtyStore.textContent = item.qtyStore || '0';
+                    itemQtyWarehouse.textContent = item.qtyWarehouse || '0';
+                    itemQtyTotal.textContent = item.totalQty || '0';
+                    statusLabel.textContent = 'Item ditemukan. Modal input qty siap digunakan.';
                     qtyInput.disabled = false;
                     qtyMinusButton.disabled = false;
                     qtyPlusButton.disabled = false;
@@ -579,8 +768,9 @@
                     itemSKU.textContent = '-';
                     itemName.textContent = 'Item tidak ditemukan';
                     itemBarcode.textContent = barcode || '-';
-                    itemStatus.textContent = 'Barcode ini belum ada pada daftar item session.';
-                    itemThumb.textContent = '!';
+                    itemQtyStore.textContent = '0';
+                    itemQtyWarehouse.textContent = '0';
+                    itemQtyTotal.textContent = '0';
                     statusLabel.textContent = 'Barcode tidak cocok dengan item session ini.';
                     qtyInput.disabled = true;
                     qtyMinusButton.disabled = true;
@@ -589,18 +779,80 @@
                 }
 
                 function syncPreviewFromBarcode() {
-                    var barcode = normalizeBarcode(barcodeInput.value);
+                    var currentInput = barcodeInput ? barcodeInput.value : '';
+                    var barcode = normalizeBarcode(currentInput);
                     if (!barcode) {
+                        var selectedBarcode = getSelectedBarcode();
+                        if (selectedBarcode && items[normalizeBarcode(selectedBarcode)]) {
+                            setPreviewMatched(items[normalizeBarcode(selectedBarcode)]);
+                            return;
+                        }
                         setPreviewEmpty();
                         return;
                     }
 
                     if (items[barcode]) {
-                        setPreviewMatched(items[barcode]);
+                        statusLabel.textContent = 'Item dikenali. Tekan Enter untuk buka modal input qty.';
                         return;
                     }
 
-                    setPreviewNotFound(barcodeInput.value.trim());
+                    statusLabel.textContent = 'Barcode tidak cocok dengan item session ini.';
+                }
+
+                function commitScannedBarcode() {
+                    if (!barcodeInput) return false;
+                    if (scanCommitTimer) {
+                        window.clearTimeout(scanCommitTimer);
+                        scanCommitTimer = null;
+                    }
+
+                    var rawBarcode = barcodeInput.value.trim();
+                    var normalizedBarcode = normalizeBarcode(rawBarcode);
+
+                    if (!normalizedBarcode) {
+                        setSelectedBarcode('');
+                        setPreviewEmpty();
+                        return false;
+                    }
+
+                    if (items[normalizedBarcode]) {
+                        setSelectedBarcode(items[normalizedBarcode].barcode || rawBarcode);
+                        setPreviewMatched(items[normalizedBarcode]);
+                        resetQty('0');
+                        clearScannerInput();
+                        openScanModal();
+                        return true;
+                    }
+
+                    setSelectedBarcode('');
+                    clearScannerInput();
+                    closeScanModal(false);
+                    setPreviewNotFound(rawBarcode);
+                    return false;
+                }
+
+                function scheduleScanCommit() {
+                    if (!barcodeInput) return;
+                    if (scanModal && scanModal.classList.contains('flex')) return;
+
+                    var rawBarcode = barcodeInput.value.trim();
+                    if (!rawBarcode) return;
+
+                    var normalizedBarcode = normalizeBarcode(rawBarcode);
+                    if (!items[normalizedBarcode]) return;
+
+                    if (scanCommitTimer) {
+                        window.clearTimeout(scanCommitTimer);
+                    }
+
+                    scanCommitTimer = window.setTimeout(function () {
+                        if (commitScannedBarcode()) {
+                            qtyInput.focus();
+                            qtyInput.select();
+                        } else {
+                            focusScannerInput();
+                        }
+                    }, 180);
                 }
 
                 function adjustQty(delta) {
@@ -646,21 +898,73 @@
                     });
                 }
 
+                scanModalCloses.forEach(function (button) {
+                    button.addEventListener('click', function () {
+                        closeScanModal(true);
+                    });
+                });
+
                 if (barcodeInput) {
-                    barcodeInput.addEventListener('input', syncPreviewFromBarcode);
+                    barcodeInput.addEventListener('input', function () {
+                        syncPreviewFromBarcode();
+                        scheduleScanCommit();
+                    });
                     barcodeInput.addEventListener('keydown', function (event) {
-                        if (event.key === 'Enter' && !qtyInput.disabled) {
+                        if (event.key === 'Enter' || event.key === 'Tab') {
                             event.preventDefault();
-                            qtyInput.focus();
-                            qtyInput.select();
+                            window.setTimeout(function () {
+                                if (commitScannedBarcode()) {
+                                    qtyInput.focus();
+                                    qtyInput.select();
+                                    return;
+                                }
+                                focusScannerInput();
+                            }, 0);
                         }
                     });
-                    barcodeInput.focus();
-                    barcodeInput.select();
+                    barcodeInput.addEventListener('blur', function () {
+                        if (scanModal && scanModal.classList.contains('flex')) return;
+                        window.setTimeout(function () {
+                            if (scanModal && scanModal.classList.contains('flex')) return;
+                            focusScannerInput();
+                        }, 0);
+                    });
+                    focusScannerInput();
                 }
 
+                if (scannerForm) {
+                    scannerForm.addEventListener('submit', function (event) {
+                        if (barcodeInput && barcodeInput.value.trim()) {
+                            commitScannedBarcode();
+                        }
+
+                        if (!getSelectedBarcode()) {
+                            event.preventDefault();
+                            if (barcodeInput) {
+                                barcodeInput.focus();
+                            }
+                            return;
+                        }
+
+                        submitButton.disabled = true;
+                    });
+                }
+
+                document.addEventListener('keydown', function (event) {
+                    if (event.key === 'Escape' && scanModal && scanModal.classList.contains('flex')) {
+                        closeScanModal(true);
+                    }
+                });
+
                 updateLocationUI();
-                syncPreviewFromBarcode();
+                setPreviewEmpty();
+
+                var selectedBarcode = getSelectedBarcode();
+                if (selectedBarcode && items[normalizeBarcode(selectedBarcode)]) {
+                    setPreviewMatched(items[normalizeBarcode(selectedBarcode)]);
+                    resetQty(initialQtyValue);
+                    openScanModal();
+                }
             });
         </script>
     </body>
