@@ -1,6 +1,7 @@
 package services
 
 import (
+	"database/sql"
 	"errors"
 	"fmt"
 	"gobase-app/models"
@@ -55,6 +56,13 @@ func (s *StockCheckSessionService) GetSessions(filter models.StockCheckSessionLi
 
 func (s *StockCheckSessionService) GetStoreOptions() ([]models.Store, error) {
 	return s.Repo.GetStoreOptions()
+}
+
+func (s *StockCheckSessionService) GetStoreOptionsByUserID(userID int) ([]models.Store, error) {
+	if userID <= 0 {
+		return []models.Store{}, nil
+	}
+	return s.Repo.GetStoreOptionsByUserID(userID)
 }
 
 func (s *StockCheckSessionService) GetSupplierOptions() ([]models.Supplier, error) {
@@ -157,32 +165,83 @@ func (s *StockCheckSessionService) GetSessionDetailPage(id int, page int, limit 
 	}, nil
 }
 
-func (s *StockCheckSessionService) CreateSession(input models.StockCheckSessionCreateInput) error {
+func (s *StockCheckSessionService) GetCheckerInputPage(sessionID int, userID int) (models.StockCheckSessionCheckerInputPage, error) {
+	if sessionID <= 0 {
+		return models.StockCheckSessionCheckerInputPage{}, errors.New("session id tidak valid")
+	}
+	if userID <= 0 {
+		return models.StockCheckSessionCheckerInputPage{}, errors.New("user login tidak valid")
+	}
+
+	session, err := s.Repo.GetByID(sessionID)
+	if err != nil {
+		return models.StockCheckSessionCheckerInputPage{}, err
+	}
+
+	hasAccess, err := s.Repo.UserHasStoreAccess(userID, session.StoreID)
+	if err != nil {
+		return models.StockCheckSessionCheckerInputPage{}, err
+	}
+	if !hasAccess {
+		return models.StockCheckSessionCheckerInputPage{}, errors.New("session tidak tersedia untuk user login")
+	}
+
+	items, err := s.Repo.GetCheckerInputItems(sessionID)
+	if err != nil {
+		return models.StockCheckSessionCheckerInputPage{}, err
+	}
+
+	return models.StockCheckSessionCheckerInputPage{
+		Session: session,
+		Items:   items,
+	}, nil
+}
+
+func (s *StockCheckSessionService) CreateSession(input models.StockCheckSessionCreateInput) (int, error) {
 	sanitizeStockCheckSessionCreateInput(&input)
 
 	if input.CreatedBy <= 0 {
-		return errors.New("user login tidak valid")
+		return 0, errors.New("user login tidak valid")
 	}
 	if err := validateStockCheckSessionCreateInput(input); err != nil {
-		return err
+		return 0, err
+	}
+
+	if input.CreatedBy > 0 {
+		hasAccess, err := s.Repo.UserHasStoreAccess(input.CreatedBy, input.StoreID)
+		if err != nil {
+			return 0, err
+		}
+		if !hasAccess {
+			return 0, errors.New("store tidak tersedia untuk user login")
+		}
 	}
 
 	storeCode, err := s.Repo.GetStoreCodeByID(input.StoreID)
 	if err != nil {
-		return err
+		return 0, err
 	}
 	if strings.TrimSpace(storeCode) == "" {
-		return errors.New("store code tidak ditemukan")
+		return 0, errors.New("store code tidak ditemukan")
 	}
 
 	prefix := fmt.Sprintf("SCS-%s-%s-", storeCode, strings.ReplaceAll(input.SessionDate, "-", ""))
 	nextSequence, err := s.Repo.GetNextSessionSequence(prefix)
 	if err != nil {
-		return err
+		return 0, err
 	}
 
 	input.SessionNumber = fmt.Sprintf("%s%03d", prefix, nextSequence)
-	return s.Repo.Create(input)
+	sessionID, err := s.Repo.Create(input)
+	if err != nil {
+		return 0, err
+	}
+
+	if err := s.Repo.SeedItemsFromSupplier(sessionID, input.SupplierID, input.CreatedBy); err != nil {
+		return 0, err
+	}
+
+	return sessionID, nil
 }
 
 func (s *StockCheckSessionService) UpdateSession(input models.StockCheckSessionUpdateInput) error {
@@ -252,6 +311,50 @@ func (s *StockCheckSessionService) UpdateReviewItem(input models.StockCheckSessi
 	return s.Repo.UpdateReviewItem(input)
 }
 
+func (s *StockCheckSessionService) RecordCheckerScan(input models.StockCheckSessionCheckerScanInput) (int, error) {
+	input.Location = sanitizeStockCheckCheckerLocation(input.Location)
+	input.Barcode = strings.TrimSpace(input.Barcode)
+
+	if input.SessionID <= 0 {
+		return 0, errors.New("session id tidak valid")
+	}
+	if input.UpdatedBy <= 0 {
+		return 0, errors.New("user login tidak valid")
+	}
+	if input.Location == "" {
+		return 0, errors.New("lokasi input wajib dipilih")
+	}
+	if input.Barcode == "" {
+		return 0, errors.New("barcode wajib diisi")
+	}
+	if input.Qty < 0 {
+		return 0, errors.New("qty tidak boleh kurang dari 0")
+	}
+
+	session, err := s.Repo.GetByID(input.SessionID)
+	if err != nil {
+		return 0, err
+	}
+
+	hasAccess, err := s.Repo.UserHasStoreAccess(input.UpdatedBy, session.StoreID)
+	if err != nil {
+		return 0, err
+	}
+	if !hasAccess {
+		return 0, errors.New("session tidak tersedia untuk user login")
+	}
+
+	itemID, err := s.Repo.UpdateCheckerItemQtyByBarcode(input.SessionID, input.Location, input.Barcode, input.Qty, input.UpdatedBy)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return 0, errors.New("barcode tidak ditemukan pada daftar item supplier ini")
+		}
+		return 0, err
+	}
+
+	return itemID, nil
+}
+
 func (s *StockCheckSessionService) DeleteSession(id int) error {
 	if id <= 0 {
 		return errors.New("session id tidak valid")
@@ -292,6 +395,15 @@ func sanitizeStockCheckSessionStatus(value string) string {
 	}
 }
 
+func sanitizeStockCheckCheckerLocation(value string) string {
+	switch strings.TrimSpace(value) {
+	case "store", "warehouse":
+		return value
+	default:
+		return ""
+	}
+}
+
 func sanitizeStockCheckSessionInitiationType(value string) string {
 	switch strings.TrimSpace(value) {
 	case "scheduled", "checker_initiative":
@@ -306,6 +418,15 @@ func sanitizeStockCheckSessionCreateInput(input *models.StockCheckSessionCreateI
 	input.InitiationType = sanitizeStockCheckSessionInitiationType(input.InitiationType)
 	input.Status = sanitizeStockCheckSessionStatus(input.Status)
 	input.Notes = strings.TrimSpace(input.Notes)
+	if input.SessionDate == "" {
+		input.SessionDate = time.Now().Format("2006-01-02")
+	}
+	if input.InitiationType == "" {
+		input.InitiationType = "checker_initiative"
+	}
+	if input.Status == "" {
+		input.Status = "in_progress"
+	}
 }
 
 func sanitizeStockCheckSessionUpdateInput(input *models.StockCheckSessionUpdateInput) {

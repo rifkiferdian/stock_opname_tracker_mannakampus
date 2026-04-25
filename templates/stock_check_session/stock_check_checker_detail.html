@@ -195,10 +195,10 @@
                                         <i class="bx bx-arrow-back"></i>
                                         <span>Kembali</span>
                                     </a>
-                                    <a href="/stock-check-sessions?supplier_id={{ .Supplier.ID }}" class="inline-flex items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-extrabold text-white transition" style="background-color: #153e8a;">
+                                    <button type="button" data-modal-open="stockCheckSessionModal" class="inline-flex items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-extrabold text-white transition hover:bg-[#1c4ca7]" style="background-color: #153e8a;">
                                         <i class="bx bx-plus"></i>
                                         <span>Tambah Session Baru</span>
-                                    </a>
+                                    </button>
                                 </div>
                             </article>
 
@@ -227,6 +227,18 @@
                                 </div>
                             </article>
                         </section>
+
+                        {{ if .Error }}
+                        <div class="rounded-[1.35rem] border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-600">
+                            {{ .Error }}
+                        </div>
+                        {{ end }}
+
+                        {{ if .Success }}
+                        <div class="rounded-[1.35rem] border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700">
+                            {{ .Success }}
+                        </div>
+                        {{ end }}
 
                         <section class="rounded-[1.75rem] bg-white p-5 shadow-sm">
                             <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
@@ -301,7 +313,7 @@
                                             </td>
                                             <td class="px-5 py-4 font-semibold text-slate-600">{{ .CreatedByName }}</td>
                                             <td class="px-5 py-4">
-                                                <a href="/stock-check-sessions/{{ .ID }}" class="inline-flex items-center gap-2 rounded-xl bg-[#153e8a] px-4 py-2.5 text-sm font-extrabold text-white transition hover:bg-[#1c4ca7]">
+                                                <a href="/stock-checker/sessions/{{ .ID }}/input?location=store" class="inline-flex items-center gap-2 rounded-xl bg-[#153e8a] px-4 py-2.5 text-sm font-extrabold text-white transition hover:bg-[#1c4ca7]">
                                                     <span>Lihat Detail</span>
                                                     <i class="bx bx-right-arrow-alt text-lg"></i>
                                                 </a>
@@ -315,11 +327,11 @@
                                                         <i class="bx bx-clipboard text-3xl"></i>
                                                     </div>
                                                     <h3 class="mt-4 text-lg font-extrabold text-[#153e8a]">Belum ada session untuk supplier ini</h3>
-                                                    <p class="mt-2 text-sm font-medium text-slate-500">Checker bisa mulai dari halaman manajemen session untuk membuat sesi baru yang terhubung ke supplier ini.</p>
-                                                    <a href="/stock-check-sessions?supplier_id={{ .Supplier.ID }}" class="mt-5 inline-flex items-center gap-2 rounded-xl bg-[#f26419] px-5 py-3 text-sm font-extrabold text-white transition hover:bg-[#de5b16]">
+                                                    <p class="mt-2 text-sm font-medium text-slate-500">Checker bisa langsung membuat sesi baru dari halaman supplier ini.</p>
+                                                    <button type="button" data-modal-open="stockCheckSessionModal" class="mt-5 inline-flex items-center gap-2 rounded-xl bg-[#f26419] px-5 py-3 text-sm font-extrabold text-white transition hover:bg-[#de5b16]">
                                                         <i class="bx bx-plus"></i>
-                                                        <span>Buka Manajemen Session</span>
-                                                    </a>
+                                                        <span>Buat Session Baru</span>
+                                                    </button>
                                                 </div>
                                             </td>
                                         </tr>
@@ -361,6 +373,92 @@
             </div>
         </div>
 
+        <div data-modal class="fixed inset-0 z-50 hidden items-start justify-center overflow-y-auto p-4 sm:items-center sm:p-6" id="stockCheckSessionModal">
+            <div class="absolute inset-0 bg-slate-900/50" data-modal-close></div>
+            <div class="relative w-full max-w-4xl rounded-3xl bg-white p-5 shadow-xl sm:p-6">
+                <div class="flex items-center justify-between border-b border-slate-100 pb-4">
+                    <h2 class="text-lg font-semibold text-slate-900">Create Stock Check Session</h2>
+                    <button type="button" class="text-slate-400 transition hover:text-slate-600" data-modal-close>
+                        <i class="bx bx-x text-2xl"></i>
+                    </button>
+                </div>
+
+                <form action="/stock-check-sessions" method="post" class="mt-6 space-y-5">
+                    <input type="hidden" name="supplier_id" value="{{ .Supplier.ID }}">
+                    <input type="hidden" name="return_to" value="{{ .CurrentURL }}">
+                    <input type="hidden" name="initiation_type" value="checker_initiative">
+                    <input type="hidden" name="status" value="in_progress">
+
+                    <div class="grid gap-5 md:grid-cols-2">
+                        <div class="space-y-4">
+                            <div>
+                                <label class="text-xs font-semibold uppercase tracking-wider text-slate-500">Session Number</label>
+                                <div class="mt-2 rounded-xl border border-slate-200 bg-slate-100 px-3 py-2.5 text-sm font-semibold text-slate-500">
+                                    Otomatis dibuat oleh sistem saat session disimpan
+                                </div>
+                            </div>
+
+                            <div>
+                                <label for="session_date" class="text-xs font-semibold uppercase tracking-wider text-slate-500">Session Date</label>
+                                <div class="mt-2 flex items-center rounded-xl border border-slate-200 bg-white px-3 focus-within:border-[#153e8a]">
+                                    <i class="bx bx-calendar text-lg text-slate-400"></i>
+                                    <input id="session_date" name="session_date" type="date" value="{{ .FormSession.SessionDate }}" class="min-h-[46px] w-full border-0 bg-transparent px-3 py-2.5 text-sm text-slate-700 outline-none" required>
+                                    <button type="button" class="inline-flex h-9 w-9 items-center justify-center rounded-lg text-slate-400 transition hover:bg-slate-100 hover:text-[#153e8a]" data-date-picker-target="session_date" aria-label="Pilih tanggal session">
+                                        <i class="bx bx-chevron-down text-base"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label for="session_store_id" class="text-xs font-semibold uppercase tracking-wider text-slate-500">Store</label>
+                                {{ if .Stores }}
+                                <select id="session_store_id" name="store_id" class="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none transition focus:border-[#153e8a]" required>
+                                    <option value="">Pilih Store</option>
+                                    {{ range .Stores }}
+                                    <option value="{{ .StoreID }}" {{ if and (eq $.FormMode "create") (eq $.FormSession.StoreID .StoreID) }}selected{{ end }}>{{ .StoreName }}</option>
+                                    {{ end }}
+                                </select>
+                                {{ else }}
+                                <div class="mt-2 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2.5 text-sm font-semibold text-amber-700">
+                                    Tidak ada store yang terhubung ke user ini di `user_stores`.
+                                </div>
+                                {{ end }}
+                            </div>
+                        </div>
+
+                        <div class="space-y-4">
+                            <div>
+                                <label class="text-xs font-semibold uppercase tracking-wider text-slate-500">Supplier</label>
+                                <div class="mt-2 rounded-xl border border-slate-200 bg-slate-100 px-3 py-2.5 text-sm font-semibold text-slate-600">
+                                    {{ .Supplier.SupplierName }}
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="text-xs font-semibold uppercase tracking-wider text-slate-500">Status</label>
+                                <div class="mt-2 rounded-xl border border-slate-200 bg-slate-100 px-3 py-2.5 text-sm font-semibold text-slate-600">
+                                    In Progress
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label for="session_notes" class="text-xs font-semibold uppercase tracking-wider text-slate-500">Notes</label>
+                        <textarea id="session_notes" name="notes" class="mt-2 h-28 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none transition focus:border-[#153e8a]">{{ if eq .FormMode "create" }}{{ .FormSession.Notes }}{{ end }}</textarea>
+                    </div>
+
+                    <div class="flex flex-col gap-3 border-t border-slate-100 pt-4 sm:flex-row sm:justify-end">
+                        <button type="button" class="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-50" data-modal-close>Batal</button>
+                        <button type="submit" class="inline-flex items-center justify-center gap-2 rounded-xl bg-[#153e8a] px-5 py-3 text-sm font-extrabold text-white transition hover:bg-[#1c4ca7]" {{ if not .Stores }}disabled{{ end }}>
+                            <i class="bx bx-plus"></i>
+                            <span>Simpan Session</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
         <div id="sidebar-overlay" class="fixed inset-0 z-40 hidden bg-slate-900/50 lg:hidden"></div>
 
         <script>
@@ -373,7 +471,9 @@
                     if (!sidebar) return;
                     sidebar.classList.add('-translate-x-full');
                     if (overlay) overlay.classList.add('hidden');
-                    document.body.classList.remove('overflow-hidden');
+                    if (!document.querySelector('[data-modal].flex')) {
+                        document.body.classList.remove('overflow-hidden');
+                    }
                 }
 
                 function openSidebar() {
@@ -381,6 +481,23 @@
                     sidebar.classList.remove('-translate-x-full');
                     if (overlay) overlay.classList.remove('hidden');
                     document.body.classList.add('overflow-hidden');
+                }
+
+                function openModal(modalId) {
+                    var modal = document.getElementById(modalId);
+                    if (!modal) return;
+                    modal.classList.remove('hidden');
+                    modal.classList.add('flex');
+                    document.body.classList.add('overflow-hidden');
+                }
+
+                function closeModal(modal) {
+                    if (!modal) return;
+                    modal.classList.add('hidden');
+                    modal.classList.remove('flex');
+                    if (sidebar && sidebar.classList.contains('-translate-x-full')) {
+                        document.body.classList.remove('overflow-hidden');
+                    }
                 }
 
                 toggleButtons.forEach(function (button) {
@@ -397,6 +514,43 @@
                 if (overlay) {
                     overlay.addEventListener('click', closeSidebar);
                 }
+
+                document.querySelectorAll('[data-modal-open]').forEach(function (trigger) {
+                    trigger.addEventListener('click', function () {
+                        var target = trigger.getAttribute('data-modal-open');
+                        if (target) openModal(target);
+                    });
+                });
+
+                document.querySelectorAll('[data-modal-close]').forEach(function (close) {
+                    close.addEventListener('click', function () {
+                        closeModal(close.closest('[data-modal]'));
+                    });
+                });
+
+                document.addEventListener('keydown', function (event) {
+                    if (event.key !== 'Escape') return;
+                    document.querySelectorAll('[data-modal].flex').forEach(closeModal);
+                });
+
+                document.querySelectorAll('[data-date-picker-target]').forEach(function (button) {
+                    button.addEventListener('click', function () {
+                        var input = document.getElementById(button.getAttribute('data-date-picker-target'));
+                        if (!input) return;
+
+                        if (typeof input.showPicker === 'function') {
+                            input.showPicker();
+                            return;
+                        }
+
+                        input.focus();
+                        input.click();
+                    });
+                });
+
+                {{ if eq .FormMode "create" }}
+                openModal('stockCheckSessionModal');
+                {{ end }}
             });
         </script>
     </body>

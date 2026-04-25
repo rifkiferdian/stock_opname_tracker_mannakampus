@@ -19,6 +19,8 @@
                         New Role
                     {{ else if eq .Page "roleEdit" }}
                         Edit Role
+                    {{ else if .MobileHeaderTitle }}
+                        {{ .MobileHeaderTitle }}
                     {{ else if .Title }}
                         {{ .Title }}
                     {{ else }}

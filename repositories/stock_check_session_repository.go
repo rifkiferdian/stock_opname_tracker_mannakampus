@@ -249,6 +249,42 @@ func (r *StockCheckSessionRepository) GetStoreOptions() ([]models.Store, error) 
 	return stores, rows.Err()
 }
 
+func (r *StockCheckSessionRepository) GetStoreOptionsByUserID(userID int) ([]models.Store, error) {
+	rows, err := r.DB.Query(`
+		SELECT s.store_id, s.store_name
+		FROM stores s
+		INNER JOIN user_stores us ON us.store_id = s.store_id
+		WHERE s.is_active = 1 AND us.user_id = ?
+		ORDER BY s.store_name ASC
+	`, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var stores []models.Store
+	for rows.Next() {
+		var store models.Store
+		if err := rows.Scan(&store.StoreID, &store.StoreName); err != nil {
+			return nil, err
+		}
+		stores = append(stores, store)
+	}
+
+	return stores, rows.Err()
+}
+
+func (r *StockCheckSessionRepository) UserHasStoreAccess(userID int, storeID int) (bool, error) {
+	var count int
+	err := r.DB.QueryRow(`
+		SELECT COUNT(1)
+		FROM user_stores us
+		INNER JOIN stores s ON s.store_id = us.store_id
+		WHERE us.user_id = ? AND us.store_id = ? AND s.is_active = 1
+	`, userID, storeID).Scan(&count)
+	return count > 0, err
+}
+
 func (r *StockCheckSessionRepository) GetSupplierOptions() ([]models.Supplier, error) {
 	rows, err := r.DB.Query(`
 		SELECT id, supplier_name
@@ -327,8 +363,8 @@ func (r *StockCheckSessionRepository) ExistsReviewItem(sessionID int, itemID int
 	return count > 0, err
 }
 
-func (r *StockCheckSessionRepository) Create(input models.StockCheckSessionCreateInput) error {
-	_, err := r.DB.Exec(`
+func (r *StockCheckSessionRepository) Create(input models.StockCheckSessionCreateInput) (int, error) {
+	res, err := r.DB.Exec(`
 		INSERT INTO stock_check_sessions (
 			session_number,
 			session_date,
@@ -349,8 +385,16 @@ func (r *StockCheckSessionRepository) Create(input models.StockCheckSessionCreat
 		input.CreatedBy,
 		nullableText(input.Notes),
 	)
+	if err != nil {
+		return 0, err
+	}
 
-	return err
+	lastInsertID, err := res.LastInsertId()
+	if err != nil {
+		return 0, err
+	}
+
+	return int(lastInsertID), nil
 }
 
 func (r *StockCheckSessionRepository) Update(input models.StockCheckSessionUpdateInput) error {
@@ -508,6 +552,195 @@ func (r *StockCheckSessionRepository) UpdateReviewItem(input models.StockCheckSe
 func (r *StockCheckSessionRepository) DeleteByID(id int) error {
 	_, err := r.DB.Exec(`DELETE FROM stock_check_sessions WHERE id = ?`, id)
 	return err
+}
+
+func (r *StockCheckSessionRepository) SeedItemsFromSupplier(sessionID int, supplierID int, userID int) error {
+	_, err := r.DB.Exec(`
+		INSERT INTO stock_check_session_items (
+			stock_check_session_id,
+			product_id,
+			suggested_supplier_id,
+			status,
+			created_by,
+			updated_by
+		)
+		SELECT
+			?,
+			ps.product_id,
+			?,
+			'draft',
+			?,
+			?
+		FROM product_suppliers ps
+		INNER JOIN products p ON p.id = ps.product_id
+		WHERE ps.supplier_id = ?
+			AND ps.is_active = 1
+			AND NOT EXISTS (
+				SELECT 1
+				FROM stock_check_session_items si
+				WHERE si.stock_check_session_id = ?
+					AND si.product_id = ps.product_id
+			)
+		GROUP BY ps.product_id
+	`,
+		sessionID,
+		supplierID,
+		userID,
+		userID,
+		supplierID,
+		sessionID,
+	)
+
+	return err
+}
+
+func (r *StockCheckSessionRepository) GetCheckerInputItems(sessionID int) ([]models.StockCheckSessionCheckerInputItem, error) {
+	rows, err := r.DB.Query(`
+		SELECT
+			si.id,
+			si.product_id,
+			p.product_code,
+			COALESCE(p.barcode, '') AS barcode,
+			p.product_name,
+			COALESCE(pc.category_name, 'Tanpa Kategori') AS category_name,
+			COALESCE(un.unit_name, '-') AS unit_name,
+			COALESCE(si.qty_store, 0) AS qty_store,
+			COALESCE(si.qty_warehouse, 0) AS qty_warehouse,
+			COALESCE(si.total_qty, 0) AS total_qty,
+			COALESCE(si.status, 'draft') AS status
+		FROM stock_check_session_items si
+		INNER JOIN products p ON p.id = si.product_id
+		LEFT JOIN product_categories pc ON pc.id = p.category_id
+		LEFT JOIN units un ON un.id = p.unit_id
+		WHERE si.stock_check_session_id = ?
+		ORDER BY p.product_name ASC, si.id ASC
+	`, sessionID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	items := make([]models.StockCheckSessionCheckerInputItem, 0)
+	for rows.Next() {
+		var (
+			item         models.StockCheckSessionCheckerInputItem
+			qtyStore     sql.NullFloat64
+			qtyWarehouse sql.NullFloat64
+			totalQty     sql.NullFloat64
+		)
+
+		if err := rows.Scan(
+			&item.ID,
+			&item.ProductID,
+			&item.ProductCode,
+			&item.Barcode,
+			&item.ProductName,
+			&item.CategoryName,
+			&item.UnitName,
+			&qtyStore,
+			&qtyWarehouse,
+			&totalQty,
+			&item.Status,
+		); err != nil {
+			return nil, err
+		}
+
+		if qtyStore.Valid {
+			item.QtyStore = qtyStore.Float64
+		}
+		if qtyWarehouse.Valid {
+			item.QtyWarehouse = qtyWarehouse.Float64
+		}
+		if totalQty.Valid {
+			item.TotalQty = totalQty.Float64
+		}
+
+		item.QtyStoreDisplay = formatStockCheckWholeNumber(item.QtyStore)
+		item.QtyWarehouseDisplay = formatStockCheckWholeNumber(item.QtyWarehouse)
+		item.TotalQtyDisplay = formatStockCheckWholeNumber(item.TotalQty)
+		item.StatusLabel, _, _ = stockCheckSessionStatusMeta(item.Status)
+		item.HasBarcode = strings.TrimSpace(item.Barcode) != ""
+
+		items = append(items, item)
+	}
+
+	return items, rows.Err()
+}
+
+func (r *StockCheckSessionRepository) UpdateCheckerItemQtyByBarcode(sessionID int, location string, barcode string, qty float64, updatedBy int) (int, error) {
+	tx, err := r.DB.Begin()
+	if err != nil {
+		return 0, err
+	}
+	defer func() {
+		if err != nil {
+			_ = tx.Rollback()
+		}
+	}()
+
+	var (
+		itemID       int
+		currentStore sql.NullFloat64
+		currentWH    sql.NullFloat64
+	)
+
+	err = tx.QueryRow(`
+		SELECT
+			si.id,
+			si.qty_store,
+			si.qty_warehouse
+		FROM stock_check_session_items si
+		INNER JOIN products p ON p.id = si.product_id
+		WHERE si.stock_check_session_id = ?
+			AND LOWER(COALESCE(p.barcode, '')) = LOWER(?)
+		LIMIT 1
+	`, sessionID, strings.TrimSpace(barcode)).Scan(&itemID, &currentStore, &currentWH)
+	if err != nil {
+		return 0, err
+	}
+
+	storeQty := 0.0
+	warehouseQty := 0.0
+	if currentStore.Valid {
+		storeQty = currentStore.Float64
+	}
+	if currentWH.Valid {
+		warehouseQty = currentWH.Float64
+	}
+
+	switch location {
+	case "warehouse":
+		warehouseQty = qty
+	default:
+		storeQty = qty
+	}
+
+	totalQty := storeQty + warehouseQty
+	status := "draft"
+	if totalQty > 0 {
+		status = "submitted"
+	}
+
+	_, err = tx.Exec(`
+		UPDATE stock_check_session_items
+		SET
+			qty_store = ?,
+			qty_warehouse = ?,
+			total_qty = ?,
+			status = ?,
+			updated_by = ?
+		WHERE stock_check_session_id = ? AND id = ?
+	`, storeQty, warehouseQty, totalQty, status, updatedBy, sessionID, itemID)
+	if err != nil {
+		return 0, err
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		return 0, err
+	}
+
+	return itemID, nil
 }
 
 func buildStockCheckSessionListQuery(filter models.StockCheckSessionListFilter, countOnly bool) (string, []interface{}) {

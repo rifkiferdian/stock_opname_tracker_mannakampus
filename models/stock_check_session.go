@@ -49,6 +49,14 @@ type StockCheckSessionCreateInput struct {
 	CreatedBy      int
 }
 
+type StockCheckSessionCheckerScanInput struct {
+	SessionID int
+	Location  string
+	Barcode   string
+	Qty       float64
+	UpdatedBy int
+}
+
 type StockCheckSessionUpdateInput struct {
 	ID             int
 	SessionDate    string
@@ -75,11 +83,22 @@ type StockCheckSessionReviewItemEditForm struct {
 	BuyerNotes     string
 }
 
+type StockCheckSessionCheckerScanForm struct {
+	Location string
+	Barcode  string
+	Qty      string
+}
+
 type StockCheckSessionDetailPage struct {
 	Session       StockCheckSessionDetail
 	Items         []StockCheckSessionReviewItem
 	OverviewCards []StockCheckSessionOverviewCard
 	Pagination    Pagination
+}
+
+type StockCheckSessionCheckerInputPage struct {
+	Session StockCheckSession
+	Items   []StockCheckSessionCheckerInputItem
 }
 
 type StockCheckSessionDetail struct {
@@ -138,6 +157,25 @@ type StockCheckSessionReviewItem struct {
 	SuggestLineValueDisplay  string
 	ApprovedLineValue        float64
 	ApprovedLineValueDisplay string
+}
+
+type StockCheckSessionCheckerInputItem struct {
+	ID                  int
+	ProductID           int
+	ProductCode         string
+	Barcode             string
+	ProductName         string
+	CategoryName        string
+	UnitName            string
+	QtyStore            float64
+	QtyStoreDisplay     string
+	QtyWarehouse        float64
+	QtyWarehouseDisplay string
+	TotalQty            float64
+	TotalQtyDisplay     string
+	Status              string
+	StatusLabel         string
+	HasBarcode          bool
 }
 
 type StockCheckSessionOverviewCard struct {
