@@ -68,10 +68,12 @@ func buildSupplierListQuery(filter models.SupplierListFilter, countOnly bool) (s
 			s.is_active,
 			s.created_at,
 			s.updated_at,
-			COUNT(DISTINCT CASE WHEN ps.is_active = 1 THEN ps.product_id END) AS product_count
+			COUNT(DISTINCT CASE WHEN ps.is_active = 1 THEN ps.product_id END) AS product_count,
+			MAX(scs.session_date) AS last_so_date
 		FROM suppliers s
 		LEFT JOIN supplier_groups sg ON sg.id = s.supplier_group_id
 		LEFT JOIN product_suppliers ps ON ps.supplier_id = s.id
+		LEFT JOIN stock_check_sessions scs ON scs.supplier_id = s.id
 	`
 	}
 
@@ -155,10 +157,12 @@ func (r *SupplierRepository) GetByID(id int) (models.Supplier, error) {
 			s.is_active,
 			s.created_at,
 			s.updated_at,
-			COUNT(DISTINCT CASE WHEN ps.is_active = 1 THEN ps.product_id END) AS product_count
+			COUNT(DISTINCT CASE WHEN ps.is_active = 1 THEN ps.product_id END) AS product_count,
+			MAX(scs.session_date) AS last_so_date
 		FROM suppliers s
 		LEFT JOIN supplier_groups sg ON sg.id = s.supplier_group_id
 		LEFT JOIN product_suppliers ps ON ps.supplier_id = s.id
+		LEFT JOIN stock_check_sessions scs ON scs.supplier_id = s.id
 		WHERE s.id = ?
 		GROUP BY
 			s.id,
@@ -436,10 +440,11 @@ func scanSupplier(scanner interface {
 	Scan(dest ...interface{}) error
 }) (models.Supplier, error) {
 	var (
-		supplier  models.Supplier
-		isActive  int
-		createdAt sql.NullTime
-		updatedAt sql.NullTime
+		supplier   models.Supplier
+		isActive   int
+		createdAt  sql.NullTime
+		updatedAt  sql.NullTime
+		lastSODate sql.NullTime
 	)
 
 	err := scanner.Scan(
@@ -458,6 +463,7 @@ func scanSupplier(scanner interface {
 		&createdAt,
 		&updatedAt,
 		&supplier.ProductCount,
+		&lastSODate,
 	)
 	if err != nil {
 		return supplier, err
@@ -484,6 +490,14 @@ func scanSupplier(scanner interface {
 	} else {
 		supplier.UpdatedAt = "-"
 		supplier.UpdatedAtDisplay = "-"
+	}
+
+	if lastSODate.Valid {
+		supplier.LastSODate = lastSODate.Time.Format("2006-01-02")
+		supplier.LastSODateDisplay = lastSODate.Time.Format("02 Jan 2006")
+	} else {
+		supplier.LastSODate = "-"
+		supplier.LastSODateDisplay = "Belum ada SO"
 	}
 
 	return supplier, nil

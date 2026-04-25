@@ -22,6 +22,8 @@ func RegisterWebRoutes(r *gin.Engine) {
 		auth.GET("/dashboard", controllers.DashboardIndex)
 		auth.GET("/reports/stock-opname", controllers.StockOpnameReportIndex)
 		auth.GET("/reports/stock-opname/:id", controllers.StockOpnameReportDetail)
+		auth.GET("/stock-checker", controllers.StockCheckCheckerSupplierIndex)
+		auth.GET("/stock-checker/:id", controllers.StockCheckCheckerSupplierDetail)
 		auth.GET("/stock-check-sessions", controllers.StockCheckSessionIndex)
 		auth.GET("/stock-check-sessions/:id", controllers.StockCheckSessionDetail)
 		auth.POST("/stock-check-sessions", controllers.StockCheckSessionStore)

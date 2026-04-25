@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+        <title>
+            {{ if .Title }}
+                {{ .Title }}
+            {{ else }}
+                Input SO Checker
+            {{ end }}
+        </title>
+
+        <link rel="stylesheet" href="/assets/fonts/google/plus-jakarta-sans.css">
+        <link rel="stylesheet" href="/assets/css/tailwind.css">
+        <link href="/assets/vendor/boxicons/css/boxicons.min.css" rel="stylesheet" />
+    </head>
+
+    <body class="bg-[#f5f7fb] font-display text-[#07142f]">
+        <div class="flex min-h-screen">
+            {{ template "sidebar" . }}
+
+            <div class="flex min-h-screen min-w-0 flex-1 flex-col">
+                {{ template "header" . }}
+
+                <main class="min-w-0 flex-1 px-4 py-5 sm:px-6 lg:px-8">
+                    <div class="mx-auto flex w-full max-w-7xl flex-col gap-5">
+                        <section class="rounded-2xl border border-slate-200 bg-white px-6 py-6 shadow-sm">
+                            <div class="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+                                <div class="max-w-2xl">
+                                    <p class="text-xs font-extrabold uppercase tracking-[0.28em] text-slate-400">Input SO Checker</p>
+                                    <h1 class="mt-2 text-2xl font-extrabold text-[#153e8a] sm:text-3xl">Pilih supplier</h1>
+                                    <p class="mt-2 text-sm font-medium leading-6 text-slate-500">Pilih supplier aktif untuk melihat detail supplier dan daftar sesi stock opname yang terkait.</p>
+                                </div>
+
+                                <div class="grid gap-3 sm:grid-cols-2">
+                                    <div class="rounded-xl bg-slate-50 px-5 py-4">
+                                        <p class="text-[11px] font-extrabold uppercase tracking-[0.2em] text-slate-400">Supplier Aktif</p>
+                                        <p class="mt-2 text-2xl font-extrabold text-slate-800">{{ .TotalItems }}</p>
+                                    </div>
+                                    <div class="rounded-xl bg-slate-50 px-5 py-4">
+                                        <p class="text-[11px] font-extrabold uppercase tracking-[0.2em] text-slate-400">Halaman</p>
+                                        <p class="mt-2 text-2xl font-extrabold text-slate-800">{{ .Pagination.CurrentPage }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
+                        <section class="rounded-lg bg-white p-4 shadow-sm">
+                            <form action="/stock-checker" method="get" class="flex flex-col gap-3 lg:flex-row lg:items-center">
+                                <label class="relative block min-w-0 flex-1">
+                                    <i class="bx bx-search pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                                    <input id="search_supplier" type="text" name="search" value="{{ .Filters.Search }}" class="w-full rounded-md border border-slate-200 bg-slate-50 py-3 pl-10 pr-4 text-sm font-semibold text-slate-600 outline-none transition focus:border-[#153e8a] focus:bg-white" placeholder="Cari nama supplier atau kontak...">
+                                </label>
+
+                                <select id="sort_supplier" name="sort" class="rounded-md border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-extrabold text-[#1e2b42] outline-none transition focus:border-[#153e8a] focus:bg-white">
+                                    <option value="name" {{ if eq .Filters.Sort "name" }}selected{{ end }}>Urut Nama</option>
+                                    <option value="recent" {{ if eq .Filters.Sort "recent" }}selected{{ end }}>Terbaru</option>
+                                    <option value="products" {{ if eq .Filters.Sort "products" }}selected{{ end }}>Produk Terbanyak</option>
+                                    <option value="code" {{ if eq .Filters.Sort "code" }}selected{{ end }}>Kode Supplier</option>
+                                </select>
+
+                                <div class="flex flex-wrap items-center gap-2">
+                                    <button type="submit" class="inline-flex items-center justify-center gap-2 rounded-md px-5 py-3 text-sm font-extrabold text-white transition" style="background-color: #153e8a;">
+                                        <i class="bx bx-search-alt text-base"></i>
+                                        <span>Terapkan</span>
+                                    </button>
+                                    {{ if or .Filters.Search (ne .Filters.Sort "name") }}
+                                    <a href="/stock-checker" class="inline-flex items-center justify-center gap-2 rounded-md bg-slate-50 px-5 py-3 text-sm font-extrabold text-[#566173] transition hover:bg-slate-100">
+                                        <i class="bx bx-reset text-base"></i>
+                                        <span>Reset</span>
+                                    </a>
+                                    {{ end }}
+                                </div>
+                            </form>
+                        </section>
+
+                        {{ if .Error }}
+                        <div class="rounded-2xl border border-rose-200 bg-rose-50 px-5 py-4 text-sm font-semibold text-rose-600">
+                            {{ .Error }}
+                        </div>
+                        {{ end }}
+
+                        <section class="overflow-hidden rounded-lg bg-white shadow-sm">
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-sm" style="min-width: 980px;">
+                                    <thead class="bg-slate-50 text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#153e8a]">
+                                        <tr>
+                                            <th class="px-5 py-4 text-left">Supplier</th>
+                                            <th class="px-5 py-4 text-left">Produk</th>
+                                            <th class="px-5 py-4 text-left">Status</th>
+                                            <th class="px-5 py-4 text-left">Tanggal SO Terakhir</th>
+                                            <th class="px-5 py-4 text-left">Aksi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-slate-100">
+                                        {{ range .Suppliers }}
+                                        <tr class="hover:bg-slate-50/70">
+                                            <td class="px-5 py-4">
+                                                <div class="flex items-center gap-3">
+                                                    <span class="inline-flex h-10 min-w-10 flex-none items-center justify-center rounded-lg bg-[#eef3ff] px-2 text-xs font-extrabold uppercase text-[#153e8a]">
+                                                        {{ if ge (len .SupplierName) 2 }}
+                                                            {{ printf "%.2s" .SupplierName }}
+                                                        {{ else }}
+                                                            {{ .SupplierCode }}
+                                                        {{ end }}
+                                                    </span>
+                                                    <div class="min-w-0">
+                                                        <a href="/stock-checker/{{ .ID }}" class="truncate font-extrabold text-slate-800 transition hover:text-[#153e8a]">
+                                                            {{ .SupplierName }}
+                                                        </a>
+                                                        <p class="mt-1 text-[11px] font-extrabold uppercase tracking-[0.18em] text-slate-400">{{ .SupplierCode }}</p>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td class="px-5 py-4 font-extrabold text-slate-800">{{ .ProductCount }}</td>
+                                            <td class="px-5 py-4">
+                                                <span class="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1 text-[10px] font-extrabold uppercase text-emerald-600">
+                                                    <span class="h-2 w-2 rounded-full bg-emerald-500"></span>
+                                                    Aktif
+                                                </span>
+                                            </td>
+                                            <td class="px-5 py-4 font-semibold text-slate-500">{{ .LastSODateDisplay }}</td>
+                                            <td class="px-5 py-4">
+                                                <a href="/stock-checker/{{ .ID }}" class="inline-flex items-center gap-2 rounded-md px-4 py-2.5 text-sm font-extrabold text-white transition" style="background-color: #f26419;">
+                                                    <span>Pilih</span>
+                                                    <i class="bx bx-right-arrow-alt text-base"></i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                        {{ else }}
+                                        <tr>
+                                            <td colspan="5" class="px-5 py-12 text-center">
+                                                <div class="mx-auto max-w-md">
+                                                    <p class="text-base font-extrabold text-slate-800">Supplier tidak ditemukan</p>
+                                                    <p class="mt-2 text-sm font-medium text-slate-500">Coba ubah kata kunci pencarian atau reset filter untuk melihat semua supplier aktif.</p>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        {{ end }}
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <div class="flex flex-col gap-3 border-t border-slate-100 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+                                <p class="text-sm font-semibold text-slate-500">
+                                    {{ if gt .Pagination.TotalItems 0 }}
+                                        Menampilkan {{ .Pagination.StartItem }}-{{ .Pagination.EndItem }} dari {{ .Pagination.TotalItems }} supplier
+                                    {{ else }}
+                                        Tidak ada supplier untuk ditampilkan
+                                    {{ end }}
+                                </p>
+
+                                {{ if gt .Pagination.TotalPages 1 }}
+                                <div class="flex flex-wrap items-center gap-2">
+                                    {{ if .Pagination.HasPrev }}
+                                    <a href="{{ .Pagination.PrevURL }}" class="inline-flex h-9 min-w-9 items-center justify-center rounded-md border border-slate-200 px-3 text-sm font-extrabold text-slate-500 transition hover:bg-slate-50">
+                                        <i class="bx bx-chevron-left"></i>
+                                    </a>
+                                    {{ else }}
+                                    <span class="inline-flex h-9 min-w-9 items-center justify-center rounded-md border border-slate-200 px-3 text-sm font-extrabold text-slate-300">
+                                        <i class="bx bx-chevron-left"></i>
+                                    </span>
+                                    {{ end }}
+
+                                    {{ range .Pagination.Pages }}
+                                    <a href="{{ .URL }}" class="inline-flex h-9 min-w-9 items-center justify-center rounded-md px-3 text-sm font-extrabold transition {{ if .Active }}text-white{{ else }}border border-slate-200 text-slate-500 hover:bg-slate-50{{ end }}" {{ if .Active }}style="background-color: #153e8a;"{{ end }}>
+                                        {{ .Number }}
+                                    </a>
+                                    {{ end }}
+
+                                    {{ if .Pagination.HasNext }}
+                                    <a href="{{ .Pagination.NextURL }}" class="inline-flex h-9 min-w-9 items-center justify-center rounded-md border border-slate-200 px-3 text-sm font-extrabold text-slate-500 transition hover:bg-slate-50">
+                                        <i class="bx bx-chevron-right"></i>
+                                    </a>
+                                    {{ else }}
+                                    <span class="inline-flex h-9 min-w-9 items-center justify-center rounded-md border border-slate-200 px-3 text-sm font-extrabold text-slate-300">
+                                        <i class="bx bx-chevron-right"></i>
+                                    </span>
+                                    {{ end }}
+                                </div>
+                                {{ end }}
+                            </div>
+                        </section>
+                    </div>
+                </main>
+            </div>
+        </div>
+
+        <div id="sidebar-overlay" class="fixed inset-0 z-40 hidden bg-slate-900/50 lg:hidden"></div>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                var sidebar = document.getElementById('app-sidebar');
+                var overlay = document.getElementById('sidebar-overlay');
+                var toggleButtons = document.querySelectorAll('[data-sidebar-toggle]');
+
+                function closeSidebar() {
+                    if (!sidebar) return;
+                    sidebar.classList.add('-translate-x-full');
+                    if (overlay) overlay.classList.add('hidden');
+                    document.body.classList.remove('overflow-hidden');
+                }
+
+                function openSidebar() {
+                    if (!sidebar) return;
+                    sidebar.classList.remove('-translate-x-full');
+                    if (overlay) overlay.classList.remove('hidden');
+                    document.body.classList.add('overflow-hidden');
+                }
+
+                toggleButtons.forEach(function (button) {
+                    button.addEventListener('click', function () {
+                        if (!sidebar) return;
+                        if (sidebar.classList.contains('-translate-x-full')) {
+                            openSidebar();
+                        } else {
+                            closeSidebar();
+                        }
+                    });
+                });
+
+                if (overlay) {
+                    overlay.addEventListener('click', closeSidebar);
+                }
+            });
+        </script>
+    </body>
+</html>

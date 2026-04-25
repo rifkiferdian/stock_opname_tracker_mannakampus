@@ -19,6 +19,39 @@ import (
 
 const stockCheckSessionDetailItemLimit = 100
 
+func StockCheckCheckerSupplierIndex(c *gin.Context) {
+	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
+
+	renderStockCheckCheckerSupplierPage(c, buildSupplierService(), "", models.SupplierListFilter{
+		Search: c.Query("search"),
+		Status: "active",
+		Sort:   c.DefaultQuery("sort", "name"),
+		Page:   page,
+		Limit:  12,
+	})
+}
+
+func StockCheckCheckerSupplierDetail(c *gin.Context) {
+	supplierID, err := strconv.Atoi(c.Param("id"))
+	if err != nil || supplierID <= 0 {
+		c.String(http.StatusBadRequest, "invalid supplier id")
+		return
+	}
+
+	renderStockCheckCheckerDetailPage(
+		c,
+		buildSupplierService(),
+		buildStockCheckSessionService(),
+		supplierID,
+		models.StockCheckSessionListFilter{
+			SupplierID: supplierID,
+			Status:     c.Query("status"),
+			Page:       parsePositiveInt(c.Query("page"), 1),
+			Limit:      10,
+		},
+	)
+}
+
 func StockCheckSessionIndex(c *gin.Context) {
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 	storeID, _ := strconv.Atoi(c.DefaultQuery("store_id", "0"))
@@ -287,6 +320,81 @@ func renderStockCheckSessionPage(c *gin.Context, service *services.StockCheckSes
 	})
 }
 
+func renderStockCheckCheckerSupplierPage(c *gin.Context, supplierService *services.SupplierService, message string, filter models.SupplierListFilter) {
+	filter.Status = "active"
+	if filter.Page <= 0 {
+		filter.Page = 1
+	}
+	if filter.Limit <= 0 {
+		filter.Limit = 12
+	}
+	if filter.Sort == "" {
+		filter.Sort = "name"
+	}
+
+	suppliers, totalItems, err := supplierService.GetSuppliers(filter)
+	if err != nil {
+		c.String(http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	pagination := buildStockCheckCheckerSupplierPagination(filter, totalItems)
+
+	Render(c, "stock_check_checker_suppliers.html", gin.H{
+		"Title":      "Input SO Checker",
+		"Page":       "stock_check_checker",
+		"Suppliers":  suppliers,
+		"Filters":    filter,
+		"Pagination": pagination,
+		"TotalItems": totalItems,
+		"Error":      message,
+	})
+}
+
+func renderStockCheckCheckerDetailPage(c *gin.Context, supplierService *services.SupplierService, sessionService *services.StockCheckSessionService, supplierID int, filter models.StockCheckSessionListFilter) {
+	supplier, err := supplierService.GetSupplierByID(supplierID)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			c.HTML(http.StatusNotFound, "error.html", gin.H{
+				"code_error": http.StatusNotFound,
+				"error":      "Supplier tidak ditemukan",
+			})
+			return
+		}
+
+		c.String(http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	filter.SupplierID = supplierID
+	filter.Status = sanitizeStockCheckSessionStatusFilter(filter.Status)
+	if filter.Page <= 0 {
+		filter.Page = 1
+	}
+	if filter.Limit <= 0 {
+		filter.Limit = 10
+	}
+
+	sessions, totalItems, err := sessionService.GetSessions(filter)
+	if err != nil {
+		c.String(http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	pagination := buildStockCheckCheckerSessionPagination(supplierID, filter, totalItems)
+
+	Render(c, "stock_check_checker_detail.html", gin.H{
+		"Title":       supplier.SupplierName,
+		"Page":        "stock_check_checker",
+		"Supplier":    supplier,
+		"Sessions":    sessions,
+		"Filters":     filter,
+		"Pagination":  pagination,
+		"TotalItems":  totalItems,
+		"CurrentPath": c.Request.URL.Path,
+	})
+}
+
 func renderStockCheckSessionDetailPage(c *gin.Context, service *services.StockCheckSessionService, id int, successMessage string, errorMessage string, reviewForm models.StockCheckSessionReviewItemEditForm) {
 	currentPage := parsePositiveInt(c.Query("page"), 1)
 	pageData, err := service.GetSessionDetailPage(id, currentPage, stockCheckSessionDetailItemLimit)
@@ -423,6 +531,15 @@ func appendRedirectMessage(target string, key string, message string) string {
 	values.Set(key, message)
 	parsed.RawQuery = values.Encode()
 	return parsed.String()
+}
+
+func sanitizeStockCheckSessionStatusFilter(value string) string {
+	switch strings.TrimSpace(value) {
+	case "draft", "in_progress", "submitted", "reviewed", "closed", "cancelled":
+		return value
+	default:
+		return ""
+	}
 }
 
 func buildStockCheckSessionFilter(c *gin.Context) models.StockCheckSessionListFilter {
@@ -562,4 +679,166 @@ func buildStockCheckSessionPageURL(filter models.StockCheckSessionListFilter, pa
 		return "/stock-check-sessions"
 	}
 	return "/stock-check-sessions?" + encoded
+}
+
+func buildStockCheckCheckerSupplierPagination(filter models.SupplierListFilter, totalItems int) models.Pagination {
+	pagination := models.Pagination{
+		CurrentPage: filter.Page,
+		PageSize:    filter.Limit,
+		TotalItems:  totalItems,
+	}
+
+	if pagination.CurrentPage <= 0 {
+		pagination.CurrentPage = 1
+	}
+	if pagination.PageSize <= 0 {
+		pagination.PageSize = 12
+	}
+	if totalItems == 0 {
+		return pagination
+	}
+
+	pagination.TotalPages = (totalItems + pagination.PageSize - 1) / pagination.PageSize
+	if pagination.CurrentPage > pagination.TotalPages {
+		pagination.CurrentPage = pagination.TotalPages
+	}
+
+	pagination.StartItem = ((pagination.CurrentPage - 1) * pagination.PageSize) + 1
+	pagination.EndItem = pagination.StartItem + pagination.PageSize - 1
+	if pagination.EndItem > totalItems {
+		pagination.EndItem = totalItems
+	}
+
+	pagination.HasPrev = pagination.CurrentPage > 1
+	pagination.HasNext = pagination.CurrentPage < pagination.TotalPages
+	if pagination.HasPrev {
+		pagination.PrevURL = buildStockCheckCheckerSupplierPageURL(filter, pagination.CurrentPage-1)
+	}
+	if pagination.HasNext {
+		pagination.NextURL = buildStockCheckCheckerSupplierPageURL(filter, pagination.CurrentPage+1)
+	}
+
+	startPage := pagination.CurrentPage - 2
+	if startPage < 1 {
+		startPage = 1
+	}
+	endPage := startPage + 4
+	if endPage > pagination.TotalPages {
+		endPage = pagination.TotalPages
+	}
+	if endPage-startPage < 4 {
+		startPage = endPage - 4
+		if startPage < 1 {
+			startPage = 1
+		}
+	}
+
+	for page := startPage; page <= endPage; page++ {
+		pagination.Pages = append(pagination.Pages, models.PaginationLink{
+			Number: page,
+			URL:    buildStockCheckCheckerSupplierPageURL(filter, page),
+			Active: page == pagination.CurrentPage,
+		})
+	}
+
+	return pagination
+}
+
+func buildStockCheckCheckerSupplierPageURL(filter models.SupplierListFilter, page int) string {
+	values := url.Values{}
+	if filter.Search != "" {
+		values.Set("search", filter.Search)
+	}
+	if filter.Sort != "" && filter.Sort != "name" {
+		values.Set("sort", filter.Sort)
+	}
+	if page > 1 {
+		values.Set("page", strconv.Itoa(page))
+	}
+
+	encoded := values.Encode()
+	if encoded == "" {
+		return "/stock-checker"
+	}
+	return "/stock-checker?" + encoded
+}
+
+func buildStockCheckCheckerSessionPagination(supplierID int, filter models.StockCheckSessionListFilter, totalItems int) models.Pagination {
+	pagination := models.Pagination{
+		CurrentPage: filter.Page,
+		PageSize:    filter.Limit,
+		TotalItems:  totalItems,
+	}
+
+	if pagination.CurrentPage <= 0 {
+		pagination.CurrentPage = 1
+	}
+	if pagination.PageSize <= 0 {
+		pagination.PageSize = 10
+	}
+	if totalItems == 0 {
+		return pagination
+	}
+
+	pagination.TotalPages = (totalItems + pagination.PageSize - 1) / pagination.PageSize
+	if pagination.CurrentPage > pagination.TotalPages {
+		pagination.CurrentPage = pagination.TotalPages
+	}
+
+	pagination.StartItem = ((pagination.CurrentPage - 1) * pagination.PageSize) + 1
+	pagination.EndItem = pagination.StartItem + pagination.PageSize - 1
+	if pagination.EndItem > totalItems {
+		pagination.EndItem = totalItems
+	}
+
+	pagination.HasPrev = pagination.CurrentPage > 1
+	pagination.HasNext = pagination.CurrentPage < pagination.TotalPages
+	if pagination.HasPrev {
+		pagination.PrevURL = buildStockCheckCheckerDetailPageURL(supplierID, filter, pagination.CurrentPage-1)
+	}
+	if pagination.HasNext {
+		pagination.NextURL = buildStockCheckCheckerDetailPageURL(supplierID, filter, pagination.CurrentPage+1)
+	}
+
+	startPage := pagination.CurrentPage - 2
+	if startPage < 1 {
+		startPage = 1
+	}
+	endPage := startPage + 4
+	if endPage > pagination.TotalPages {
+		endPage = pagination.TotalPages
+	}
+	if endPage-startPage < 4 {
+		startPage = endPage - 4
+		if startPage < 1 {
+			startPage = 1
+		}
+	}
+
+	for page := startPage; page <= endPage; page++ {
+		pagination.Pages = append(pagination.Pages, models.PaginationLink{
+			Number: page,
+			URL:    buildStockCheckCheckerDetailPageURL(supplierID, filter, page),
+			Active: page == pagination.CurrentPage,
+		})
+	}
+
+	return pagination
+}
+
+func buildStockCheckCheckerDetailPageURL(supplierID int, filter models.StockCheckSessionListFilter, page int) string {
+	values := url.Values{}
+	if filter.Status != "" {
+		values.Set("status", filter.Status)
+	}
+	if page > 1 {
+		values.Set("page", strconv.Itoa(page))
+	}
+
+	baseURL := fmt.Sprintf("/stock-checker/%d", supplierID)
+	encoded := values.Encode()
+	if encoded == "" {
+		return baseURL
+	}
+	return baseURL + "?" + encoded
 }

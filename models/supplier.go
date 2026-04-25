@@ -19,6 +19,8 @@ type Supplier struct {
 	CreatedAtDisplay  string
 	UpdatedAt         string
 	UpdatedAtDisplay  string
+	LastSODate        string
+	LastSODateDisplay string
 }
 
 type SupplierGroup struct {
