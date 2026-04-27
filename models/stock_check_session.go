@@ -102,6 +102,11 @@ type StockCheckSessionCheckerInputPage struct {
 	Items   []StockCheckSessionCheckerInputItem
 }
 
+type StockCheckSessionCheckerScanPage struct {
+	Session StockCheckSession
+	Item    StockCheckSessionCheckerInputItem
+}
+
 type StockCheckSessionDetail struct {
 	StockCheckSession
 	StageLabel                    string

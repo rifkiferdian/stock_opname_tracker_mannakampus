@@ -1,0 +1,450 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+        <title>
+            {{ if .Title }}
+                {{ .Title }}
+            {{ else }}
+                Input Qty Item
+            {{ end }}
+        </title>
+
+        <link rel="stylesheet" href="/assets/fonts/google/manrope-space-grotesk.css">
+        <link rel="stylesheet" href="/assets/css/tailwind.css">
+        <link href="/assets/vendor/boxicons/css/boxicons.min.css" rel="stylesheet" />
+
+        <style>
+            body {
+                background: #f7f9fc;
+                color: #0f172a;
+                font-family: "Manrope", sans-serif;
+            }
+
+            .page-shell {
+                display: grid;
+                gap: 1rem;
+            }
+
+            .panel-card {
+                border: 1px solid #e2e8f0;
+                border-radius: 1.35rem;
+                background: #fff;
+                box-shadow: 0 20px 44px -34px rgba(15, 23, 42, 0.28);
+            }
+
+            .page-toolbar {
+                display: flex;
+                flex-direction: column;
+                gap: 0.75rem;
+            }
+
+            .toolbar-actions {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 0.75rem;
+                align-items: center;
+                justify-content: space-between;
+            }
+
+            .item-preview {
+                display: grid;
+                gap: 0.3rem;
+            }
+
+            .qty-summary-grid {
+                display: grid;
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+                gap: 0.5rem;
+            }
+
+            .qty-summary-card {
+                border-radius: 0.8rem;
+                background: #f8fafc;
+                border: 1px solid #e2e8f0;
+                padding: 0.6rem 0.45rem;
+                text-align: center;
+            }
+
+            .qty-summary-card span {
+                display: block;
+                font-size: 0.58rem;
+                font-weight: 800;
+                letter-spacing: 0.07em;
+                text-transform: uppercase;
+                color: #64748b;
+            }
+
+            .qty-summary-card strong {
+                display: block;
+                margin-top: 0.12rem;
+                font-size: 0.92rem;
+                line-height: 1.1;
+                font-weight: 800;
+                color: #153e8a;
+            }
+
+            .control-panel {
+                border-radius: 1.2rem;
+                border: 1px solid #e5e7eb;
+                background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+                padding: 1rem;
+            }
+
+            .location-switch {
+                display: grid;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 0.35rem;
+                border-radius: 0.9rem;
+                background: #e5e7eb;
+                padding: 0.28rem;
+            }
+
+            .location-button {
+                border-radius: 0.72rem;
+                border: 0;
+                background: transparent;
+                padding: 0.72rem 0.8rem;
+                font-size: 0.82rem;
+                font-weight: 800;
+                color: #475569;
+                transition: all 0.18s ease;
+            }
+
+            .location-button.active {
+                background: #fff;
+                color: #153e8a;
+                box-shadow: 0 8px 16px -12px rgba(15, 23, 42, 0.5);
+            }
+
+            .qty-block {
+                display: grid;
+                gap: 0.8rem;
+                justify-items: center;
+                padding-top: 0.4rem;
+            }
+
+            .qty-stepper {
+                display: grid;
+                grid-template-columns: 3.1rem minmax(0, 1fr) 3.1rem;
+                align-items: center;
+                gap: 0.75rem;
+                width: 100%;
+                max-width: 16rem;
+            }
+
+            .qty-button {
+                display: inline-flex;
+                height: 3.1rem;
+                width: 3.1rem;
+                align-items: center;
+                justify-content: center;
+                border: 0;
+                border-radius: 0.95rem;
+                background: #fff;
+                color: #153e8a;
+                font-size: 1.35rem;
+                font-weight: 800;
+                box-shadow: 0 12px 24px -20px rgba(15, 23, 42, 0.55);
+            }
+
+            .qty-field {
+                border: 0;
+                border-radius: 1rem;
+                background: #e5e7eb;
+                padding: 0.95rem 1rem;
+                width: 100%;
+                text-align: center;
+                font-size: 1.8rem;
+                font-weight: 800;
+                color: #0f172a;
+                outline: none;
+            }
+
+            .submit-button {
+                display: inline-flex;
+                min-height: 3.25rem;
+                align-items: center;
+                justify-content: center;
+                gap: 0.55rem;
+                border: 0;
+                border-radius: 0.95rem;
+                background: linear-gradient(135deg, #2948a2 0%, #1a377f 100%);
+                color: #fff;
+                font-size: 0.95rem;
+                font-weight: 800;
+                box-shadow: 0 20px 34px -24px rgba(41, 72, 162, 0.95);
+            }
+
+            .form-actions {
+                display: grid;
+                gap: 0.75rem;
+            }
+
+            @media (min-width: 768px) {
+                .page-toolbar {
+                    flex-direction: row;
+                    align-items: center;
+                    justify-content: space-between;
+                }
+
+                .form-actions {
+                    display: flex;
+                    justify-content: flex-end;
+                }
+            }
+        </style>
+    </head>
+
+    <body class="text-[#07142f]">
+        <div class="flex min-h-screen">
+            {{ template "sidebar" . }}
+
+            <div class="flex min-h-screen min-w-0 flex-1 flex-col">
+                {{ template "header" . }}
+
+                <main class="min-w-0 flex-1 px-3 py-4 sm:px-6 sm:py-5 lg:px-8">
+                    <div class="mx-auto flex w-full max-w-3xl flex-col page-shell">
+                        <div class="page-toolbar">
+                            <a href="{{ .BackURL }}" class="inline-flex min-h-[44px] items-center gap-2 self-start rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-bold text-slate-600 transition hover:bg-slate-50 hover:text-[#153e8a]">
+                                <i class="bx bx-arrow-back text-base"></i>
+                                <span>Kembali</span>
+                            </a>
+
+                            <div class="toolbar-actions">
+                                <div class="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-left shadow-sm">
+                                    <div class="mt-2 border-t border-slate-100 pt-2">
+                                        <p class="text-[10px] font-extrabold uppercase tracking-[0.18em] text-slate-400">Supplier</p>
+                                        <div class="mt-1 flex items-center gap-2">
+                                            <p class="text-sm font-extrabold text-slate-800">{{ .Session.SupplierName }}</p>
+                                            <p class="text-xs font-bold uppercase tracking-[0.16em] text-[#153e8a]">{{ .Session.SupplierCode }}</p>
+                                        </div>
+                                    </div>
+                                    <p class="text-[10px] font-extrabold uppercase tracking-[0.18em] text-slate-400">Session</p>
+                                    <div class="mt-1 flex items-center gap-2">
+                                        <p class="text-sm font-extrabold text-slate-800">{{ .Session.SessionDateDisplay }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {{ if .Error }}
+                        <div class="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-600">
+                            {{ .Error }}
+                        </div>
+                        {{ end }}
+
+                        <section class="panel-card p-4 sm:p-6">
+                            <div class="border-b border-slate-100 pb-4">
+                                <p class="text-[11px] font-extrabold uppercase tracking-[0.18em] text-slate-400">Scanner Item</p>
+                                <h1 class="mt-1 text-xl font-extrabold text-[#153e8a]">Input Qty Item</h1>
+                            </div>
+
+                            <div class="space-y-4 pt-5">
+                                <section class="panel-card p-3 text-left text-slate-800 sm:p-4">
+                                    <div class="item-preview">
+                                        <div class="min-w-0">
+                                            <p class="text-[11px] font-extrabold uppercase tracking-[0.16em] text-slate-400">SKU: {{ .Item.ProductCode }}</p>
+                                            <h3 class="mt-0.5 truncate text-lg font-extrabold text-[#153e8a] sm:text-xl">{{ .Item.ProductName }}</h3>
+                                            <p class="mt-1 truncate text-xs font-semibold text-slate-500 sm:text-sm">Barcode: {{ if .Item.HasBarcode }}{{ .Item.Barcode }}{{ else }}-{{ end }}</p>
+                                        </div>
+                                    </div>
+                                </section>
+
+                                <div class="qty-summary-grid">
+                                    <div class="qty-summary-card">
+                                        <span>Toko</span>
+                                        <strong>{{ .Item.QtyStoreDisplay }}</strong>
+                                    </div>
+                                    <div class="qty-summary-card">
+                                        <span>Gudang</span>
+                                        <strong>{{ .Item.QtyWarehouseDisplay }}</strong>
+                                    </div>
+                                    <div class="qty-summary-card">
+                                        <span>Total</span>
+                                        <strong>{{ .Item.TotalQtyDisplay }}</strong>
+                                    </div>
+                                </div>
+
+                                <form method="POST" action="/stock-checker/sessions/{{ .Session.ID }}/input" class="space-y-4">
+                                    <input type="hidden" name="location" id="scan_location" value="{{ if eq .ScanForm.Location "warehouse" }}warehouse{{ else }}store{{ end }}">
+                                    <input type="hidden" name="barcode" value="{{ .ScanForm.Barcode }}">
+                                    <input type="hidden" name="redirect_to" value="{{ .CurrentURL }}">
+                                    <input type="hidden" name="back_to" value="{{ .BackURL }}">
+
+                                    <section class="control-panel">
+                                        <div class="flex items-center justify-between gap-3">
+                                            <div>
+                                                <p class="text-sm font-extrabold text-[#153e8a]">Adjust Stock Quantity</p>
+                                                <p id="selectedLocationHelper" class="mt-1 text-xs font-semibold text-slate-500">Qty akan disimpan ke area toko.</p>
+                                            </div>
+                                        </div>
+
+                                        <div class="location-switch mt-4">
+                                            <button type="button" class="location-button active" data-location-button="store">Shop Floor</button>
+                                            <button type="button" class="location-button" data-location-button="warehouse">Warehouse</button>
+                                        </div>
+
+                                        <div class="qty-block mt-5">
+                                            <p id="selectedLocationLabel" class="text-sm font-semibold text-slate-500">Front display units</p>
+                                            <div class="qty-stepper">
+                                                <button type="button" id="qtyMinusButton" class="qty-button" aria-label="Kurangi qty">-</button>
+                                                <input id="scan_qty" name="qty" type="number" step="1" min="0" value="{{ .ScanForm.Qty }}" class="qty-field" inputmode="numeric" required>
+                                                <button type="button" id="qtyPlusButton" class="qty-button" aria-label="Tambah qty">+</button>
+                                            </div>
+                                        </div>
+                                    </section>
+
+                                    <div class="form-actions border-t border-slate-100 pt-4">
+                                        <button type="submit" id="submitScanButton" class="submit-button px-6">
+                                            <i class="bx bx-sync text-xl"></i>
+                                            <span>Simpan Qty</span>
+                                        </button>
+                                        <a href="{{ .BackURL }}" class="inline-flex min-h-[46px] items-center justify-center rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-50">
+                                            Batal
+                                        </a>
+                                    </div>
+                                </form>
+                            </div>
+                        </section>
+                    </div>
+                </main>
+            </div>
+        </div>
+
+        <div id="sidebar-overlay" class="fixed inset-0 z-40 hidden bg-slate-900/50 lg:hidden"></div>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                var sidebar = document.getElementById('app-sidebar');
+                var overlay = document.getElementById('sidebar-overlay');
+                var toggleButtons = document.querySelectorAll('[data-sidebar-toggle]');
+                var qtyInput = document.getElementById('scan_qty');
+                var qtyMinusButton = document.getElementById('qtyMinusButton');
+                var qtyPlusButton = document.getElementById('qtyPlusButton');
+                var locationInput = document.getElementById('scan_location');
+                var locationButtons = document.querySelectorAll('[data-location-button]');
+                var locationHelper = document.getElementById('selectedLocationHelper');
+                var locationLabel = document.getElementById('selectedLocationLabel');
+                var submitButton = document.getElementById('submitScanButton');
+                var backToInput = document.querySelector('input[name="back_to"]');
+                var locationStorageKey = 'stock-checker-location:{{ .Session.ID }}';
+
+                function closeSidebar() {
+                    if (!sidebar) return;
+                    sidebar.classList.add('-translate-x-full');
+                    if (overlay) overlay.classList.add('hidden');
+                    document.body.classList.remove('overflow-hidden');
+                }
+
+                function openSidebar() {
+                    if (!sidebar) return;
+                    if (typeof window.closeHeaderInteractivePanels === 'function') {
+                        window.closeHeaderInteractivePanels();
+                    }
+                    sidebar.classList.remove('-translate-x-full');
+                    if (overlay) overlay.classList.remove('hidden');
+                    document.body.classList.add('overflow-hidden');
+                }
+
+                function normalizeLocation(value) {
+                    return value === 'warehouse' ? 'warehouse' : 'store';
+                }
+
+                function buildBackURL(location) {
+                    var url = new URL('{{ .BackURL }}', window.location.origin);
+                    url.searchParams.set('location', normalizeLocation(location));
+                    url.searchParams.delete('success');
+                    url.searchParams.delete('error');
+                    return url.pathname + url.search;
+                }
+
+                function persistLocation(location) {
+                    location = normalizeLocation(location);
+                    locationInput.value = location;
+
+                    try {
+                        window.localStorage.setItem(locationStorageKey, location);
+                    } catch (error) {}
+
+                    if (backToInput) {
+                        backToInput.value = buildBackURL(location);
+                    }
+                }
+
+                function updateLocationUI() {
+                    var location = normalizeLocation(locationInput.value);
+                    locationButtons.forEach(function (button) {
+                        button.classList.toggle('active', button.getAttribute('data-location-button') === location);
+                    });
+
+                    if (location === 'warehouse') {
+                        locationHelper.textContent = 'Qty akan disimpan ke area gudang.';
+                        locationLabel.textContent = 'Warehouse storage units';
+                    } else {
+                        locationHelper.textContent = 'Qty akan disimpan ke area toko.';
+                        locationLabel.textContent = 'Front display units';
+                    }
+                }
+
+                function adjustQty(delta) {
+                    var current = parseFloat(qtyInput.value || '0');
+                    if (isNaN(current)) current = 0;
+                    current += delta;
+                    if (current < 0) current = 0;
+                    qtyInput.value = String(current);
+                }
+
+                toggleButtons.forEach(function (button) {
+                    button.addEventListener('click', function () {
+                        if (!sidebar) return;
+                        if (sidebar.classList.contains('-translate-x-full')) {
+                            openSidebar();
+                        } else {
+                            closeSidebar();
+                        }
+                    });
+                });
+
+                if (overlay) {
+                    overlay.addEventListener('click', closeSidebar);
+                }
+
+                locationButtons.forEach(function (button) {
+                    button.addEventListener('click', function () {
+                        persistLocation(button.getAttribute('data-location-button') || 'store');
+                        updateLocationUI();
+                    });
+                });
+
+                if (qtyMinusButton) {
+                    qtyMinusButton.addEventListener('click', function () {
+                        adjustQty(-1);
+                    });
+                }
+
+                if (qtyPlusButton) {
+                    qtyPlusButton.addEventListener('click', function () {
+                        adjustQty(1);
+                    });
+                }
+
+                if (qtyInput) {
+                    qtyInput.focus();
+                    qtyInput.select();
+                }
+
+                persistLocation(locationInput.value);
+                updateLocationUI();
+
+                if (submitButton) {
+                    submitButton.form.addEventListener('submit', function () {
+                        submitButton.disabled = true;
+                    });
+                }
+            });
+        </script>
+    </body>
+</html>

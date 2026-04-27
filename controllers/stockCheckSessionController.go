@@ -24,11 +24,12 @@ func StockCheckCheckerSupplierIndex(c *gin.Context) {
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 
 	renderStockCheckCheckerSupplierPage(c, buildSupplierService(), "", models.SupplierListFilter{
-		Search: c.Query("search"),
-		Status: "active",
-		Sort:   c.DefaultQuery("sort", "name"),
-		Page:   page,
-		Limit:  12,
+		Search:     c.Query("search"),
+		SearchMode: "name_code",
+		Status:     "active",
+		Sort:       c.DefaultQuery("sort", "name"),
+		Page:       page,
+		Limit:      12,
 	})
 }
 
@@ -58,6 +59,30 @@ func StockCheckCheckerSupplierDetail(c *gin.Context) {
 	)
 }
 
+func StockCheckCheckerSessionCreatePage(c *gin.Context) {
+	supplierID, err := strconv.Atoi(c.Param("id"))
+	if err != nil || supplierID <= 0 {
+		c.String(http.StatusBadRequest, "invalid supplier id")
+		return
+	}
+
+	backURL := sanitizeRedirectTarget(c.Query("back_to"))
+	if backURL == "" {
+		backURL = buildStockCheckCheckerDefaultBackURL(supplierID)
+	}
+
+	renderStockCheckCheckerCreateSessionPage(
+		c,
+		buildSupplierService(),
+		buildStockCheckSessionService(),
+		supplierID,
+		"",
+		models.StockCheckSession{},
+		extractCurrentUserID(c),
+		backURL,
+	)
+}
+
 func StockCheckCheckerSessionInput(c *gin.Context) {
 	sessionID, err := strconv.Atoi(c.Param("id"))
 	if err != nil || sessionID <= 0 {
@@ -77,11 +102,43 @@ func StockCheckCheckerSessionInput(c *gin.Context) {
 	)
 }
 
+func StockCheckCheckerSessionScanPage(c *gin.Context) {
+	sessionID, err := strconv.Atoi(c.Param("id"))
+	if err != nil || sessionID <= 0 {
+		c.String(http.StatusBadRequest, "invalid stock check session id")
+		return
+	}
+
+	barcode := strings.TrimSpace(c.Query("barcode"))
+	if barcode == "" {
+		c.Redirect(http.StatusSeeOther, buildStockCheckCheckerSessionInputPageURL(sessionID, sanitizeStockCheckCheckerScanLocation(c.Query("location")), ""))
+		return
+	}
+
+	backURL := sanitizeRedirectTarget(c.Query("back_to"))
+	if backURL == "" {
+		backURL = buildStockCheckCheckerSessionInputPageURL(sessionID, sanitizeStockCheckCheckerScanLocation(c.Query("location")), "")
+	}
+
+	renderStockCheckCheckerSessionScanPage(
+		c,
+		buildStockCheckSessionService(),
+		sessionID,
+		barcode,
+		sanitizeStockCheckCheckerScanLocation(c.Query("location")),
+		c.Query("error"),
+		models.StockCheckSessionCheckerScanForm{},
+		backURL,
+	)
+}
+
 func StockCheckCheckerSessionScan(c *gin.Context) {
 	type stockCheckCheckerScanForm struct {
-		Location string `form:"location" binding:"required"`
-		Barcode  string `form:"barcode" binding:"required"`
-		Qty      string `form:"qty" binding:"required"`
+		Location   string `form:"location" binding:"required"`
+		Barcode    string `form:"barcode" binding:"required"`
+		Qty        string `form:"qty" binding:"required"`
+		RedirectTo string `form:"redirect_to"`
+		BackTo     string `form:"back_to"`
 	}
 
 	sessionID, err := strconv.Atoi(c.Param("id"))
@@ -92,7 +149,39 @@ func StockCheckCheckerSessionScan(c *gin.Context) {
 
 	var form stockCheckCheckerScanForm
 	service := buildStockCheckSessionService()
+	redirectTo := ""
+	backTo := ""
+
+	renderScanPage := func(message string) bool {
+		if isStockCheckCheckerSessionScanRedirectTarget(redirectTo, sessionID) {
+			renderStockCheckCheckerSessionScanPage(
+				c,
+				service,
+				sessionID,
+				form.Barcode,
+				sanitizeStockCheckCheckerScanLocation(form.Location),
+				message,
+				models.StockCheckSessionCheckerScanForm{
+					Location: sanitizeStockCheckCheckerScanLocation(form.Location),
+					Barcode:  strings.TrimSpace(form.Barcode),
+					Qty:      strings.TrimSpace(form.Qty),
+				},
+				backTo,
+			)
+			return true
+		}
+		return false
+	}
+
 	if err := c.ShouldBind(&form); err != nil {
+		redirectTo = sanitizeRedirectTarget(form.RedirectTo)
+		backTo = sanitizeRedirectTarget(form.BackTo)
+		if backTo == "" {
+			backTo = buildStockCheckCheckerSessionInputPageURL(sessionID, sanitizeStockCheckCheckerScanLocation(form.Location), "")
+		}
+		if renderScanPage("Form scan item tidak lengkap") {
+			return
+		}
 		renderStockCheckCheckerSessionInputPage(c, service, sessionID, "", "Form scan item tidak lengkap", models.StockCheckSessionCheckerScanForm{
 			Location: sanitizeStockCheckCheckerScanLocation(form.Location),
 			Barcode:  strings.TrimSpace(form.Barcode),
@@ -101,8 +190,17 @@ func StockCheckCheckerSessionScan(c *gin.Context) {
 		return
 	}
 
+	redirectTo = sanitizeRedirectTarget(form.RedirectTo)
+	backTo = sanitizeRedirectTarget(form.BackTo)
+	if backTo == "" {
+		backTo = buildStockCheckCheckerSessionInputPageURL(sessionID, sanitizeStockCheckCheckerScanLocation(form.Location), "")
+	}
+
 	qty, err := strconv.ParseFloat(strings.TrimSpace(form.Qty), 64)
 	if err != nil {
+		if renderScanPage("Qty harus berupa angka yang valid") {
+			return
+		}
 		renderStockCheckCheckerSessionInputPage(c, service, sessionID, "", "Qty harus berupa angka yang valid", models.StockCheckSessionCheckerScanForm{
 			Location: sanitizeStockCheckCheckerScanLocation(form.Location),
 			Barcode:  strings.TrimSpace(form.Barcode),
@@ -119,11 +217,19 @@ func StockCheckCheckerSessionScan(c *gin.Context) {
 		UpdatedBy: extractCurrentUserID(c),
 	})
 	if err != nil {
+		if renderScanPage(err.Error()) {
+			return
+		}
 		renderStockCheckCheckerSessionInputPage(c, service, sessionID, "", err.Error(), models.StockCheckSessionCheckerScanForm{
 			Location: sanitizeStockCheckCheckerScanLocation(form.Location),
 			Barcode:  strings.TrimSpace(form.Barcode),
 			Qty:      strings.TrimSpace(form.Qty),
 		})
+		return
+	}
+
+	if backTo != "" {
+		c.Redirect(http.StatusSeeOther, appendRedirectMessage(backTo, "success", "Qty item berhasil disimpan"))
 		return
 	}
 
@@ -238,6 +344,7 @@ func StockCheckSessionStore(c *gin.Context) {
 		Status         string `form:"status" binding:"required"`
 		Notes          string `form:"notes"`
 		ReturnTo       string `form:"return_to"`
+		BackTo         string `form:"back_to"`
 	}
 
 	var form stockCheckSessionForm
@@ -245,6 +352,7 @@ func StockCheckSessionStore(c *gin.Context) {
 	filter := buildStockCheckSessionFilter(c)
 	formSession := models.StockCheckSession{}
 	redirectTarget := ""
+	backURL := ""
 
 	if err := c.ShouldBind(&form); err != nil {
 		formSession = models.StockCheckSession{
@@ -256,6 +364,10 @@ func StockCheckSessionStore(c *gin.Context) {
 			Notes:          form.Notes,
 		}
 		redirectTarget = sanitizeRedirectTarget(form.ReturnTo)
+		backURL = sanitizeRedirectTarget(form.BackTo)
+		if backURL == "" {
+			backURL = buildStockCheckCheckerDefaultBackURL(form.SupplierID)
+		}
 		if isStockCheckCheckerDetailRedirectTarget(redirectTarget, form.SupplierID) {
 			renderStockCheckCheckerDetailPage(
 				c,
@@ -268,6 +380,19 @@ func StockCheckSessionStore(c *gin.Context) {
 				"create",
 				formSession,
 				extractCurrentUserID(c),
+			)
+			return
+		}
+		if isStockCheckCheckerCreateRedirectTarget(redirectTarget, form.SupplierID) {
+			renderStockCheckCheckerCreateSessionPage(
+				c,
+				buildSupplierService(),
+				service,
+				form.SupplierID,
+				"Form stock check session tidak lengkap",
+				formSession,
+				extractCurrentUserID(c),
+				backURL,
 			)
 			return
 		}
@@ -284,6 +409,10 @@ func StockCheckSessionStore(c *gin.Context) {
 		Notes:          form.Notes,
 	}
 	redirectTarget = sanitizeRedirectTarget(form.ReturnTo)
+	backURL = sanitizeRedirectTarget(form.BackTo)
+	if backURL == "" {
+		backURL = buildStockCheckCheckerDefaultBackURL(form.SupplierID)
+	}
 
 	sessionID, err := service.CreateSession(models.StockCheckSessionCreateInput{
 		SessionDate:    form.SessionDate,
@@ -310,11 +439,24 @@ func StockCheckSessionStore(c *gin.Context) {
 			)
 			return
 		}
+		if isStockCheckCheckerCreateRedirectTarget(redirectTarget, form.SupplierID) {
+			renderStockCheckCheckerCreateSessionPage(
+				c,
+				buildSupplierService(),
+				service,
+				form.SupplierID,
+				err.Error(),
+				formSession,
+				extractCurrentUserID(c),
+				backURL,
+			)
+			return
+		}
 		renderStockCheckSessionPage(c, service, err.Error(), "create", formSession, filter)
 		return
 	}
 
-	if isStockCheckCheckerDetailRedirectTarget(redirectTarget, form.SupplierID) {
+	if isStockCheckCheckerDetailRedirectTarget(redirectTarget, form.SupplierID) || isStockCheckCheckerCreateRedirectTarget(redirectTarget, form.SupplierID) {
 		c.Redirect(http.StatusSeeOther, buildStockCheckCheckerSessionInputPageURL(sessionID, "store", "Session berhasil dibuat. Silakan mulai input item."))
 		return
 	}
@@ -532,6 +674,48 @@ func renderStockCheckCheckerDetailPage(c *gin.Context, supplierService *services
 		"FormSession": formSession,
 		"CurrentPath": c.Request.URL.Path,
 		"CurrentURL":  currentURL,
+		"CreateURL":   buildStockCheckCheckerSessionCreatePageURL(supplierID, currentURL),
+	})
+}
+
+func renderStockCheckCheckerCreateSessionPage(c *gin.Context, supplierService *services.SupplierService, sessionService *services.StockCheckSessionService, supplierID int, errorMessage string, formSession models.StockCheckSession, currentUserID int, backURL string) {
+	supplier, err := supplierService.GetSupplierByID(supplierID)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			c.HTML(http.StatusNotFound, "error.html", gin.H{
+				"code_error": http.StatusNotFound,
+				"error":      "Supplier tidak ditemukan",
+			})
+			return
+		}
+
+		c.String(http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	stores, err := sessionService.GetStoreOptionsByUserID(currentUserID)
+	if err != nil {
+		c.String(http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	if backURL == "" {
+		backURL = buildStockCheckCheckerDefaultBackURL(supplierID)
+	}
+
+	formSession = applyDefaultStockCheckCheckerCreateForm(formSession, supplierID, stores)
+	currentURL := buildStockCheckCheckerSessionCreatePageURL(supplierID, backURL)
+
+	Render(c, "stock_check_checker_session_create.html", gin.H{
+		"Title":       "Tambah Session Baru",
+		"Page":        "stock_check_checker",
+		"Supplier":    supplier,
+		"Stores":      stores,
+		"Error":       errorMessage,
+		"FormSession": formSession,
+		"BackURL":     backURL,
+		"CurrentPath": c.Request.URL.Path,
+		"CurrentURL":  currentURL,
 	})
 }
 
@@ -568,6 +752,58 @@ func renderStockCheckCheckerSessionInputPage(c *gin.Context, service *services.S
 		"Error":             errorMessage,
 		"ScanForm":          scanForm,
 		"CurrentURL":        buildStockCheckCheckerSessionInputPageURL(sessionID, scanForm.Location, ""),
+	})
+}
+
+func renderStockCheckCheckerSessionScanPage(c *gin.Context, service *services.StockCheckSessionService, sessionID int, barcode string, location string, errorMessage string, scanForm models.StockCheckSessionCheckerScanForm, backURL string) {
+	barcode = strings.TrimSpace(barcode)
+	location = sanitizeStockCheckCheckerScanLocation(location)
+	if location == "" {
+		location = "store"
+	}
+	if backURL == "" {
+		backURL = buildStockCheckCheckerSessionInputPageURL(sessionID, location, "")
+	}
+	if barcode == "" {
+		c.Redirect(http.StatusSeeOther, appendRedirectMessage(backURL, "error", "Barcode wajib diisi"))
+		return
+	}
+
+	pageData, err := service.GetCheckerScanPage(sessionID, extractCurrentUserID(c), barcode)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			c.Redirect(http.StatusSeeOther, appendRedirectMessage(buildStockCheckCheckerSessionInputPageURL(sessionID, location, ""), "error", "Barcode tidak ditemukan pada daftar item supplier ini"))
+			return
+		}
+		if strings.Contains(strings.ToLower(err.Error()), "tidak tersedia untuk user login") {
+			c.String(http.StatusForbidden, err.Error())
+			return
+		}
+
+		c.String(http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	if scanForm.Location == "" {
+		scanForm.Location = location
+	}
+	if strings.TrimSpace(scanForm.Barcode) == "" {
+		scanForm.Barcode = pageData.Item.Barcode
+	}
+	if strings.TrimSpace(scanForm.Qty) == "" {
+		scanForm.Qty = "0"
+	}
+
+	Render(c, "stock_check_checker_session_scan.html", gin.H{
+		"Title":       "Input Qty Item",
+		"Page":        "stock_check_checker",
+		"Session":     pageData.Session,
+		"Item":        pageData.Item,
+		"Error":       errorMessage,
+		"ScanForm":    scanForm,
+		"BackURL":     backURL,
+		"CurrentURL":  buildStockCheckCheckerSessionScanPageURL(sessionID, location, pageData.Item.Barcode, backURL),
+		"CurrentPath": c.Request.URL.Path,
 	})
 }
 
@@ -705,6 +941,29 @@ func buildStockCheckCheckerSessionInputPageURL(sessionID int, location string, s
 	return baseURL + "?" + encoded
 }
 
+func buildStockCheckCheckerSessionScanPageURL(sessionID int, location string, barcode string, backURL string) string {
+	values := url.Values{}
+	location = sanitizeStockCheckCheckerScanLocation(location)
+	if location != "" {
+		values.Set("location", location)
+	}
+	barcode = strings.TrimSpace(barcode)
+	if barcode != "" {
+		values.Set("barcode", barcode)
+	}
+	backURL = sanitizeRedirectTarget(backURL)
+	if backURL != "" {
+		values.Set("back_to", backURL)
+	}
+
+	baseURL := fmt.Sprintf("/stock-checker/sessions/%d/scan", sessionID)
+	encoded := values.Encode()
+	if encoded == "" {
+		return baseURL
+	}
+	return baseURL + "?" + encoded
+}
+
 func sanitizeRedirectTarget(value string) string {
 	value = strings.TrimSpace(value)
 	if value == "" {
@@ -727,6 +986,19 @@ func appendRedirectMessage(target string, key string, message string) string {
 	return parsed.String()
 }
 
+func isStockCheckCheckerSessionScanRedirectTarget(target string, sessionID int) bool {
+	if sessionID <= 0 || target == "" {
+		return false
+	}
+
+	parsed, err := url.Parse(target)
+	if err != nil {
+		return false
+	}
+
+	return parsed.Path == fmt.Sprintf("/stock-checker/sessions/%d/scan", sessionID)
+}
+
 func isStockCheckCheckerDetailRedirectTarget(target string, supplierID int) bool {
 	if supplierID <= 0 || target == "" {
 		return false
@@ -738,6 +1010,19 @@ func isStockCheckCheckerDetailRedirectTarget(target string, supplierID int) bool
 	}
 
 	return parsed.Path == fmt.Sprintf("/stock-checker/%d", supplierID)
+}
+
+func isStockCheckCheckerCreateRedirectTarget(target string, supplierID int) bool {
+	if supplierID <= 0 || target == "" {
+		return false
+	}
+
+	parsed, err := url.Parse(target)
+	if err != nil {
+		return false
+	}
+
+	return parsed.Path == fmt.Sprintf("/stock-checker/%d/sessions/new", supplierID)
 }
 
 func buildCheckerDetailFilterFromRedirectTarget(target string, supplierID int) models.StockCheckSessionListFilter {
@@ -1111,4 +1396,23 @@ func buildStockCheckCheckerDetailPageURL(supplierID int, filter models.StockChec
 		return baseURL
 	}
 	return baseURL + "?" + encoded
+}
+
+func buildStockCheckCheckerSessionCreatePageURL(supplierID int, backURL string) string {
+	values := url.Values{}
+	backURL = sanitizeRedirectTarget(backURL)
+	if backURL != "" {
+		values.Set("back_to", backURL)
+	}
+
+	baseURL := fmt.Sprintf("/stock-checker/%d/sessions/new", supplierID)
+	encoded := values.Encode()
+	if encoded == "" {
+		return baseURL
+	}
+	return baseURL + "?" + encoded
+}
+
+func buildStockCheckCheckerDefaultBackURL(supplierID int) string {
+	return fmt.Sprintf("/stock-checker/%d", supplierID)
 }

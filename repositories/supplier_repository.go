@@ -82,8 +82,13 @@ func buildSupplierListQuery(filter models.SupplierListFilter, countOnly bool) (s
 
 	if filter.Search != "" {
 		keyword := "%" + strings.ToLower(filter.Search) + "%"
-		conditions = append(conditions, `(LOWER(s.supplier_code) LIKE ? OR LOWER(s.supplier_name) LIKE ? OR LOWER(COALESCE(s.pic_name, '')) LIKE ? OR LOWER(COALESCE(s.phone, '')) LIKE ?)`)
-		args = append(args, keyword, keyword, keyword, keyword)
+		if filter.SearchMode == "name_code" {
+			conditions = append(conditions, `(LOWER(s.supplier_code) LIKE ? OR LOWER(s.supplier_name) LIKE ?)`)
+			args = append(args, keyword, keyword)
+		} else {
+			conditions = append(conditions, `(LOWER(s.supplier_code) LIKE ? OR LOWER(s.supplier_name) LIKE ? OR LOWER(COALESCE(s.pic_name, '')) LIKE ? OR LOWER(COALESCE(s.phone, '')) LIKE ?)`)
+			args = append(args, keyword, keyword, keyword, keyword)
+		}
 	}
 
 	switch filter.Status {

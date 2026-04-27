@@ -73,12 +73,13 @@ type SupplierGroupStats struct {
 }
 
 type SupplierListFilter struct {
-	Search string
-	Status string
-	Type   string
-	Sort   string
-	Page   int
-	Limit  int
+	Search     string
+	SearchMode string
+	Status     string
+	Type       string
+	Sort       string
+	Page       int
+	Limit      int
 }
 
 type SupplierGroupListFilter struct {

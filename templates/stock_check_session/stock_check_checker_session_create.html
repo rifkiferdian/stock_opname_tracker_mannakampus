@@ -1,0 +1,258 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+        <title>
+            {{ if .Title }}
+                {{ .Title }}
+            {{ else }}
+                Tambah Session Baru
+            {{ end }}
+        </title>
+
+        <link rel="stylesheet" href="/assets/fonts/google/manrope-space-grotesk.css">
+        <link rel="stylesheet" href="/assets/css/tailwind.css">
+        <link href="/assets/vendor/boxicons/css/boxicons.min.css" rel="stylesheet" />
+
+        <style>
+            body {
+                background: #f7f9fc;
+                color: #0f1f47;
+                font-family: "Manrope", sans-serif;
+            }
+
+            .page-shell {
+                display: grid;
+                gap: 1rem;
+            }
+
+            .panel-card {
+                border: 1px solid rgba(231, 237, 246, 0.9);
+                border-radius: 1.5rem;
+                background: #ffffff;
+                box-shadow: 0 10px 28px -24px rgba(16, 34, 78, 0.35);
+            }
+
+            .page-toolbar {
+                display: flex;
+                flex-direction: column;
+                gap: 0.75rem;
+            }
+
+            .toolbar-actions {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 0.75rem;
+                align-items: center;
+                justify-content: space-between;
+            }
+
+            .form-grid {
+                display: grid;
+                gap: 1.25rem;
+            }
+
+            .form-actions {
+                display: grid;
+                gap: 0.75rem;
+            }
+
+            @media (min-width: 768px) {
+                .page-toolbar {
+                    flex-direction: row;
+                    align-items: center;
+                    justify-content: space-between;
+                }
+
+                .form-grid {
+                    grid-template-columns: repeat(2, minmax(0, 1fr));
+                }
+
+                .form-actions {
+                    display: flex;
+                    justify-content: flex-end;
+                }
+            }
+        </style>
+    </head>
+
+    <body class="text-[#07142f]">
+        <div class="flex min-h-screen">
+            {{ template "sidebar" . }}
+
+            <div class="flex min-h-screen min-w-0 flex-1 flex-col">
+                {{ template "header" . }}
+
+                <main class="min-w-0 flex-1 px-3 py-4 sm:px-6 sm:py-5 lg:px-8">
+                    <div class="mx-auto flex w-full max-w-5xl flex-col page-shell">
+                        <div class="page-toolbar">
+                            <a href="{{ .BackURL }}" class="inline-flex min-h-[44px] items-center gap-2 self-start rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-bold text-slate-600 transition hover:bg-slate-50 hover:text-[#153e8a]">
+                                <i class="bx bx-arrow-back text-base"></i>
+                                <span>Kembali</span>
+                            </a>
+
+                            <div class="toolbar-actions">
+                                <div class="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-left shadow-sm">
+                                    <p class="text-[10px] font-extrabold uppercase tracking-[0.18em] text-slate-400">Supplier</p>
+                                    <div class="mt-1 flex items-center gap-2">
+                                        <p class="text-sm font-extrabold text-slate-800">{{ .Supplier.SupplierName }}</p>
+                                        <p class="text-xs font-bold uppercase tracking-[0.16em] text-[#153e8a]">{{ .Supplier.SupplierCode }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {{ if .Error }}
+                        <div class="rounded-[1.35rem] border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-600">
+                            {{ .Error }}
+                        </div>
+                        {{ end }}
+
+                        <section class="panel-card p-4 sm:p-6">
+                            <div class="border-b border-slate-100 pb-4">
+                                <h2 class="text-lg font-extrabold text-slate-900">Form Tambah Sesi Checker</h2>
+                                <!-- <p class="mt-1 text-sm font-medium text-slate-500">Nomor session dibuat otomatis saat data berhasil disimpan.</p> -->
+                            </div>
+
+                            <form action="/stock-check-sessions" method="post" class="mt-6 space-y-5">
+                                <input type="hidden" name="supplier_id" value="{{ .Supplier.ID }}">
+                                <input type="hidden" name="return_to" value="{{ .CurrentURL }}">
+                                <input type="hidden" name="back_to" value="{{ .BackURL }}">
+                                <input type="hidden" name="initiation_type" value="checker_initiative">
+                                <input type="hidden" name="status" value="in_progress">
+
+                                <div class="form-grid">
+                                    <div class="space-y-4">
+                                        <!-- <div>
+                                            <label class="text-xs font-semibold uppercase tracking-wider text-slate-500">Session Number</label>
+                                            <div class="mt-2 rounded-xl border border-slate-200 bg-slate-100 px-3 py-2.5 text-sm font-semibold text-slate-500">
+                                                Otomatis dibuat oleh sistem saat session disimpan
+                                            </div>
+                                        </div> -->
+
+                                        <div>
+                                            <label for="session_date" class="text-xs font-semibold uppercase tracking-wider text-slate-500">Session Date</label>
+                                            <div class="mt-2 flex items-center rounded-xl border border-slate-200 bg-white px-3 focus-within:border-[#153e8a]">
+                                                <i class="bx bx-calendar text-lg text-slate-400"></i>
+                                                <input id="session_date" name="session_date" type="date" value="{{ .FormSession.SessionDate }}" class="min-h-[46px] w-full border-0 bg-transparent px-3 py-2.5 text-sm text-slate-700 outline-none" required>
+                                                <button type="button" class="inline-flex h-9 w-9 items-center justify-center rounded-lg text-slate-400 transition hover:bg-slate-100 hover:text-[#153e8a]" data-date-picker-target="session_date" aria-label="Pilih tanggal session">
+                                                    <i class="bx bx-chevron-down text-base"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        <div>
+                                            <label for="session_store_id" class="text-xs font-semibold uppercase tracking-wider text-slate-500">Store</label>
+                                            {{ if .Stores }}
+                                            <select id="session_store_id" name="store_id" class="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none transition focus:border-[#153e8a]" required>
+                                                <option value="">Pilih Store</option>
+                                                {{ range .Stores }}
+                                                <option value="{{ .StoreID }}" {{ if eq $.FormSession.StoreID .StoreID }}selected{{ end }}>{{ .StoreName }}</option>
+                                                {{ end }}
+                                            </select>
+                                            {{ else }}
+                                            <div class="mt-2 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2.5 text-sm font-semibold text-amber-700">
+                                                Tidak ada store yang terhubung ke user ini di `user_stores`.
+                                            </div>
+                                            {{ end }}
+                                        </div>
+                                    </div>
+
+                                    <div class="space-y-4">
+                                        <div>
+                                            <label class="text-xs font-semibold uppercase tracking-wider text-slate-500">Supplier</label>
+                                            <div class="mt-2 rounded-xl border border-slate-200 bg-slate-100 px-3 py-2.5 text-sm font-semibold text-slate-600">
+                                                {{ .Supplier.SupplierName }}
+                                            </div>
+                                        </div>
+
+                                        <div>
+                                            <label class="text-xs font-semibold uppercase tracking-wider text-slate-500">Status</label>
+                                            <div class="mt-2 rounded-xl border border-slate-200 bg-slate-100 px-3 py-2.5 text-sm font-semibold text-slate-600">
+                                                In Progress
+                                            </div>
+                                        </div>
+
+                                        <div>
+                                            <label for="session_notes" class="text-xs font-semibold uppercase tracking-wider text-slate-500">Notes</label>
+                                            <textarea id="session_notes" name="notes" class="mt-2 h-32 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none transition focus:border-[#153e8a]">{{ .FormSession.Notes }}</textarea>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="form-actions border-t border-slate-100 pt-4">
+                                    <button type="submit" class="inline-flex min-h-[46px] items-center justify-center gap-2 rounded-xl bg-[#153e8a] px-5 py-3 text-sm font-extrabold text-white transition hover:bg-[#1c4ca7] disabled:cursor-not-allowed disabled:opacity-60" {{ if not .Stores }}disabled{{ end }}>
+                                        <i class="bx bx-plus"></i>
+                                        <span>Simpan Session</span>
+                                    </button>
+                                    <a href="{{ .BackURL }}" class="inline-flex min-h-[46px] items-center justify-center rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-50">
+                                        Batal
+                                    </a>
+                                </div>
+                            </form>
+                        </section>
+                    </div>
+                </main>
+            </div>
+        </div>
+
+        <div id="sidebar-overlay" class="fixed inset-0 z-40 hidden bg-slate-900/50 lg:hidden"></div>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                var sidebar = document.getElementById('app-sidebar');
+                var overlay = document.getElementById('sidebar-overlay');
+                var toggleButtons = document.querySelectorAll('[data-sidebar-toggle]');
+
+                function closeSidebar() {
+                    if (!sidebar) return;
+                    sidebar.classList.add('-translate-x-full');
+                    if (overlay) overlay.classList.add('hidden');
+                    document.body.classList.remove('overflow-hidden');
+                }
+
+                function openSidebar() {
+                    if (!sidebar) return;
+                    if (typeof window.closeHeaderInteractivePanels === 'function') {
+                        window.closeHeaderInteractivePanels();
+                    }
+                    sidebar.classList.remove('-translate-x-full');
+                    if (overlay) overlay.classList.remove('hidden');
+                    document.body.classList.add('overflow-hidden');
+                }
+
+                toggleButtons.forEach(function (button) {
+                    button.addEventListener('click', function () {
+                        if (!sidebar) return;
+                        if (sidebar.classList.contains('-translate-x-full')) {
+                            openSidebar();
+                        } else {
+                            closeSidebar();
+                        }
+                    });
+                });
+
+                if (overlay) {
+                    overlay.addEventListener('click', closeSidebar);
+                }
+
+                document.querySelectorAll('[data-date-picker-target]').forEach(function (button) {
+                    button.addEventListener('click', function () {
+                        var input = document.getElementById(button.getAttribute('data-date-picker-target'));
+                        if (!input) return;
+
+                        if (typeof input.showPicker === 'function') {
+                            input.showPicker();
+                            return;
+                        }
+
+                        input.focus();
+                        input.click();
+                    });
+                });
+            });
+        </script>
+    </body>
+</html>

@@ -197,6 +197,30 @@ func (s *StockCheckSessionService) GetCheckerInputPage(sessionID int, userID int
 	}, nil
 }
 
+func (s *StockCheckSessionService) GetCheckerScanPage(sessionID int, userID int, barcode string) (models.StockCheckSessionCheckerScanPage, error) {
+	barcode = strings.TrimSpace(barcode)
+	if barcode == "" {
+		return models.StockCheckSessionCheckerScanPage{}, errors.New("barcode wajib diisi")
+	}
+
+	pageData, err := s.GetCheckerInputPage(sessionID, userID)
+	if err != nil {
+		return models.StockCheckSessionCheckerScanPage{}, err
+	}
+
+	normalizedBarcode := strings.ToLower(barcode)
+	for _, item := range pageData.Items {
+		if strings.ToLower(strings.TrimSpace(item.Barcode)) == normalizedBarcode {
+			return models.StockCheckSessionCheckerScanPage{
+				Session: pageData.Session,
+				Item:    item,
+			}, nil
+		}
+	}
+
+	return models.StockCheckSessionCheckerScanPage{}, sql.ErrNoRows
+}
+
 func (s *StockCheckSessionService) CreateSession(input models.StockCheckSessionCreateInput) (int, error) {
 	sanitizeStockCheckSessionCreateInput(&input)
 
