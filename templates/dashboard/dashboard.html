@@ -249,6 +249,16 @@
                 var overlay = document.getElementById('sidebar-overlay');
                 var toggleButtons = document.querySelectorAll('[data-sidebar-toggle]');
 
+                function blurActiveField() {
+                    var activeElement = document.activeElement;
+                    if (!activeElement) return;
+
+                    var tagName = activeElement.tagName;
+                    if (tagName === 'INPUT' || tagName === 'TEXTAREA' || tagName === 'SELECT' || activeElement.isContentEditable) {
+                        activeElement.blur();
+                    }
+                }
+
                 function closeSidebar() {
                     if (!sidebar) return;
                     sidebar.classList.add('-translate-x-full');
@@ -258,6 +268,11 @@
 
                 function openSidebar() {
                     if (!sidebar) return;
+                    if (typeof window.closeHeaderInteractivePanels === 'function') {
+                        window.closeHeaderInteractivePanels();
+                    } else {
+                        blurActiveField();
+                    }
                     sidebar.classList.remove('-translate-x-full');
                     if (overlay) overlay.classList.remove('hidden');
                     document.body.classList.add('overflow-hidden');

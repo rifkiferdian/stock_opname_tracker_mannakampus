@@ -38,18 +38,18 @@
         </div>
 
         <div class="flex items-center gap-2 sm:gap-4 lg:mr-10">
-            <details class="lg:hidden">
+            <details class="lg:hidden" data-header-panel>
                 <summary class="list-none">
                     <div class="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 text-slate-600 transition hover:bg-slate-50">
                         <i class="bx bx-search text-xl"></i>
                     </div>
                 </summary>
                 <div class="absolute left-4 right-4 top-full mt-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-lg">
-                    <input type="text" class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-600 outline-none focus:border-brand-500 focus:bg-white" placeholder="Search ...">
+                    <input type="text" class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-600 outline-none focus:border-brand-500 focus:bg-white" placeholder="Search ..." data-header-panel-input>
                 </div>
             </details>
 
-            <details class="relative">
+            <details class="relative" data-header-panel>
                 <summary class="list-none cursor-pointer">
                     <div class="relative inline-flex h-10 w-10 items-center justify-center rounded-full text-slate-500 transition hover:bg-slate-100">
                         <i class="bx bx-bell text-xl"></i>
@@ -81,7 +81,7 @@
 
             <span class="hidden h-8 w-px bg-slate-200 sm:inline-flex"></span>
 
-            <details class="relative">
+            <details class="relative" data-header-panel>
                 <summary class="list-none cursor-pointer">
                     <div class="inline-flex items-center gap-2 sm:gap-3 text-slate-600">
                         <div class="hidden text-right sm:block sm:text-left">
@@ -107,4 +107,21 @@
         </div>
     </div>
 </header>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        window.closeHeaderInteractivePanels = function () {
+            document.querySelectorAll('[data-header-panel][open]').forEach(function (panel) {
+                panel.removeAttribute('open');
+            });
+
+            var activeElement = document.activeElement;
+            if (!activeElement) return;
+
+            var tagName = activeElement.tagName;
+            if (tagName === 'INPUT' || tagName === 'TEXTAREA' || tagName === 'SELECT' || activeElement.isContentEditable) {
+                activeElement.blur();
+            }
+        };
+    });
+</script>
 {{ end }}

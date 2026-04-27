@@ -130,6 +130,9 @@
 
                 function openSidebar() {
                     if (!sidebar) return;
+                    if (typeof window.closeHeaderInteractivePanels === 'function') {
+                        window.closeHeaderInteractivePanels();
+                    }
                     sidebar.classList.remove('-translate-x-full');
                     if (overlay) overlay.classList.remove('hidden');
                     document.body.classList.add('overflow-hidden');
