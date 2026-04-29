@@ -41,6 +41,41 @@
                 gap: 0.75rem;
             }
 
+            .scanner-header {
+                display: flex;
+                align-items: flex-end;
+                justify-content: space-between;
+                gap: 0.75rem;
+                border-bottom: 1px solid #f1f5f9;
+                padding-bottom: 1rem;
+            }
+
+            .scanner-header-action {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                gap: 0.38rem;
+                width: auto;
+                margin-left: auto;
+                flex-shrink: 0;
+                min-height: 2.2rem;
+                padding: 0.5rem 0.78rem;
+                margin-top: 0;
+                border: 1px solid #bfdbfe;
+                border-radius: 0.78rem;
+                background: #eff6ff;
+                color: #1d4ed8;
+                font-size: 0.74rem;
+                font-weight: 800;
+                line-height: 1;
+                box-shadow: none;
+                white-space: nowrap;
+            }
+
+            .scanner-header-action i {
+                font-size: 0.95rem;
+            }
+
             .toolbar-actions {
                 display: flex;
                 flex-wrap: wrap;
@@ -87,26 +122,16 @@
             }
 
             .unit-stack {
-                display: grid;
-                gap: 0.28rem;
-                margin-top: 0.55rem;
-                text-align: left;
+                margin-top: 0.45rem;
+                text-align: center;
             }
 
             .unit-stack p {
-                display: flex;
-                align-items: center;
-                gap: 0.4rem;
                 margin: 0;
-                font-size: 0.72rem;
-                font-weight: 700;
-                color: #475569;
-            }
-
-            .unit-stack p strong {
-                margin-top: 0;
-                font-size: 0.8rem;
+                font-size: 0.82rem;
+                font-weight: 800;
                 color: #0f172a;
+                letter-spacing: 0.01em;
             }
 
             .control-panel {
@@ -348,6 +373,12 @@
                 margin-top: 1rem;
             }
 
+            .modal-qty-grid {
+                display: grid;
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+                gap: 0.75rem;
+            }
+
             .modal-form label {
                 display: block;
                 font-size: 0.72rem;
@@ -454,6 +485,7 @@
                 .ledger-grid {
                     grid-template-columns: repeat(3, minmax(0, 1fr));
                 }
+
             }
         </style>
     </head>
@@ -502,9 +534,26 @@
                         {{ end }}
 
                         <section class="panel-card p-4 sm:p-6">
-                            <div class="border-b border-slate-100 pb-4">
-                                <p class="text-[11px] font-extrabold uppercase tracking-[0.18em] text-slate-400">Scanner Item</p>
-                                <h1 class="mt-1 text-xl font-extrabold text-[#153e8a]">Input Qty Item</h1>
+                            <div class="scanner-header">
+                                <div>
+                                    <p class="text-[11px] font-extrabold uppercase tracking-[0.18em] text-slate-400">Scanner Item</p>
+                                    <h1 class="mt-1 text-xl font-extrabold text-[#153e8a]">Input Qty Item</h1>
+                                </div>
+
+                                <button
+                                    type="button"
+                                    class="scanner-header-action"
+                                    id="openSuggestModalButton"
+                                    data-item-id="{{ .Item.ID }}"
+                                    data-product-name="{{ .Item.ProductName }}"
+                                    data-suggest-carton="{{ .Item.SuggestBuyCarton }}"
+                                    data-suggest-box="{{ .Item.SuggestBuyBox }}"
+                                    data-suggest-pcs="{{ .Item.SuggestBuyPcs }}"
+                                    data-conversion="{{ .Item.ConversionDisplay }}"
+                                >
+                                    <i class="bx bx-edit-alt"></i>
+                                    <span>Input Suggest</span>
+                                </button>
                             </div>
 
                             <div class="space-y-4 pt-5">
@@ -522,34 +571,21 @@
                                     <div class="qty-summary-card">
                                         <span>Toko</span>
                                         <div class="unit-stack">
-                                            <p><span>Carton</span><strong>{{ .Item.QtyStoreCarton }}</strong></p>
-                                            <p><span>Box</span><strong>{{ .Item.QtyStoreBox }}</strong></p>
-                                            <p><span>Pcs</span><strong>{{ .Item.QtyStorePcs }}</strong></p>
+                                            <p><b style="color: #d35400;">{{ .Item.QtyStoreCarton }}</b>c - <b style="color: #d35400;">{{ .Item.QtyStoreBox }}</b>b - <b style="color: #d35400;">{{ .Item.QtyStorePcs }}</b>p</p>
                                         </div>
                                     </div>
                                     <div class="qty-summary-card">
                                         <span>Gudang</span>
                                         <div class="unit-stack">
-                                            <p><span>Carton</span><strong>{{ .Item.QtyWarehouseCarton }}</strong></p>
-                                            <p><span>Box</span><strong>{{ .Item.QtyWarehouseBox }}</strong></p>
-                                            <p><span>Pcs</span><strong>{{ .Item.QtyWarehousePcs }}</strong></p>
+                                            <p><b style="color: #d35400;">{{ .Item.QtyWarehouseCarton }}</b>c - <b style="color: #d35400;">{{ .Item.QtyWarehouseBox }}</b>b - <b style="color: #d35400;">{{ .Item.QtyWarehousePcs }}</b>p</p>
                                         </div>
                                     </div>
                                     <div class="qty-summary-card">
                                         <span>Saran PO</span>
-                                        <strong>{{ .Item.SuggestBuyCartonDisplay }}</strong>
-                                        <button
-                                            type="button"
-                                            class="suggest-button"
-                                            id="openSuggestModalButton"
-                                            data-item-id="{{ .Item.ID }}"
-                                            data-product-name="{{ .Item.ProductName }}"
-                                            data-suggest-carton="{{ .Item.SuggestBuyCarton }}"
-                                            data-conversion="{{ .Item.ConversionDisplay }}"
-                                        >
-                                            <i class="bx bx-edit-alt text-base"></i>
-                                            <span>Input Suggest</span>
-                                        </button>
+                                        <div class="unit-stack">
+                                            <p><b style="color: #d35400;">{{ .Item.SuggestBuyCarton }}</b>c - <b style="color: #d35400;">{{ .Item.SuggestBuyBox }}</b>b - <b style="color: #d35400;">{{ .Item.SuggestBuyPcs }}</b>p</p>
+                                        </div>
+                                        
                                     </div>
                                 </div>
 
@@ -629,9 +665,14 @@
                     <input type="hidden" name="redirect_to" value="{{ .CurrentURL }}">
 
                     <div>
-                        <label for="suggest_carton">Suggest Carton</label>
-                        <input type="number" id="suggest_carton" name="suggest_carton" min="0" step="1" value="{{ .Item.SuggestBuyCarton }}" required>
+                        <label>Suggest Qty</label>
+                        <div class="modal-qty-grid">
+                            <input type="number" id="suggest_carton" name="suggest_carton" min="0" step="1" value="{{ .Item.SuggestBuyCarton }}" placeholder="Carton" required>
+                            <input type="number" id="suggest_box" name="suggest_box" min="0" step="1" value="{{ .Item.SuggestBuyBox }}" placeholder="Box">
+                            <input type="number" id="suggest_pcs" name="suggest_pcs" min="0" step="1" value="{{ .Item.SuggestBuyPcs }}" placeholder="Pcs">
+                        </div>
                         <p id="suggestModalHint" class="modal-hint">{{ .Item.ConversionDisplay }}</p>
+                        <p class="modal-hint">Breakdown saat ini: {{ .Item.SuggestBuyBreakdownDisplay }}</p>
                     </div>
 
                     <div class="modal-actions">
@@ -793,11 +834,15 @@
                         var itemIdInput = suggestModalEl.querySelector('#suggest_item_id');
                         var productNameNode = suggestModalEl.querySelector('#suggestModalProductName');
                         var suggestCartonInput = suggestModalEl.querySelector('#suggest_carton');
+                        var suggestBoxInput = suggestModalEl.querySelector('#suggest_box');
+                        var suggestPcsInput = suggestModalEl.querySelector('#suggest_pcs');
                         var hintNode = suggestModalEl.querySelector('#suggestModalHint');
 
                         if (itemIdInput) itemIdInput.value = suggestOpenButton.getAttribute('data-item-id') || '';
                         if (productNameNode) productNameNode.textContent = suggestOpenButton.getAttribute('data-product-name') || '';
                         if (suggestCartonInput) suggestCartonInput.value = suggestOpenButton.getAttribute('data-suggest-carton') || '0';
+                        if (suggestBoxInput) suggestBoxInput.value = suggestOpenButton.getAttribute('data-suggest-box') || '0';
+                        if (suggestPcsInput) suggestPcsInput.value = suggestOpenButton.getAttribute('data-suggest-pcs') || '0';
                         if (hintNode) hintNode.textContent = suggestOpenButton.getAttribute('data-conversion') || '';
 
                         openModal(suggestModalEl);

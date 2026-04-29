@@ -398,6 +398,12 @@ func (s *StockCheckSessionService) UpdateCheckerSuggest(input models.StockCheckS
 	if input.SuggestCarton < 0 {
 		return errors.New("suggest carton tidak boleh kurang dari 0")
 	}
+	if input.SuggestBox < 0 {
+		return errors.New("suggest box tidak boleh kurang dari 0")
+	}
+	if input.SuggestPcs < 0 {
+		return errors.New("suggest pcs tidak boleh kurang dari 0")
+	}
 	if input.UpdatedBy <= 0 {
 		return errors.New("user login tidak valid")
 	}
@@ -423,7 +429,14 @@ func (s *StockCheckSessionService) UpdateCheckerSuggest(input models.StockCheckS
 		return errors.New("item tidak ditemukan pada session ini")
 	}
 
-	return s.Repo.UpdateCheckerItemSuggest(input.SessionID, input.ItemID, input.SuggestCarton, input.UpdatedBy)
+	return s.Repo.UpdateCheckerItemSuggest(
+		input.SessionID,
+		input.ItemID,
+		input.SuggestCarton,
+		input.SuggestBox,
+		input.SuggestPcs,
+		input.UpdatedBy,
+	)
 }
 
 func (s *StockCheckSessionService) DeleteSession(id int) error {

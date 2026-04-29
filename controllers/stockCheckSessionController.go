@@ -135,9 +135,11 @@ func StockCheckCheckerSessionScanPage(c *gin.Context) {
 
 func StockCheckCheckerSessionSuggest(c *gin.Context) {
 	type stockCheckCheckerSuggestForm struct {
-		ItemID       int    `form:"item_id" binding:"required"`
+		ItemID        int    `form:"item_id" binding:"required"`
 		SuggestCarton string `form:"suggest_carton" binding:"required"`
-		RedirectTo   string `form:"redirect_to"`
+		SuggestBox    string `form:"suggest_box"`
+		SuggestPcs    string `form:"suggest_pcs"`
+		RedirectTo    string `form:"redirect_to"`
 	}
 
 	sessionID, err := strconv.Atoi(c.Param("id"))
@@ -168,10 +170,32 @@ func StockCheckCheckerSessionSuggest(c *gin.Context) {
 		return
 	}
 
+	suggestBox, err := parseStockCheckNonNegativeInt(form.SuggestBox)
+	if err != nil {
+		if redirectTo := sanitizeRedirectTarget(form.RedirectTo); redirectTo != "" {
+			c.Redirect(http.StatusSeeOther, appendRedirectMessage(redirectTo, "error", "Suggest box harus berupa angka bulat yang valid"))
+			return
+		}
+		c.String(http.StatusBadRequest, "suggest box harus berupa angka bulat yang valid")
+		return
+	}
+
+	suggestPcs, err := parseStockCheckNonNegativeInt(form.SuggestPcs)
+	if err != nil {
+		if redirectTo := sanitizeRedirectTarget(form.RedirectTo); redirectTo != "" {
+			c.Redirect(http.StatusSeeOther, appendRedirectMessage(redirectTo, "error", "Suggest pcs harus berupa angka bulat yang valid"))
+			return
+		}
+		c.String(http.StatusBadRequest, "suggest pcs harus berupa angka bulat yang valid")
+		return
+	}
+
 	err = service.UpdateCheckerSuggest(models.StockCheckSessionCheckerSuggestInput{
 		SessionID:     sessionID,
 		ItemID:        form.ItemID,
 		SuggestCarton: suggestCarton,
+		SuggestBox:    suggestBox,
+		SuggestPcs:    suggestPcs,
 		UpdatedBy:     extractCurrentUserID(c),
 	})
 	if err != nil {

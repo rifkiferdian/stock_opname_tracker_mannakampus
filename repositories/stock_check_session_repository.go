@@ -684,7 +684,7 @@ func (r *StockCheckSessionRepository) GetCheckerInputItems(sessionID int) ([]mod
 		item.QtyWarehouseDisplay = formatStockCheckWholeNumber(item.QtyWarehouse)
 		item.TotalQtyDisplay = formatStockCheckWholeNumber(item.TotalQty)
 		item.SuggestBuyQtyDisplay = formatStockCheckWholeNumber(item.SuggestBuyQty)
-		item.SuggestBuyCarton, item.SuggestBuyCartonDisplay = formatStockCheckSuggestCarton(item.SuggestBuyQty, item.PcsPerCarton)
+		item.SuggestBuyCarton, item.SuggestBuyBox, item.SuggestBuyPcs, item.SuggestBuyCartonDisplay, item.SuggestBuyBreakdownDisplay = formatStockCheckSuggestBreakdown(item.SuggestBuyQty, item.PcsPerBox, item.PcsPerCarton)
 		item.QtyStoreBreakdownDisplay = formatStockCheckUnitBreakdown(item.QtyStoreCarton, item.QtyStoreBox, item.QtyStorePcs)
 		item.QtyWarehouseBreakdownDisplay = formatStockCheckUnitBreakdown(item.QtyWarehouseCarton, item.QtyWarehouseBox, item.QtyWarehousePcs)
 		item.ConversionDisplay = formatStockCheckConversion(item.PcsPerBox, item.BoxPerCarton, item.PcsPerCarton)
@@ -709,15 +709,15 @@ func (r *StockCheckSessionRepository) UpdateCheckerItemQtyByBarcode(sessionID in
 	}()
 
 	var (
-		itemID               int
-		pcsPerBox            int
-		pcsPerCarton         int
-		storeCarton          int
-		storeBox             int
-		storePcs             int
-		warehouseCarton      int
-		warehouseBox         int
-		warehousePcs         int
+		itemID          int
+		pcsPerBox       int
+		pcsPerCarton    int
+		storeCarton     int
+		storeBox        int
+		storePcs        int
+		warehouseCarton int
+		warehouseBox    int
+		warehousePcs    int
 	)
 
 	err = tx.QueryRow(`
@@ -820,7 +820,7 @@ func (r *StockCheckSessionRepository) UpdateCheckerItemQtyByBarcode(sessionID in
 	return itemID, nil
 }
 
-func (r *StockCheckSessionRepository) UpdateCheckerItemSuggest(sessionID int, itemID int, suggestCarton int, updatedBy int) error {
+func (r *StockCheckSessionRepository) UpdateCheckerItemSuggest(sessionID int, itemID int, suggestCarton int, suggestBox int, suggestPcs int, updatedBy int) error {
 	tx, err := r.DB.Begin()
 	if err != nil {
 		return err
@@ -831,14 +831,19 @@ func (r *StockCheckSessionRepository) UpdateCheckerItemSuggest(sessionID int, it
 		}
 	}()
 
-	var pcsPerCarton int
+	var (
+		pcsPerBox    int
+		pcsPerCarton int
+	)
 	err = tx.QueryRow(`
-		SELECT COALESCE(p.pcs_per_carton, 0) AS pcs_per_carton
+		SELECT
+			COALESCE(p.pcs_per_box, 0) AS pcs_per_box,
+			COALESCE(p.pcs_per_carton, 0) AS pcs_per_carton
 		FROM stock_check_session_items si
 		INNER JOIN products p ON p.id = si.product_id
 		WHERE si.stock_check_session_id = ? AND si.id = ?
 		LIMIT 1
-	`, sessionID, itemID).Scan(&pcsPerCarton)
+	`, sessionID, itemID).Scan(&pcsPerBox, &pcsPerCarton)
 	if err != nil {
 		return err
 	}
@@ -846,8 +851,14 @@ func (r *StockCheckSessionRepository) UpdateCheckerItemSuggest(sessionID int, it
 	if suggestCarton > 0 && pcsPerCarton <= 0 {
 		return fmt.Errorf("produk ini belum memiliki konversi pcs per carton")
 	}
+	if suggestBox > 0 && pcsPerBox <= 0 {
+		return fmt.Errorf("produk ini belum memiliki konversi pcs per box")
+	}
 
-	suggestQty := float64(suggestCarton * pcsPerCarton)
+	suggestQty, err := computeStockCheckQtyInPcs(suggestCarton, suggestBox, suggestPcs, pcsPerBox, pcsPerCarton)
+	if err != nil {
+		return err
+	}
 	_, err = tx.Exec(`
 		UPDATE stock_check_session_items
 		SET
@@ -1149,6 +1160,33 @@ func formatStockCheckSuggestCarton(suggestQty float64, pcsPerCarton int) (int, s
 
 	carton := int(math.Ceil(suggestQty / float64(pcsPerCarton)))
 	return carton, fmt.Sprintf("%d carton", carton)
+}
+
+func formatStockCheckSuggestBreakdown(suggestQty float64, pcsPerBox int, pcsPerCarton int) (int, int, int, string, string) {
+	totalPcs := int(math.Round(suggestQty))
+	if totalPcs <= 0 {
+		return 0, 0, 0, "0 carton", "0 pcs"
+	}
+
+	carton := 0
+	box := 0
+	pcs := totalPcs
+
+	if pcsPerCarton > 0 {
+		carton = pcs / pcsPerCarton
+		pcs = pcs % pcsPerCarton
+	}
+	if pcsPerBox > 0 {
+		box = pcs / pcsPerBox
+		pcs = pcs % pcsPerBox
+	}
+
+	cartonDisplay := "0 carton"
+	if pcsPerCarton > 0 {
+		cartonDisplay = fmt.Sprintf("%d carton", carton)
+	}
+
+	return carton, box, pcs, cartonDisplay, formatStockCheckUnitBreakdown(carton, box, pcs)
 }
 
 func stockCheckSessionItemStatusMeta(status string) (string, string) {
