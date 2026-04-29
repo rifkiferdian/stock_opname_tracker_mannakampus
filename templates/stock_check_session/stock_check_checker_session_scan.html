@@ -86,6 +86,29 @@
                 color: #153e8a;
             }
 
+            .unit-stack {
+                display: grid;
+                gap: 0.28rem;
+                margin-top: 0.55rem;
+                text-align: left;
+            }
+
+            .unit-stack p {
+                display: flex;
+                align-items: center;
+                gap: 0.4rem;
+                margin: 0;
+                font-size: 0.72rem;
+                font-weight: 700;
+                color: #475569;
+            }
+
+            .unit-stack p strong {
+                margin-top: 0;
+                font-size: 0.8rem;
+                color: #0f172a;
+            }
+
             .control-panel {
                 border-radius: 1.2rem;
                 border: 1px solid #e5e7eb;
@@ -121,46 +144,60 @@
 
             .qty-block {
                 display: grid;
-                gap: 0.8rem;
-                justify-items: center;
+                gap: 0.7rem;
                 padding-top: 0.4rem;
             }
 
-            .qty-stepper {
+            .qty-grid {
                 display: grid;
-                grid-template-columns: 3.1rem minmax(0, 1fr) 3.1rem;
-                align-items: center;
-                gap: 0.75rem;
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+                gap: 0.45rem;
                 width: 100%;
-                max-width: 16rem;
             }
 
-            .qty-button {
-                display: inline-flex;
-                height: 3.1rem;
-                width: 3.1rem;
-                align-items: center;
-                justify-content: center;
-                border: 0;
-                border-radius: 0.95rem;
+            .qty-input-card {
+                border: 1px solid #dbe3f0;
+                border-radius: 0.85rem;
                 background: #fff;
-                color: #153e8a;
-                font-size: 1.35rem;
+                padding: 0.6rem 0.55rem;
+                box-shadow: 0 14px 28px -24px rgba(15, 23, 42, 0.4);
+            }
+
+            .qty-input-card label {
+                display: block;
+                font-size: 0.62rem;
                 font-weight: 800;
-                box-shadow: 0 12px 24px -20px rgba(15, 23, 42, 0.55);
+                letter-spacing: 0.05em;
+                text-transform: uppercase;
+                color: #64748b;
+                text-align: center;
+            }
+
+            .qty-input-card p {
+                display: none;
+                margin-top: 0.2rem;
+                font-size: 0.68rem;
+                font-weight: 700;
+                color: #94a3b8;
             }
 
             .qty-field {
-                border: 0;
-                border-radius: 1rem;
-                background: #e5e7eb;
-                padding: 0.95rem 1rem;
+                border: 1px solid #dbe3f0;
+                border-radius: 0.8rem;
+                background: #f8fafc;
+                padding: 0.7rem 0.45rem;
                 width: 100%;
                 text-align: center;
-                font-size: 1.8rem;
+                font-size: 1rem;
                 font-weight: 800;
                 color: #0f172a;
                 outline: none;
+                margin-top: 0.45rem;
+            }
+
+            .qty-field:focus {
+                border-color: #2948a2;
+                background: #fff;
             }
 
             .submit-button {
@@ -183,6 +220,197 @@
                 gap: 0.75rem;
             }
 
+            .item-ledger {
+                border-top: 1px solid #e2e8f0;
+                padding-top: 1rem;
+            }
+
+            .ledger-list {
+                display: grid;
+                gap: 0.75rem;
+            }
+
+            .ledger-card {
+                border: 1px solid #e2e8f0;
+                border-radius: 1rem;
+                background: #fff;
+                padding: 0.95rem;
+            }
+
+            .ledger-card.active {
+                border-color: #93c5fd;
+                box-shadow: 0 18px 30px -26px rgba(37, 99, 235, 0.45);
+                background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+            }
+
+            .ledger-grid {
+                display: grid;
+                gap: 0.65rem;
+                margin-top: 0.8rem;
+            }
+
+            .ledger-box {
+                border-radius: 0.85rem;
+                background: #f8fafc;
+                border: 1px solid #e2e8f0;
+                padding: 0.7rem 0.8rem;
+            }
+
+            .ledger-box span {
+                display: block;
+                font-size: 0.65rem;
+                font-weight: 800;
+                letter-spacing: 0.08em;
+                text-transform: uppercase;
+                color: #64748b;
+            }
+
+            .ledger-box strong {
+                display: block;
+                margin-top: 0.3rem;
+                font-size: 0.95rem;
+                font-weight: 800;
+                color: #0f172a;
+            }
+
+            .ledger-box p {
+                margin-top: 0.28rem;
+                font-size: 0.73rem;
+                font-weight: 700;
+                color: #94a3b8;
+            }
+
+            .suggest-button {
+                display: inline-flex;
+                min-height: 2.35rem;
+                align-items: center;
+                justify-content: center;
+                gap: 0.4rem;
+                margin-top: 0.55rem;
+                border: 0;
+                border-radius: 0.8rem;
+                background: #dbeafe;
+                color: #1d4ed8;
+                padding: 0.55rem 0.75rem;
+                font-size: 0.76rem;
+                font-weight: 800;
+                width: 100%;
+            }
+
+            .modal-shell {
+                position: fixed;
+                inset: 0;
+                z-index: 60;
+                display: none;
+                align-items: center;
+                justify-content: center;
+                padding: 1rem;
+                background: rgba(15, 23, 42, 0.55);
+            }
+
+            .modal-shell.flex {
+                display: flex;
+            }
+
+            .modal-card {
+                width: 100%;
+                max-width: 28rem;
+                border-radius: 1.2rem;
+                background: #fff;
+                padding: 1.1rem;
+                box-shadow: 0 26px 60px -34px rgba(15, 23, 42, 0.45);
+            }
+
+            .modal-head {
+                display: flex;
+                align-items: flex-start;
+                justify-content: space-between;
+                gap: 0.75rem;
+                border-bottom: 1px solid #e2e8f0;
+                padding-bottom: 0.85rem;
+            }
+
+            .modal-close {
+                display: inline-flex;
+                height: 2.2rem;
+                width: 2.2rem;
+                align-items: center;
+                justify-content: center;
+                border: 0;
+                border-radius: 999px;
+                background: #f8fafc;
+                color: #475569;
+            }
+
+            .modal-form {
+                display: grid;
+                gap: 0.9rem;
+                margin-top: 1rem;
+            }
+
+            .modal-form label {
+                display: block;
+                font-size: 0.72rem;
+                font-weight: 800;
+                letter-spacing: 0.08em;
+                text-transform: uppercase;
+                color: #64748b;
+            }
+
+            .modal-form input {
+                width: 100%;
+                border: 1px solid #dbe3f0;
+                border-radius: 0.9rem;
+                background: #f8fafc;
+                padding: 0.9rem 1rem;
+                margin-top: 0.65rem;
+                font-size: 1rem;
+                font-weight: 800;
+                color: #0f172a;
+                outline: none;
+            }
+
+            .modal-form input:focus {
+                border-color: #2948a2;
+                background: #fff;
+            }
+
+            .modal-hint {
+                margin-top: 0.42rem;
+                font-size: 0.76rem;
+                font-weight: 700;
+                color: #94a3b8;
+            }
+
+            .modal-actions {
+                display: flex;
+                justify-content: flex-end;
+                gap: 0.65rem;
+                padding-top: 0.25rem;
+            }
+
+            .modal-button {
+                display: inline-flex;
+                min-height: 2.7rem;
+                align-items: center;
+                justify-content: center;
+                border: 0;
+                border-radius: 0.85rem;
+                padding: 0.65rem 1rem;
+                font-size: 0.86rem;
+                font-weight: 800;
+            }
+
+            .modal-button.secondary {
+                background: #f8fafc;
+                color: #475569;
+            }
+
+            .modal-button.primary {
+                background: linear-gradient(135deg, #2948a2 0%, #1a377f 100%);
+                color: #fff;
+            }
+
             @media (min-width: 768px) {
                 .page-toolbar {
                     flex-direction: row;
@@ -193,6 +421,38 @@
                 .form-actions {
                     display: flex;
                     justify-content: flex-end;
+                }
+
+                .qty-grid {
+                    gap: 0.75rem;
+                }
+
+                .qty-input-card {
+                    padding: 0.9rem;
+                    border-radius: 1rem;
+                }
+
+                .qty-input-card label {
+                    font-size: 0.72rem;
+                    letter-spacing: 0.08em;
+                    text-align: left;
+                }
+
+                .qty-input-card p {
+                    display: block;
+                    font-size: 0.76rem;
+                }
+
+                .qty-field {
+                    border-radius: 1rem;
+                    padding: 0.95rem 1rem 0.9rem;
+                    text-align: left;
+                    font-size: 1.35rem;
+                    margin-top: 0.75rem;
+                }
+
+                .ledger-grid {
+                    grid-template-columns: repeat(3, minmax(0, 1fr));
                 }
             }
         </style>
@@ -235,6 +495,11 @@
                             {{ .Error }}
                         </div>
                         {{ end }}
+                        {{ if .Success }}
+                        <div class="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700">
+                            {{ .Success }}
+                        </div>
+                        {{ end }}
 
                         <section class="panel-card p-4 sm:p-6">
                             <div class="border-b border-slate-100 pb-4">
@@ -256,15 +521,35 @@
                                 <div class="qty-summary-grid">
                                     <div class="qty-summary-card">
                                         <span>Toko</span>
-                                        <strong>{{ .Item.QtyStoreDisplay }}</strong>
+                                        <div class="unit-stack">
+                                            <p><span>Carton</span><strong>{{ .Item.QtyStoreCarton }}</strong></p>
+                                            <p><span>Box</span><strong>{{ .Item.QtyStoreBox }}</strong></p>
+                                            <p><span>Pcs</span><strong>{{ .Item.QtyStorePcs }}</strong></p>
+                                        </div>
                                     </div>
                                     <div class="qty-summary-card">
                                         <span>Gudang</span>
-                                        <strong>{{ .Item.QtyWarehouseDisplay }}</strong>
+                                        <div class="unit-stack">
+                                            <p><span>Carton</span><strong>{{ .Item.QtyWarehouseCarton }}</strong></p>
+                                            <p><span>Box</span><strong>{{ .Item.QtyWarehouseBox }}</strong></p>
+                                            <p><span>Pcs</span><strong>{{ .Item.QtyWarehousePcs }}</strong></p>
+                                        </div>
                                     </div>
                                     <div class="qty-summary-card">
-                                        <span>Total</span>
-                                        <strong>{{ .Item.TotalQtyDisplay }}</strong>
+                                        <span>Saran PO</span>
+                                        <strong>{{ .Item.SuggestBuyCartonDisplay }}</strong>
+                                        <button
+                                            type="button"
+                                            class="suggest-button"
+                                            id="openSuggestModalButton"
+                                            data-item-id="{{ .Item.ID }}"
+                                            data-product-name="{{ .Item.ProductName }}"
+                                            data-suggest-carton="{{ .Item.SuggestBuyCarton }}"
+                                            data-conversion="{{ .Item.ConversionDisplay }}"
+                                        >
+                                            <i class="bx bx-edit-alt text-base"></i>
+                                            <span>Input Suggest</span>
+                                        </button>
                                     </div>
                                 </div>
 
@@ -278,21 +563,33 @@
                                         <div class="flex items-center justify-between gap-3">
                                             <div>
                                                 <p class="text-sm font-extrabold text-[#153e8a]">Adjust Stock Quantity</p>
-                                                <p id="selectedLocationHelper" class="mt-1 text-xs font-semibold text-slate-500">Qty akan disimpan ke area toko.</p>
+                                                <p id="selectedLocationHelper" class="mt-1 text-xs font-semibold text-slate-500">{{ if eq .ScanForm.Location "warehouse" }}Qty akan disimpan ke area gudang.{{ else }}Qty akan disimpan ke area toko.{{ end }}</p>
                                             </div>
                                         </div>
 
                                         <div class="location-switch mt-4">
-                                            <button type="button" class="location-button active" data-location-button="store">Shop Floor</button>
-                                            <button type="button" class="location-button" data-location-button="warehouse">Warehouse</button>
+                                            <button type="button" class="location-button{{ if ne .ScanForm.Location "warehouse" }} active{{ end }}" data-location-button="store">Shop Floor</button>
+                                            <button type="button" class="location-button{{ if eq .ScanForm.Location "warehouse" }} active{{ end }}" data-location-button="warehouse">Warehouse</button>
                                         </div>
 
                                         <div class="qty-block mt-5">
-                                            <p id="selectedLocationLabel" class="text-sm font-semibold text-slate-500">Front display units</p>
-                                            <div class="qty-stepper">
-                                                <button type="button" id="qtyMinusButton" class="qty-button" aria-label="Kurangi qty">-</button>
-                                                <input id="scan_qty" name="qty" type="number" step="1" min="0" value="{{ .ScanForm.Qty }}" class="qty-field" inputmode="numeric" required>
-                                                <button type="button" id="qtyPlusButton" class="qty-button" aria-label="Tambah qty">+</button>
+                                            <p id="selectedLocationLabel" class="text-sm font-semibold text-slate-500">{{ if eq .ScanForm.Location "warehouse" }}Warehouse storage units{{ else }}Front display units{{ end }}</p>
+                                            <div class="qty-grid">
+                                                <div class="qty-input-card">
+                                                    <label for="scan_qty_carton">Carton</label>
+                                                    <p>Jumlah karton</p>
+                                                    <input id="scan_qty_carton" name="qty_carton" type="number" step="1" min="0" value="{{ .ScanForm.QtyCarton }}" class="qty-field" inputmode="numeric">
+                                                </div>
+                                                <div class="qty-input-card">
+                                                    <label for="scan_qty_box">Box</label>
+                                                    <p>Jumlah box</p>
+                                                    <input id="scan_qty_box" name="qty_box" type="number" step="1" min="0" value="{{ .ScanForm.QtyBox }}" class="qty-field" inputmode="numeric">
+                                                </div>
+                                                <div class="qty-input-card">
+                                                    <label for="scan_qty_pcs">Pcs</label>
+                                                    <p>Satuan terkecil</p>
+                                                    <input id="scan_qty_pcs" name="qty_pcs" type="number" step="1" min="0" value="{{ .ScanForm.QtyPcs }}" class="qty-field" inputmode="numeric">
+                                                </div>
                                             </div>
                                         </div>
                                     </section>
@@ -307,10 +604,41 @@
                                         </a>
                                     </div>
                                 </form>
+
                             </div>
                         </section>
                     </div>
                 </main>
+            </div>
+        </div>
+
+        <div data-modal class="modal-shell hidden" id="suggestCheckerModal">
+            <div class="modal-card">
+                <div class="modal-head">
+                    <div>
+                        <h2 class="text-lg font-extrabold text-[#153e8a]">Input Suggest Checker</h2>
+                        <p id="suggestModalProductName" class="mt-1 text-sm font-semibold text-slate-500">{{ .Item.ProductName }}</p>
+                    </div>
+                    <button type="button" class="modal-close" data-modal-close aria-label="Close suggest modal">
+                        <i class="bx bx-x text-xl"></i>
+                    </button>
+                </div>
+
+                <form method="POST" action="/stock-checker/sessions/{{ .Session.ID }}/suggest" class="modal-form">
+                    <input type="hidden" name="item_id" id="suggest_item_id" value="{{ .Item.ID }}">
+                    <input type="hidden" name="redirect_to" value="{{ .CurrentURL }}">
+
+                    <div>
+                        <label for="suggest_carton">Suggest Carton</label>
+                        <input type="number" id="suggest_carton" name="suggest_carton" min="0" step="1" value="{{ .Item.SuggestBuyCarton }}" required>
+                        <p id="suggestModalHint" class="modal-hint">{{ .Item.ConversionDisplay }}</p>
+                    </div>
+
+                    <div class="modal-actions">
+                        <button type="button" class="modal-button secondary" data-modal-close>Batal</button>
+                        <button type="submit" class="modal-button primary">Simpan Suggest</button>
+                    </div>
+                </form>
             </div>
         </div>
 
@@ -321,16 +649,19 @@
                 var sidebar = document.getElementById('app-sidebar');
                 var overlay = document.getElementById('sidebar-overlay');
                 var toggleButtons = document.querySelectorAll('[data-sidebar-toggle]');
-                var qtyInput = document.getElementById('scan_qty');
-                var qtyMinusButton = document.getElementById('qtyMinusButton');
-                var qtyPlusButton = document.getElementById('qtyPlusButton');
+                var qtyCartonInput = document.getElementById('scan_qty_carton');
+                var qtyBoxInput = document.getElementById('scan_qty_box');
+                var qtyPcsInput = document.getElementById('scan_qty_pcs');
                 var locationInput = document.getElementById('scan_location');
                 var locationButtons = document.querySelectorAll('[data-location-button]');
                 var locationHelper = document.getElementById('selectedLocationHelper');
                 var locationLabel = document.getElementById('selectedLocationLabel');
                 var submitButton = document.getElementById('submitScanButton');
                 var backToInput = document.querySelector('input[name="back_to"]');
+                var suggestRedirectInput = document.querySelector('#suggestCheckerModal input[name="redirect_to"]');
                 var locationStorageKey = 'stock-checker-location:{{ .Session.ID }}';
+                var suggestModalEl = document.getElementById('suggestCheckerModal');
+                var suggestOpenButton = document.getElementById('openSuggestModalButton');
 
                 function closeSidebar() {
                     if (!sidebar) return;
@@ -349,12 +680,36 @@
                     document.body.classList.add('overflow-hidden');
                 }
 
+                function openModal(target) {
+                    var modal = typeof target === 'string' ? document.getElementById(target) : target;
+                    if (!modal) return;
+                    modal.classList.remove('hidden');
+                    modal.classList.add('flex');
+                    document.body.classList.add('overflow-hidden');
+                }
+
+                function closeModal(target) {
+                    var modal = typeof target === 'string' ? document.getElementById(target) : target;
+                    if (!modal) return;
+                    modal.classList.add('hidden');
+                    modal.classList.remove('flex');
+                    document.body.classList.remove('overflow-hidden');
+                }
+
                 function normalizeLocation(value) {
                     return value === 'warehouse' ? 'warehouse' : 'store';
                 }
 
                 function buildBackURL(location) {
                     var url = new URL('{{ .BackURL }}', window.location.origin);
+                    url.searchParams.set('location', normalizeLocation(location));
+                    url.searchParams.delete('success');
+                    url.searchParams.delete('error');
+                    return url.pathname + url.search;
+                }
+
+                function buildCurrentPageURL(location) {
+                    var url = new URL(window.location.href);
                     url.searchParams.set('location', normalizeLocation(location));
                     url.searchParams.delete('success');
                     url.searchParams.delete('error');
@@ -372,6 +727,9 @@
                     if (backToInput) {
                         backToInput.value = buildBackURL(location);
                     }
+                    if (suggestRedirectInput) {
+                        suggestRedirectInput.value = buildCurrentPageURL(location);
+                    }
                 }
 
                 function updateLocationUI() {
@@ -387,14 +745,6 @@
                         locationHelper.textContent = 'Qty akan disimpan ke area toko.';
                         locationLabel.textContent = 'Front display units';
                     }
-                }
-
-                function adjustQty(delta) {
-                    var current = parseFloat(qtyInput.value || '0');
-                    if (isNaN(current)) current = 0;
-                    current += delta;
-                    if (current < 0) current = 0;
-                    qtyInput.value = String(current);
                 }
 
                 toggleButtons.forEach(function (button) {
@@ -419,21 +769,56 @@
                     });
                 });
 
-                if (qtyMinusButton) {
-                    qtyMinusButton.addEventListener('click', function () {
-                        adjustQty(-1);
+                document.querySelectorAll('[data-modal-close]').forEach(function (button) {
+                    button.addEventListener('click', function () {
+                        closeModal(button.closest('[data-modal]'));
+                    });
+                });
+
+                document.querySelectorAll('[data-modal]').forEach(function (modal) {
+                    modal.addEventListener('click', function (event) {
+                        if (event.target === modal) {
+                            closeModal(modal);
+                        }
+                    });
+                });
+
+                document.addEventListener('keydown', function (event) {
+                    if (event.key !== 'Escape') return;
+                    document.querySelectorAll('[data-modal].flex').forEach(closeModal);
+                });
+
+                if (suggestOpenButton && suggestModalEl) {
+                    suggestOpenButton.addEventListener('click', function () {
+                        var itemIdInput = suggestModalEl.querySelector('#suggest_item_id');
+                        var productNameNode = suggestModalEl.querySelector('#suggestModalProductName');
+                        var suggestCartonInput = suggestModalEl.querySelector('#suggest_carton');
+                        var hintNode = suggestModalEl.querySelector('#suggestModalHint');
+
+                        if (itemIdInput) itemIdInput.value = suggestOpenButton.getAttribute('data-item-id') || '';
+                        if (productNameNode) productNameNode.textContent = suggestOpenButton.getAttribute('data-product-name') || '';
+                        if (suggestCartonInput) suggestCartonInput.value = suggestOpenButton.getAttribute('data-suggest-carton') || '0';
+                        if (hintNode) hintNode.textContent = suggestOpenButton.getAttribute('data-conversion') || '';
+
+                        openModal(suggestModalEl);
+                        if (suggestCartonInput) {
+                            window.setTimeout(function () {
+                                suggestCartonInput.focus();
+                                suggestCartonInput.select();
+                            }, 0);
+                        }
                     });
                 }
 
-                if (qtyPlusButton) {
-                    qtyPlusButton.addEventListener('click', function () {
-                        adjustQty(1);
-                    });
-                }
-
-                if (qtyInput) {
-                    qtyInput.focus();
-                    qtyInput.select();
+                if (qtyCartonInput) {
+                    qtyCartonInput.focus();
+                    qtyCartonInput.select();
+                } else if (qtyBoxInput) {
+                    qtyBoxInput.focus();
+                    qtyBoxInput.select();
+                } else if (qtyPcsInput) {
+                    qtyPcsInput.focus();
+                    qtyPcsInput.select();
                 }
 
                 persistLocation(locationInput.value);

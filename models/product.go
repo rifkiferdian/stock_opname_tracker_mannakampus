@@ -19,6 +19,8 @@ type Product struct {
 	DefaultLeadTimeDays         int
 	PackSize                    float64
 	PackSizeDisplay             string
+	PcsPerBox                   int
+	PcsPerCarton                int
 	IsActive                    bool
 	StatusLabel                 string
 	PrimarySupplierID           int
@@ -128,6 +130,8 @@ type ProductCreateInput struct {
 	ReorderPoint        float64
 	DefaultLeadTimeDays int
 	PackSize            float64
+	PcsPerBox           int
+	PcsPerCarton        int
 	IsActive            bool
 	SupplierID          int
 	LastPrice           float64
@@ -146,6 +150,8 @@ type ProductUpdateInput struct {
 	ReorderPoint        float64
 	DefaultLeadTimeDays int
 	PackSize            float64
+	PcsPerBox           int
+	PcsPerCarton        int
 	IsActive            bool
 	SupplierID          int
 	LastPrice           float64

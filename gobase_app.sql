@@ -110,6 +110,8 @@ CREATE TABLE `products` (
   `reorder_point` decimal(18,2) NOT NULL DEFAULT 0.00,
   `default_lead_time_days` int(11) NOT NULL DEFAULT 0,
   `pack_size` decimal(18,2) NOT NULL DEFAULT 1.00,
+  `pcs_per_box` int(10) unsigned NOT NULL DEFAULT 0,
+  `pcs_per_carton` int(10) unsigned NOT NULL DEFAULT 0,
   `is_active` tinyint(1) NOT NULL DEFAULT 1,
   `created_by` int(11) DEFAULT NULL,
   `updated_by` int(11) DEFAULT NULL,
@@ -121,10 +123,10 @@ CREATE TABLE `products` (
 -- Dumping data for table `products`
 --
 
-INSERT INTO `products` (`id`, `product_code`, `barcode`, `product_name`, `category_id`, `unit_id`, `brand`, `min_stock`, `max_stock`, `reorder_point`, `default_lead_time_days`, `pack_size`, `is_active`, `created_by`, `updated_by`, `created_at`, `updated_at`) VALUES
-(1, 'BRG-0001', '899999000001', 'Indomie Goreng', 1, 1, 'Indomie', 20.00, 200.00, 30.00, 2, 1.00, 1, 1, NULL, '2026-04-17 06:09:43', '2026-04-17 06:09:43'),
-(2, 'BRG-0002', '899999000002', 'Sabun Mandi ABC', 2, 1, 'ABC', 10.00, 100.00, 15.00, 3, 1.00, 1, 1, NULL, '2026-04-17 06:09:43', '2026-04-17 06:09:43'),
-(3, 'BRG-0003', '899999000003', 'Tisu Wajah', 3, 1, 'Nice', 15.00, 120.00, 20.00, 2, 1.00, 1, 1, NULL, '2026-04-17 06:09:43', '2026-04-17 06:09:43');
+INSERT INTO `products` (`id`, `product_code`, `barcode`, `product_name`, `category_id`, `unit_id`, `brand`, `min_stock`, `max_stock`, `reorder_point`, `default_lead_time_days`, `pack_size`, `pcs_per_box`, `pcs_per_carton`, `is_active`, `created_by`, `updated_by`, `created_at`, `updated_at`) VALUES
+(1, 'BRG-0001', '899999000001', 'Indomie Goreng', 1, 1, 'Indomie', 20.00, 200.00, 30.00, 2, 1.00, 40, 400, 1, 1, NULL, '2026-04-17 06:09:43', '2026-04-17 06:09:43'),
+(2, 'BRG-0002', '899999000002', 'Sabun Mandi ABC', 2, 1, 'ABC', 10.00, 100.00, 15.00, 3, 1.00, 24, 144, 1, 1, NULL, '2026-04-17 06:09:43', '2026-04-17 06:09:43'),
+(3, 'BRG-0003', '899999000003', 'Tisu Wajah', 3, 1, 'Nice', 15.00, 120.00, 20.00, 2, 1.00, 12, 72, 1, 1, NULL, '2026-04-17 06:09:43', '2026-04-17 06:09:43');
 
 -- --------------------------------------------------------
 
@@ -327,7 +329,13 @@ CREATE TABLE `stock_check_session_items` (
   `product_id` int(11) NOT NULL,
   `system_qty_store` decimal(18,2) NOT NULL DEFAULT 0.00,
   `system_qty_warehouse` decimal(18,2) NOT NULL DEFAULT 0.00,
+  `qty_store_carton` int(10) unsigned NOT NULL DEFAULT 0,
+  `qty_store_box` int(10) unsigned NOT NULL DEFAULT 0,
+  `qty_store_pcs` int(10) unsigned NOT NULL DEFAULT 0,
   `qty_store` decimal(18,2) NOT NULL DEFAULT 0.00,
+  `qty_warehouse_carton` int(10) unsigned NOT NULL DEFAULT 0,
+  `qty_warehouse_box` int(10) unsigned NOT NULL DEFAULT 0,
+  `qty_warehouse_pcs` int(10) unsigned NOT NULL DEFAULT 0,
   `qty_warehouse` decimal(18,2) NOT NULL DEFAULT 0.00,
   `total_qty` decimal(18,2) NOT NULL DEFAULT 0.00,
   `suggest_buy_qty` decimal(18,2) NOT NULL DEFAULT 0.00,
@@ -350,22 +358,22 @@ CREATE TABLE `stock_check_session_items` (
 -- Dumping data for table `stock_check_session_items`
 --
 
-INSERT INTO `stock_check_session_items` (`id`, `stock_check_session_id`, `product_id`, `system_qty_store`, `system_qty_warehouse`, `qty_store`, `qty_warehouse`, `total_qty`, `suggest_buy_qty`, `approved_buy_qty`, `suggested_supplier_id`, `approved_supplier_id`, `condition_status`, `status`, `checker_notes`, `buyer_notes`, `reviewed_by`, `reviewed_at`, `created_by`, `updated_by`, `created_at`, `updated_at`) VALUES
-(7, 1, 1, 15.00, 50.00, 12.00, 40.00, 52.00, 20.00, 15.00, 1, NULL, 'empty_rack', 'approved', 'Rak toko mulai kosong', NULL, 1, '2026-04-24 09:31:26', 1, 1, '2026-04-18 05:16:07', '2026-04-24 02:31:26'),
-(8, 1, 2, 8.00, 20.00, 7.00, 18.00, 25.00, 15.00, 15.00, 1, NULL, 'good', 'approved', 'Stok menipis', 'oke', 1, '2026-04-23 14:40:41', 1, 1, '2026-04-18 05:16:07', '2026-04-23 07:40:41'),
-(9, 1, 3, 5.00, 12.00, 4.00, 10.00, 14.00, 25.00, NULL, 1, NULL, 'good', 'submitted', 'Perlu restock', NULL, NULL, NULL, 1, 1, '2026-04-18 05:16:07', '2026-04-18 05:16:07'),
-(22, 5, 1, 18.00, 55.00, 14.00, 45.00, 59.00, 12.00, 10.00, 1, 1, 'good', 'approved', 'Stok masih aman', 'Disesuaikan buyer', 1, '2026-04-14 10:30:00', 1, 1, '2026-04-24 07:13:27', '2026-04-24 07:13:27'),
-(23, 5, 2, 10.00, 25.00, 8.00, 20.00, 28.00, 10.00, 8.00, 1, 1, 'good', 'approved', 'Stok menurun', 'Approve sebagian', 1, '2026-04-14 10:35:00', 1, 1, '2026-04-24 07:13:27', '2026-04-24 07:13:27'),
-(24, 5, 3, 6.00, 15.00, 5.00, 12.00, 17.00, 18.00, 15.00, 1, 1, 'good', 'approved', 'Perlu restock ringan', 'Approve buyer', 1, '2026-04-14 10:40:00', 1, 1, '2026-04-24 07:13:27', '2026-04-24 07:13:27'),
-(28, 6, 1, 17.00, 52.00, 13.00, 43.00, 56.00, 15.00, 12.00, 1, 1, 'good', 'approved', 'Rak depan mulai berkurang', 'Approve buyer', 1, '2026-04-15 10:30:00', 1, 1, '2026-04-24 07:14:00', '2026-04-24 07:14:00'),
-(29, 6, 2, 9.00, 22.00, 7.00, 18.00, 25.00, 12.00, 10.00, 1, 1, 'good', 'approved', 'Stok stabil', 'Approve buyer', 1, '2026-04-15 10:35:00', 1, 1, '2026-04-24 07:14:00', '2026-04-24 07:14:00'),
-(30, 6, 3, 5.00, 13.00, 4.00, 10.00, 14.00, 20.00, 18.00, 1, 1, 'empty_rack', 'approved', 'Rak mulai kosong', 'Prioritas restock', 1, '2026-04-15 10:40:00', 1, 1, '2026-04-24 07:14:00', '2026-04-24 07:14:00'),
-(31, 7, 1, 16.00, 50.00, 12.00, 41.00, 53.00, 18.00, 15.00, 1, 1, 'good', 'approved', 'Stok turun perlahan', 'Approve buyer', 1, '2026-04-16 10:30:00', 1, 1, '2026-04-24 07:14:35', '2026-04-24 07:14:35'),
-(32, 7, 2, 8.00, 20.00, 6.00, 16.00, 22.00, 14.00, 12.00, 1, 1, 'good', 'approved', 'Perlu tambahan', 'Approve buyer', 1, '2026-04-16 10:35:00', 1, 1, '2026-04-24 07:14:35', '2026-04-24 07:14:35'),
-(33, 7, 3, 4.00, 11.00, 3.00, 9.00, 12.00, 22.00, 20.00, 1, 1, 'empty_rack', 'approved', 'Stok toko rendah', 'Tingkatkan pembelian', 1, '2026-04-16 10:40:00', 1, 1, '2026-04-24 07:14:35', '2026-04-24 07:14:35'),
-(34, 4, 1, 15.00, 48.00, 11.00, 40.00, 51.00, 20.00, 18.00, 1, 1, 'empty_rack', 'approved', 'Rak toko hampir kosong', 'Disesuaikan kebutuhan pembelian', 1, '2026-04-17 10:30:00', 1, 1, '2026-04-24 07:15:13', '2026-04-24 07:15:13'),
-(35, 4, 2, 7.00, 18.00, 5.00, 15.00, 20.00, 16.00, 14.00, 1, 1, 'good', 'approved', 'Stok menurun', 'Approve buyer', 1, '2026-04-17 10:35:00', 1, 1, '2026-04-24 07:15:13', '2026-04-24 07:15:13'),
-(36, 4, 3, 3.00, 10.00, 2.00, 8.00, 10.00, 25.00, 22.00, 1, 1, 'empty_rack', 'approved', 'Rak hampir habis', 'Prioritas order', 1, '2026-04-17 10:40:00', 1, 1, '2026-04-24 07:15:13', '2026-04-24 07:15:13');
+INSERT INTO `stock_check_session_items` (`id`, `stock_check_session_id`, `product_id`, `system_qty_store`, `system_qty_warehouse`, `qty_store_carton`, `qty_store_box`, `qty_store_pcs`, `qty_store`, `qty_warehouse_carton`, `qty_warehouse_box`, `qty_warehouse_pcs`, `qty_warehouse`, `total_qty`, `suggest_buy_qty`, `approved_buy_qty`, `suggested_supplier_id`, `approved_supplier_id`, `condition_status`, `status`, `checker_notes`, `buyer_notes`, `reviewed_by`, `reviewed_at`, `created_by`, `updated_by`, `created_at`, `updated_at`) VALUES
+(7, 1, 1, 15.00, 50.00, 0, 0, 12, 12.00, 0, 0, 40, 40.00, 52.00, 20.00, 15.00, 1, NULL, 'empty_rack', 'approved', 'Rak toko mulai kosong', NULL, 1, '2026-04-24 09:31:26', 1, 1, '2026-04-18 05:16:07', '2026-04-24 02:31:26'),
+(8, 1, 2, 8.00, 20.00, 0, 0, 7, 7.00, 0, 0, 18, 18.00, 25.00, 15.00, 15.00, 1, NULL, 'good', 'approved', 'Stok menipis', 'oke', 1, '2026-04-23 14:40:41', 1, 1, '2026-04-18 05:16:07', '2026-04-23 07:40:41'),
+(9, 1, 3, 5.00, 12.00, 0, 0, 4, 4.00, 0, 0, 10, 10.00, 14.00, 25.00, NULL, 1, NULL, 'good', 'submitted', 'Perlu restock', NULL, NULL, NULL, 1, 1, '2026-04-18 05:16:07', '2026-04-18 05:16:07'),
+(22, 5, 1, 18.00, 55.00, 0, 0, 14, 14.00, 0, 0, 45, 45.00, 59.00, 12.00, 10.00, 1, 1, 'good', 'approved', 'Stok masih aman', 'Disesuaikan buyer', 1, '2026-04-14 10:30:00', 1, 1, '2026-04-24 07:13:27', '2026-04-24 07:13:27'),
+(23, 5, 2, 10.00, 25.00, 0, 0, 8, 8.00, 0, 0, 20, 20.00, 28.00, 10.00, 8.00, 1, 1, 'good', 'approved', 'Stok menurun', 'Approve sebagian', 1, '2026-04-14 10:35:00', 1, 1, '2026-04-24 07:13:27', '2026-04-24 07:13:27'),
+(24, 5, 3, 6.00, 15.00, 0, 0, 5, 5.00, 0, 0, 12, 12.00, 17.00, 18.00, 15.00, 1, 1, 'good', 'approved', 'Perlu restock ringan', 'Approve buyer', 1, '2026-04-14 10:40:00', 1, 1, '2026-04-24 07:13:27', '2026-04-24 07:13:27'),
+(28, 6, 1, 17.00, 52.00, 0, 0, 13, 13.00, 0, 0, 43, 43.00, 56.00, 15.00, 12.00, 1, 1, 'good', 'approved', 'Rak depan mulai berkurang', 'Approve buyer', 1, '2026-04-15 10:30:00', 1, 1, '2026-04-24 07:14:00', '2026-04-24 07:14:00'),
+(29, 6, 2, 9.00, 22.00, 0, 0, 7, 7.00, 0, 0, 18, 18.00, 25.00, 12.00, 10.00, 1, 1, 'good', 'approved', 'Stok stabil', 'Approve buyer', 1, '2026-04-15 10:35:00', 1, 1, '2026-04-24 07:14:00', '2026-04-24 07:14:00'),
+(30, 6, 3, 5.00, 13.00, 0, 0, 4, 4.00, 0, 0, 10, 10.00, 14.00, 20.00, 18.00, 1, 1, 'empty_rack', 'approved', 'Rak mulai kosong', 'Prioritas restock', 1, '2026-04-15 10:40:00', 1, 1, '2026-04-24 07:14:00', '2026-04-24 07:14:00'),
+(31, 7, 1, 16.00, 50.00, 0, 0, 12, 12.00, 0, 0, 41, 41.00, 53.00, 18.00, 15.00, 1, 1, 'good', 'approved', 'Stok turun perlahan', 'Approve buyer', 1, '2026-04-16 10:30:00', 1, 1, '2026-04-24 07:14:35', '2026-04-24 07:14:35'),
+(32, 7, 2, 8.00, 20.00, 0, 0, 6, 6.00, 0, 0, 16, 16.00, 22.00, 14.00, 12.00, 1, 1, 'good', 'approved', 'Perlu tambahan', 'Approve buyer', 1, '2026-04-16 10:35:00', 1, 1, '2026-04-24 07:14:35', '2026-04-24 07:14:35'),
+(33, 7, 3, 4.00, 11.00, 0, 0, 3, 3.00, 0, 0, 9, 9.00, 12.00, 22.00, 20.00, 1, 1, 'empty_rack', 'approved', 'Stok toko rendah', 'Tingkatkan pembelian', 1, '2026-04-16 10:40:00', 1, 1, '2026-04-24 07:14:35', '2026-04-24 07:14:35'),
+(34, 4, 1, 15.00, 48.00, 0, 0, 11, 11.00, 0, 0, 40, 40.00, 51.00, 20.00, 18.00, 1, 1, 'empty_rack', 'approved', 'Rak toko hampir kosong', 'Disesuaikan kebutuhan pembelian', 1, '2026-04-17 10:30:00', 1, 1, '2026-04-24 07:15:13', '2026-04-24 07:15:13'),
+(35, 4, 2, 7.00, 18.00, 0, 0, 5, 5.00, 0, 0, 15, 15.00, 20.00, 16.00, 14.00, 1, 1, 'good', 'approved', 'Stok menurun', 'Approve buyer', 1, '2026-04-17 10:35:00', 1, 1, '2026-04-24 07:15:13', '2026-04-24 07:15:13'),
+(36, 4, 3, 3.00, 10.00, 0, 0, 2, 2.00, 0, 0, 8, 8.00, 10.00, 25.00, 22.00, 1, 1, 'empty_rack', 'approved', 'Rak hampir habis', 'Prioritas order', 1, '2026-04-17 10:40:00', 1, 1, '2026-04-24 07:15:13', '2026-04-24 07:15:13');
 
 -- --------------------------------------------------------
 

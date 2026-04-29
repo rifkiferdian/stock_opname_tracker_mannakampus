@@ -126,17 +126,78 @@ func StockCheckCheckerSessionScanPage(c *gin.Context) {
 		sessionID,
 		barcode,
 		sanitizeStockCheckCheckerScanLocation(c.Query("location")),
+		c.Query("success"),
 		c.Query("error"),
 		models.StockCheckSessionCheckerScanForm{},
 		backURL,
 	)
 }
 
+func StockCheckCheckerSessionSuggest(c *gin.Context) {
+	type stockCheckCheckerSuggestForm struct {
+		ItemID       int    `form:"item_id" binding:"required"`
+		SuggestCarton string `form:"suggest_carton" binding:"required"`
+		RedirectTo   string `form:"redirect_to"`
+	}
+
+	sessionID, err := strconv.Atoi(c.Param("id"))
+	if err != nil || sessionID <= 0 {
+		c.String(http.StatusBadRequest, "invalid stock check session id")
+		return
+	}
+
+	var form stockCheckCheckerSuggestForm
+	service := buildStockCheckSessionService()
+
+	if err := c.ShouldBind(&form); err != nil {
+		if redirectTo := sanitizeRedirectTarget(form.RedirectTo); redirectTo != "" {
+			c.Redirect(http.StatusSeeOther, appendRedirectMessage(redirectTo, "error", "Form suggest tidak lengkap"))
+			return
+		}
+		c.String(http.StatusBadRequest, "form suggest tidak lengkap")
+		return
+	}
+
+	suggestCarton, err := parseStockCheckNonNegativeInt(form.SuggestCarton)
+	if err != nil {
+		if redirectTo := sanitizeRedirectTarget(form.RedirectTo); redirectTo != "" {
+			c.Redirect(http.StatusSeeOther, appendRedirectMessage(redirectTo, "error", "Suggest carton harus berupa angka bulat yang valid"))
+			return
+		}
+		c.String(http.StatusBadRequest, "suggest carton harus berupa angka bulat yang valid")
+		return
+	}
+
+	err = service.UpdateCheckerSuggest(models.StockCheckSessionCheckerSuggestInput{
+		SessionID:     sessionID,
+		ItemID:        form.ItemID,
+		SuggestCarton: suggestCarton,
+		UpdatedBy:     extractCurrentUserID(c),
+	})
+	if err != nil {
+		if redirectTo := sanitizeRedirectTarget(form.RedirectTo); redirectTo != "" {
+			c.Redirect(http.StatusSeeOther, appendRedirectMessage(redirectTo, "error", err.Error()))
+			return
+		}
+		c.String(http.StatusBadRequest, err.Error())
+		return
+	}
+
+	if redirectTo := sanitizeRedirectTarget(form.RedirectTo); redirectTo != "" {
+		c.Redirect(http.StatusSeeOther, appendRedirectMessage(redirectTo, "success", "Suggest checker berhasil disimpan"))
+		return
+	}
+
+	c.Redirect(http.StatusSeeOther, buildStockCheckCheckerSessionInputPageURL(sessionID, "store", "Suggest checker berhasil disimpan"))
+}
+
 func StockCheckCheckerSessionScan(c *gin.Context) {
 	type stockCheckCheckerScanForm struct {
 		Location   string `form:"location" binding:"required"`
 		Barcode    string `form:"barcode" binding:"required"`
-		Qty        string `form:"qty" binding:"required"`
+		QtyCarton  string `form:"qty_carton"`
+		QtyBox     string `form:"qty_box"`
+		QtyPcs     string `form:"qty_pcs"`
 		RedirectTo string `form:"redirect_to"`
 		BackTo     string `form:"back_to"`
 	}
@@ -160,11 +221,14 @@ func StockCheckCheckerSessionScan(c *gin.Context) {
 				sessionID,
 				form.Barcode,
 				sanitizeStockCheckCheckerScanLocation(form.Location),
+				"",
 				message,
 				models.StockCheckSessionCheckerScanForm{
-					Location: sanitizeStockCheckCheckerScanLocation(form.Location),
-					Barcode:  strings.TrimSpace(form.Barcode),
-					Qty:      strings.TrimSpace(form.Qty),
+					Location:  sanitizeStockCheckCheckerScanLocation(form.Location),
+					Barcode:   strings.TrimSpace(form.Barcode),
+					QtyCarton: strings.TrimSpace(form.QtyCarton),
+					QtyBox:    strings.TrimSpace(form.QtyBox),
+					QtyPcs:    strings.TrimSpace(form.QtyPcs),
 				},
 				backTo,
 			)
@@ -183,9 +247,11 @@ func StockCheckCheckerSessionScan(c *gin.Context) {
 			return
 		}
 		renderStockCheckCheckerSessionInputPage(c, service, sessionID, "", "Form scan item tidak lengkap", models.StockCheckSessionCheckerScanForm{
-			Location: sanitizeStockCheckCheckerScanLocation(form.Location),
-			Barcode:  strings.TrimSpace(form.Barcode),
-			Qty:      strings.TrimSpace(form.Qty),
+			Location:  sanitizeStockCheckCheckerScanLocation(form.Location),
+			Barcode:   strings.TrimSpace(form.Barcode),
+			QtyCarton: strings.TrimSpace(form.QtyCarton),
+			QtyBox:    strings.TrimSpace(form.QtyBox),
+			QtyPcs:    strings.TrimSpace(form.QtyPcs),
 		})
 		return
 	}
@@ -196,15 +262,47 @@ func StockCheckCheckerSessionScan(c *gin.Context) {
 		backTo = buildStockCheckCheckerSessionInputPageURL(sessionID, sanitizeStockCheckCheckerScanLocation(form.Location), "")
 	}
 
-	qty, err := strconv.ParseFloat(strings.TrimSpace(form.Qty), 64)
+	qtyCarton, err := parseStockCheckNonNegativeInt(form.QtyCarton)
 	if err != nil {
-		if renderScanPage("Qty harus berupa angka yang valid") {
+		if renderScanPage("Qty carton harus berupa angka bulat yang valid") {
 			return
 		}
-		renderStockCheckCheckerSessionInputPage(c, service, sessionID, "", "Qty harus berupa angka yang valid", models.StockCheckSessionCheckerScanForm{
-			Location: sanitizeStockCheckCheckerScanLocation(form.Location),
-			Barcode:  strings.TrimSpace(form.Barcode),
-			Qty:      strings.TrimSpace(form.Qty),
+		renderStockCheckCheckerSessionInputPage(c, service, sessionID, "", "Qty carton harus berupa angka bulat yang valid", models.StockCheckSessionCheckerScanForm{
+			Location:  sanitizeStockCheckCheckerScanLocation(form.Location),
+			Barcode:   strings.TrimSpace(form.Barcode),
+			QtyCarton: strings.TrimSpace(form.QtyCarton),
+			QtyBox:    strings.TrimSpace(form.QtyBox),
+			QtyPcs:    strings.TrimSpace(form.QtyPcs),
+		})
+		return
+	}
+
+	qtyBox, err := parseStockCheckNonNegativeInt(form.QtyBox)
+	if err != nil {
+		if renderScanPage("Qty box harus berupa angka bulat yang valid") {
+			return
+		}
+		renderStockCheckCheckerSessionInputPage(c, service, sessionID, "", "Qty box harus berupa angka bulat yang valid", models.StockCheckSessionCheckerScanForm{
+			Location:  sanitizeStockCheckCheckerScanLocation(form.Location),
+			Barcode:   strings.TrimSpace(form.Barcode),
+			QtyCarton: strings.TrimSpace(form.QtyCarton),
+			QtyBox:    strings.TrimSpace(form.QtyBox),
+			QtyPcs:    strings.TrimSpace(form.QtyPcs),
+		})
+		return
+	}
+
+	qtyPcs, err := parseStockCheckNonNegativeInt(form.QtyPcs)
+	if err != nil {
+		if renderScanPage("Qty pcs harus berupa angka bulat yang valid") {
+			return
+		}
+		renderStockCheckCheckerSessionInputPage(c, service, sessionID, "", "Qty pcs harus berupa angka bulat yang valid", models.StockCheckSessionCheckerScanForm{
+			Location:  sanitizeStockCheckCheckerScanLocation(form.Location),
+			Barcode:   strings.TrimSpace(form.Barcode),
+			QtyCarton: strings.TrimSpace(form.QtyCarton),
+			QtyBox:    strings.TrimSpace(form.QtyBox),
+			QtyPcs:    strings.TrimSpace(form.QtyPcs),
 		})
 		return
 	}
@@ -213,7 +311,9 @@ func StockCheckCheckerSessionScan(c *gin.Context) {
 		SessionID: sessionID,
 		Location:  form.Location,
 		Barcode:   form.Barcode,
-		Qty:       qty,
+		QtyCarton: qtyCarton,
+		QtyBox:    qtyBox,
+		QtyPcs:    qtyPcs,
 		UpdatedBy: extractCurrentUserID(c),
 	})
 	if err != nil {
@@ -221,9 +321,11 @@ func StockCheckCheckerSessionScan(c *gin.Context) {
 			return
 		}
 		renderStockCheckCheckerSessionInputPage(c, service, sessionID, "", err.Error(), models.StockCheckSessionCheckerScanForm{
-			Location: sanitizeStockCheckCheckerScanLocation(form.Location),
-			Barcode:  strings.TrimSpace(form.Barcode),
-			Qty:      strings.TrimSpace(form.Qty),
+			Location:  sanitizeStockCheckCheckerScanLocation(form.Location),
+			Barcode:   strings.TrimSpace(form.Barcode),
+			QtyCarton: strings.TrimSpace(form.QtyCarton),
+			QtyBox:    strings.TrimSpace(form.QtyBox),
+			QtyPcs:    strings.TrimSpace(form.QtyPcs),
 		})
 		return
 	}
@@ -755,7 +857,7 @@ func renderStockCheckCheckerSessionInputPage(c *gin.Context, service *services.S
 	})
 }
 
-func renderStockCheckCheckerSessionScanPage(c *gin.Context, service *services.StockCheckSessionService, sessionID int, barcode string, location string, errorMessage string, scanForm models.StockCheckSessionCheckerScanForm, backURL string) {
+func renderStockCheckCheckerSessionScanPage(c *gin.Context, service *services.StockCheckSessionService, sessionID int, barcode string, location string, successMessage string, errorMessage string, scanForm models.StockCheckSessionCheckerScanForm, backURL string) {
 	barcode = strings.TrimSpace(barcode)
 	location = sanitizeStockCheckCheckerScanLocation(location)
 	if location == "" {
@@ -772,7 +874,7 @@ func renderStockCheckCheckerSessionScanPage(c *gin.Context, service *services.St
 	pageData, err := service.GetCheckerScanPage(sessionID, extractCurrentUserID(c), barcode)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			c.Redirect(http.StatusSeeOther, appendRedirectMessage(buildStockCheckCheckerSessionInputPageURL(sessionID, location, ""), "error", "Barcode tidak ditemukan pada daftar item supplier ini"))
+			c.Redirect(http.StatusSeeOther, appendRedirectMessage(buildStockCheckCheckerSessionInputPageURL(sessionID, location, ""), "error", "Barcode Item ini tidak ada di supplier ini."))
 			return
 		}
 		if strings.Contains(strings.ToLower(err.Error()), "tidak tersedia untuk user login") {
@@ -790,8 +892,26 @@ func renderStockCheckCheckerSessionScanPage(c *gin.Context, service *services.St
 	if strings.TrimSpace(scanForm.Barcode) == "" {
 		scanForm.Barcode = pageData.Item.Barcode
 	}
-	if strings.TrimSpace(scanForm.Qty) == "" {
-		scanForm.Qty = "0"
+	if location == "warehouse" {
+		if strings.TrimSpace(scanForm.QtyCarton) == "" {
+			scanForm.QtyCarton = strconv.Itoa(pageData.Item.QtyWarehouseCarton)
+		}
+		if strings.TrimSpace(scanForm.QtyBox) == "" {
+			scanForm.QtyBox = strconv.Itoa(pageData.Item.QtyWarehouseBox)
+		}
+		if strings.TrimSpace(scanForm.QtyPcs) == "" {
+			scanForm.QtyPcs = strconv.Itoa(pageData.Item.QtyWarehousePcs)
+		}
+	} else {
+		if strings.TrimSpace(scanForm.QtyCarton) == "" {
+			scanForm.QtyCarton = strconv.Itoa(pageData.Item.QtyStoreCarton)
+		}
+		if strings.TrimSpace(scanForm.QtyBox) == "" {
+			scanForm.QtyBox = strconv.Itoa(pageData.Item.QtyStoreBox)
+		}
+		if strings.TrimSpace(scanForm.QtyPcs) == "" {
+			scanForm.QtyPcs = strconv.Itoa(pageData.Item.QtyStorePcs)
+		}
 	}
 
 	Render(c, "stock_check_checker_session_scan.html", gin.H{
@@ -799,6 +919,8 @@ func renderStockCheckCheckerSessionScanPage(c *gin.Context, service *services.St
 		"Page":        "stock_check_checker",
 		"Session":     pageData.Session,
 		"Item":        pageData.Item,
+		"Items":       pageData.Items,
+		"Success":     successMessage,
 		"Error":       errorMessage,
 		"ScanForm":    scanForm,
 		"BackURL":     backURL,
@@ -844,6 +966,20 @@ func parsePositiveInt(value string, fallback int) int {
 		return fallback
 	}
 	return parsed
+}
+
+func parseStockCheckNonNegativeInt(value string) (int, error) {
+	value = strings.TrimSpace(value)
+	if value == "" {
+		return 0, nil
+	}
+
+	parsed, err := strconv.Atoi(value)
+	if err != nil || parsed < 0 {
+		return 0, errors.New("invalid qty")
+	}
+
+	return parsed, nil
 }
 
 func buildStockCheckSessionDetailPagination(sessionID int, pagination models.Pagination) models.Pagination {

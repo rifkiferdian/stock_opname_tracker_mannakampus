@@ -54,6 +54,8 @@ func ProductStore(c *gin.Context) {
 		ReorderPoint        float64 `form:"reorder_point"`
 		DefaultLeadTimeDays int     `form:"default_lead_time_days"`
 		PackSize            float64 `form:"pack_size"`
+		PcsPerBox           int     `form:"pcs_per_box"`
+		PcsPerCarton        int     `form:"pcs_per_carton"`
 		IsActive            int     `form:"is_active"`
 		SupplierID          int     `form:"supplier_id"`
 		LastPrice           float64 `form:"last_price"`
@@ -79,6 +81,8 @@ func ProductStore(c *gin.Context) {
 		ReorderPoint:        form.ReorderPoint,
 		DefaultLeadTimeDays: form.DefaultLeadTimeDays,
 		PackSize:            form.PackSize,
+		PcsPerBox:           form.PcsPerBox,
+		PcsPerCarton:        form.PcsPerCarton,
 		IsActive:            form.IsActive == 1,
 		SupplierID:          form.SupplierID,
 		LastPrice:           form.LastPrice,
@@ -105,6 +109,8 @@ func ProductUpdate(c *gin.Context) {
 		ReorderPoint        float64 `form:"reorder_point"`
 		DefaultLeadTimeDays int     `form:"default_lead_time_days"`
 		PackSize            float64 `form:"pack_size"`
+		PcsPerBox           int     `form:"pcs_per_box"`
+		PcsPerCarton        int     `form:"pcs_per_carton"`
 		IsActive            int     `form:"is_active"`
 		SupplierID          int     `form:"supplier_id"`
 		LastPrice           float64 `form:"last_price"`
@@ -131,6 +137,8 @@ func ProductUpdate(c *gin.Context) {
 		ReorderPoint:        form.ReorderPoint,
 		DefaultLeadTimeDays: form.DefaultLeadTimeDays,
 		PackSize:            form.PackSize,
+		PcsPerBox:           form.PcsPerBox,
+		PcsPerCarton:        form.PcsPerCarton,
 		IsActive:            form.IsActive == 1,
 		SupplierID:          form.SupplierID,
 		LastPrice:           form.LastPrice,

@@ -214,6 +214,7 @@ func (s *StockCheckSessionService) GetCheckerScanPage(sessionID int, userID int,
 			return models.StockCheckSessionCheckerScanPage{
 				Session: pageData.Session,
 				Item:    item,
+				Items:   pageData.Items,
 			}, nil
 		}
 	}
@@ -351,7 +352,7 @@ func (s *StockCheckSessionService) RecordCheckerScan(input models.StockCheckSess
 	if input.Barcode == "" {
 		return 0, errors.New("barcode wajib diisi")
 	}
-	if input.Qty < 0 {
+	if input.QtyCarton < 0 || input.QtyBox < 0 || input.QtyPcs < 0 {
 		return 0, errors.New("qty tidak boleh kurang dari 0")
 	}
 
@@ -368,15 +369,61 @@ func (s *StockCheckSessionService) RecordCheckerScan(input models.StockCheckSess
 		return 0, errors.New("session tidak tersedia untuk user login")
 	}
 
-	itemID, err := s.Repo.UpdateCheckerItemQtyByBarcode(input.SessionID, input.Location, input.Barcode, input.Qty, input.UpdatedBy)
+	itemID, err := s.Repo.UpdateCheckerItemQtyByBarcode(
+		input.SessionID,
+		input.Location,
+		input.Barcode,
+		input.QtyCarton,
+		input.QtyBox,
+		input.QtyPcs,
+		input.UpdatedBy,
+	)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return 0, errors.New("barcode tidak ditemukan pada daftar item supplier ini")
+			return 0, errors.New("Barcode Item ini tidak ada di supplier ini.")
 		}
 		return 0, err
 	}
 
 	return itemID, nil
+}
+
+func (s *StockCheckSessionService) UpdateCheckerSuggest(input models.StockCheckSessionCheckerSuggestInput) error {
+	if input.SessionID <= 0 {
+		return errors.New("session id tidak valid")
+	}
+	if input.ItemID <= 0 {
+		return errors.New("item id tidak valid")
+	}
+	if input.SuggestCarton < 0 {
+		return errors.New("suggest carton tidak boleh kurang dari 0")
+	}
+	if input.UpdatedBy <= 0 {
+		return errors.New("user login tidak valid")
+	}
+
+	session, err := s.Repo.GetByID(input.SessionID)
+	if err != nil {
+		return err
+	}
+
+	hasAccess, err := s.Repo.UserHasStoreAccess(input.UpdatedBy, session.StoreID)
+	if err != nil {
+		return err
+	}
+	if !hasAccess {
+		return errors.New("session tidak tersedia untuk user login")
+	}
+
+	itemExists, err := s.Repo.ExistsReviewItem(input.SessionID, input.ItemID)
+	if err != nil {
+		return err
+	}
+	if !itemExists {
+		return errors.New("item tidak ditemukan pada session ini")
+	}
+
+	return s.Repo.UpdateCheckerItemSuggest(input.SessionID, input.ItemID, input.SuggestCarton, input.UpdatedBy)
 }
 
 func (s *StockCheckSessionService) DeleteSession(id int) error {

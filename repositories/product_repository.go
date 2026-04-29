@@ -211,6 +211,8 @@ func (r *ProductRepository) GetByID(id int) (models.ProductDetail, error) {
 			p.reorder_point,
 			p.default_lead_time_days,
 			p.pack_size,
+			COALESCE(p.pcs_per_box, 0) AS pcs_per_box,
+			COALESCE(p.pcs_per_carton, 0) AS pcs_per_carton,
 			p.is_active,
 			COALESCE((
 				SELECT ps.supplier_id
@@ -306,6 +308,8 @@ func (r *ProductRepository) GetByID(id int) (models.ProductDetail, error) {
 		&reorderPoint,
 		&detail.DefaultLeadTimeDays,
 		&packSize,
+		&detail.PcsPerBox,
+		&detail.PcsPerCarton,
 		&isActive,
 		&detail.PrimarySupplierID,
 		&detail.PrimarySupplierName,
@@ -619,8 +623,10 @@ func (r *ProductRepository) Create(input models.ProductCreateInput) error {
 			reorder_point,
 			default_lead_time_days,
 			pack_size,
+			pcs_per_box,
+			pcs_per_carton,
 			is_active
-		) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+		) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 	`,
 		input.ProductCode,
 		nullableString(input.Barcode),
@@ -633,6 +639,8 @@ func (r *ProductRepository) Create(input models.ProductCreateInput) error {
 		input.ReorderPoint,
 		input.DefaultLeadTimeDays,
 		input.PackSize,
+		input.PcsPerBox,
+		input.PcsPerCarton,
 		boolToInt(input.IsActive),
 	)
 	if err != nil {
@@ -674,6 +682,8 @@ func (r *ProductRepository) Update(input models.ProductUpdateInput) error {
 			reorder_point = ?,
 			default_lead_time_days = ?,
 			pack_size = ?,
+			pcs_per_box = ?,
+			pcs_per_carton = ?,
 			is_active = ?
 		WHERE id = ?
 	`,
@@ -688,6 +698,8 @@ func (r *ProductRepository) Update(input models.ProductUpdateInput) error {
 		input.ReorderPoint,
 		input.DefaultLeadTimeDays,
 		input.PackSize,
+		input.PcsPerBox,
+		input.PcsPerCarton,
 		boolToInt(input.IsActive),
 		input.ID,
 	)
@@ -735,6 +747,8 @@ func buildProductListQuery(filter models.ProductListFilter, countOnly bool) (str
 			p.reorder_point,
 			p.default_lead_time_days,
 			p.pack_size,
+			COALESCE(p.pcs_per_box, 0) AS pcs_per_box,
+			COALESCE(p.pcs_per_carton, 0) AS pcs_per_carton,
 			p.is_active,
 			COALESCE((
 				SELECT ps.supplier_id
@@ -839,6 +853,8 @@ func scanProduct(scanner interface {
 		&reorderPoint,
 		&product.DefaultLeadTimeDays,
 		&packSize,
+		&product.PcsPerBox,
+		&product.PcsPerCarton,
 		&isActive,
 		&product.PrimarySupplierID,
 		&product.PrimarySupplierName,

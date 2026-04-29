@@ -605,9 +605,18 @@ func (r *StockCheckSessionRepository) GetCheckerInputItems(sessionID int) ([]mod
 			p.product_name,
 			COALESCE(pc.category_name, 'Tanpa Kategori') AS category_name,
 			COALESCE(un.unit_name, '-') AS unit_name,
+			COALESCE(p.pcs_per_box, 0) AS pcs_per_box,
+			COALESCE(p.pcs_per_carton, 0) AS pcs_per_carton,
+			COALESCE(si.qty_store_carton, 0) AS qty_store_carton,
+			COALESCE(si.qty_store_box, 0) AS qty_store_box,
+			COALESCE(si.qty_store_pcs, 0) AS qty_store_pcs,
 			COALESCE(si.qty_store, 0) AS qty_store,
+			COALESCE(si.qty_warehouse_carton, 0) AS qty_warehouse_carton,
+			COALESCE(si.qty_warehouse_box, 0) AS qty_warehouse_box,
+			COALESCE(si.qty_warehouse_pcs, 0) AS qty_warehouse_pcs,
 			COALESCE(si.qty_warehouse, 0) AS qty_warehouse,
 			COALESCE(si.total_qty, 0) AS total_qty,
+			COALESCE(si.suggest_buy_qty, 0) AS suggest_buy_qty,
 			COALESCE(si.status, 'draft') AS status
 		FROM stock_check_session_items si
 		INNER JOIN products p ON p.id = si.product_id
@@ -628,6 +637,7 @@ func (r *StockCheckSessionRepository) GetCheckerInputItems(sessionID int) ([]mod
 			qtyStore     sql.NullFloat64
 			qtyWarehouse sql.NullFloat64
 			totalQty     sql.NullFloat64
+			suggestQty   sql.NullFloat64
 		)
 
 		if err := rows.Scan(
@@ -638,9 +648,18 @@ func (r *StockCheckSessionRepository) GetCheckerInputItems(sessionID int) ([]mod
 			&item.ProductName,
 			&item.CategoryName,
 			&item.UnitName,
+			&item.PcsPerBox,
+			&item.PcsPerCarton,
+			&item.QtyStoreCarton,
+			&item.QtyStoreBox,
+			&item.QtyStorePcs,
 			&qtyStore,
+			&item.QtyWarehouseCarton,
+			&item.QtyWarehouseBox,
+			&item.QtyWarehousePcs,
 			&qtyWarehouse,
 			&totalQty,
+			&suggestQty,
 			&item.Status,
 		); err != nil {
 			return nil, err
@@ -655,10 +674,18 @@ func (r *StockCheckSessionRepository) GetCheckerInputItems(sessionID int) ([]mod
 		if totalQty.Valid {
 			item.TotalQty = totalQty.Float64
 		}
+		if suggestQty.Valid {
+			item.SuggestBuyQty = suggestQty.Float64
+		}
 
 		item.QtyStoreDisplay = formatStockCheckWholeNumber(item.QtyStore)
 		item.QtyWarehouseDisplay = formatStockCheckWholeNumber(item.QtyWarehouse)
 		item.TotalQtyDisplay = formatStockCheckWholeNumber(item.TotalQty)
+		item.SuggestBuyQtyDisplay = formatStockCheckWholeNumber(item.SuggestBuyQty)
+		item.SuggestBuyCarton, item.SuggestBuyCartonDisplay = formatStockCheckSuggestCarton(item.SuggestBuyQty, item.PcsPerCarton)
+		item.QtyStoreBreakdownDisplay = formatStockCheckUnitBreakdown(item.QtyStoreCarton, item.QtyStoreBox, item.QtyStorePcs)
+		item.QtyWarehouseBreakdownDisplay = formatStockCheckUnitBreakdown(item.QtyWarehouseCarton, item.QtyWarehouseBox, item.QtyWarehousePcs)
+		item.ConversionDisplay = formatStockCheckConversion(item.PcsPerBox, item.PcsPerCarton)
 		item.StatusLabel, _, _ = stockCheckSessionStatusMeta(item.Status)
 		item.HasBarcode = strings.TrimSpace(item.Barcode) != ""
 
@@ -668,7 +695,7 @@ func (r *StockCheckSessionRepository) GetCheckerInputItems(sessionID int) ([]mod
 	return items, rows.Err()
 }
 
-func (r *StockCheckSessionRepository) UpdateCheckerItemQtyByBarcode(sessionID int, location string, barcode string, qty float64, updatedBy int) (int, error) {
+func (r *StockCheckSessionRepository) UpdateCheckerItemQtyByBarcode(sessionID int, location string, barcode string, qtyCarton int, qtyBox int, qtyPcs int, updatedBy int) (int, error) {
 	tx, err := r.DB.Begin()
 	if err != nil {
 		return 0, err
@@ -680,40 +707,67 @@ func (r *StockCheckSessionRepository) UpdateCheckerItemQtyByBarcode(sessionID in
 	}()
 
 	var (
-		itemID       int
-		currentStore sql.NullFloat64
-		currentWH    sql.NullFloat64
+		itemID               int
+		pcsPerBox            int
+		pcsPerCarton         int
+		storeCarton          int
+		storeBox             int
+		storePcs             int
+		warehouseCarton      int
+		warehouseBox         int
+		warehousePcs         int
 	)
 
 	err = tx.QueryRow(`
 		SELECT
 			si.id,
-			si.qty_store,
-			si.qty_warehouse
+			COALESCE(p.pcs_per_box, 0) AS pcs_per_box,
+			COALESCE(p.pcs_per_carton, 0) AS pcs_per_carton,
+			COALESCE(si.qty_store_carton, 0) AS qty_store_carton,
+			COALESCE(si.qty_store_box, 0) AS qty_store_box,
+			COALESCE(si.qty_store_pcs, 0) AS qty_store_pcs,
+			COALESCE(si.qty_warehouse_carton, 0) AS qty_warehouse_carton,
+			COALESCE(si.qty_warehouse_box, 0) AS qty_warehouse_box,
+			COALESCE(si.qty_warehouse_pcs, 0) AS qty_warehouse_pcs
 		FROM stock_check_session_items si
 		INNER JOIN products p ON p.id = si.product_id
 		WHERE si.stock_check_session_id = ?
 			AND LOWER(COALESCE(p.barcode, '')) = LOWER(?)
 		LIMIT 1
-	`, sessionID, strings.TrimSpace(barcode)).Scan(&itemID, &currentStore, &currentWH)
+	`, sessionID, strings.TrimSpace(barcode)).Scan(
+		&itemID,
+		&pcsPerBox,
+		&pcsPerCarton,
+		&storeCarton,
+		&storeBox,
+		&storePcs,
+		&warehouseCarton,
+		&warehouseBox,
+		&warehousePcs,
+	)
 	if err != nil {
 		return 0, err
 	}
 
-	storeQty := 0.0
-	warehouseQty := 0.0
-	if currentStore.Valid {
-		storeQty = currentStore.Float64
-	}
-	if currentWH.Valid {
-		warehouseQty = currentWH.Float64
-	}
-
 	switch location {
 	case "warehouse":
-		warehouseQty = qty
+		warehouseCarton = qtyCarton
+		warehouseBox = qtyBox
+		warehousePcs = qtyPcs
 	default:
-		storeQty = qty
+		storeCarton = qtyCarton
+		storeBox = qtyBox
+		storePcs = qtyPcs
+	}
+
+	storeQty, err := computeStockCheckQtyInPcs(storeCarton, storeBox, storePcs, pcsPerBox, pcsPerCarton)
+	if err != nil {
+		return 0, err
+	}
+
+	warehouseQty, err := computeStockCheckQtyInPcs(warehouseCarton, warehouseBox, warehousePcs, pcsPerBox, pcsPerCarton)
+	if err != nil {
+		return 0, err
 	}
 
 	totalQty := storeQty + warehouseQty
@@ -725,13 +779,33 @@ func (r *StockCheckSessionRepository) UpdateCheckerItemQtyByBarcode(sessionID in
 	_, err = tx.Exec(`
 		UPDATE stock_check_session_items
 		SET
+			qty_store_carton = ?,
+			qty_store_box = ?,
+			qty_store_pcs = ?,
 			qty_store = ?,
+			qty_warehouse_carton = ?,
+			qty_warehouse_box = ?,
+			qty_warehouse_pcs = ?,
 			qty_warehouse = ?,
 			total_qty = ?,
 			status = ?,
 			updated_by = ?
 		WHERE stock_check_session_id = ? AND id = ?
-	`, storeQty, warehouseQty, totalQty, status, updatedBy, sessionID, itemID)
+	`,
+		storeCarton,
+		storeBox,
+		storePcs,
+		storeQty,
+		warehouseCarton,
+		warehouseBox,
+		warehousePcs,
+		warehouseQty,
+		totalQty,
+		status,
+		updatedBy,
+		sessionID,
+		itemID,
+	)
 	if err != nil {
 		return 0, err
 	}
@@ -742,6 +816,49 @@ func (r *StockCheckSessionRepository) UpdateCheckerItemQtyByBarcode(sessionID in
 	}
 
 	return itemID, nil
+}
+
+func (r *StockCheckSessionRepository) UpdateCheckerItemSuggest(sessionID int, itemID int, suggestCarton int, updatedBy int) error {
+	tx, err := r.DB.Begin()
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if err != nil {
+			_ = tx.Rollback()
+		}
+	}()
+
+	var pcsPerCarton int
+	err = tx.QueryRow(`
+		SELECT COALESCE(p.pcs_per_carton, 0) AS pcs_per_carton
+		FROM stock_check_session_items si
+		INNER JOIN products p ON p.id = si.product_id
+		WHERE si.stock_check_session_id = ? AND si.id = ?
+		LIMIT 1
+	`, sessionID, itemID).Scan(&pcsPerCarton)
+	if err != nil {
+		return err
+	}
+
+	if suggestCarton > 0 && pcsPerCarton <= 0 {
+		return fmt.Errorf("produk ini belum memiliki konversi pcs per carton")
+	}
+
+	suggestQty := float64(suggestCarton * pcsPerCarton)
+	_, err = tx.Exec(`
+		UPDATE stock_check_session_items
+		SET
+			suggest_buy_qty = ?,
+			updated_by = ?
+		WHERE stock_check_session_id = ? AND id = ?
+	`, suggestQty, updatedBy, sessionID, itemID)
+	if err != nil {
+		return err
+	}
+
+	err = tx.Commit()
+	return err
 }
 
 func buildStockCheckSessionListQuery(filter models.StockCheckSessionListFilter, countOnly bool) (string, []interface{}) {
@@ -971,6 +1088,61 @@ func formatStockCheckWholeNumber(value float64) string {
 
 func formatStockCheckCurrency(value float64) string {
 	return fmt.Sprintf("Rp %s", formatStockCheckDecimal(value))
+}
+
+func computeStockCheckQtyInPcs(carton int, box int, pcs int, pcsPerBox int, pcsPerCarton int) (float64, error) {
+	if carton > 0 && pcsPerCarton <= 0 {
+		return 0, fmt.Errorf("produk ini belum memiliki konversi pcs per carton")
+	}
+	if box > 0 && pcsPerBox <= 0 {
+		return 0, fmt.Errorf("produk ini belum memiliki konversi pcs per box")
+	}
+
+	total := (carton * pcsPerCarton) + (box * pcsPerBox) + pcs
+	return float64(total), nil
+}
+
+func formatStockCheckUnitBreakdown(carton int, box int, pcs int) string {
+	parts := make([]string, 0, 3)
+	if carton > 0 {
+		parts = append(parts, fmt.Sprintf("%d ctn", carton))
+	}
+	if box > 0 {
+		parts = append(parts, fmt.Sprintf("%d box", box))
+	}
+	if pcs > 0 {
+		parts = append(parts, fmt.Sprintf("%d pcs", pcs))
+	}
+	if len(parts) == 0 {
+		return "0 pcs"
+	}
+	return strings.Join(parts, " ")
+}
+
+func formatStockCheckConversion(pcsPerBox int, pcsPerCarton int) string {
+	parts := make([]string, 0, 2)
+	if pcsPerBox > 0 {
+		parts = append(parts, fmt.Sprintf("1 box = %d pcs", pcsPerBox))
+	}
+	if pcsPerCarton > 0 {
+		parts = append(parts, fmt.Sprintf("1 carton = %d pcs", pcsPerCarton))
+	}
+	if len(parts) == 0 {
+		return "Input satuan dasar pcs"
+	}
+	return strings.Join(parts, " | ")
+}
+
+func formatStockCheckSuggestCarton(suggestQty float64, pcsPerCarton int) (int, string) {
+	if suggestQty <= 0 {
+		return 0, "0 carton"
+	}
+	if pcsPerCarton <= 0 {
+		return 0, "Konversi carton belum diatur"
+	}
+
+	carton := int(math.Ceil(suggestQty / float64(pcsPerCarton)))
+	return carton, fmt.Sprintf("%d carton", carton)
 }
 
 func stockCheckSessionItemStatusMeta(status string) (string, string) {

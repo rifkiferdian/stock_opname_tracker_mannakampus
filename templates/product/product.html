@@ -184,6 +184,11 @@
                                             <td class="px-5 py-5 text-lg font-extrabold text-[#001e62]">
                                                 {{ if gt $product.PrimarySupplierID 0 }}{{ $product.PrimarySupplierPriceDisplay }}{{ else }}-{{ end }}
                                                 <p class="mt-1 text-[11px] font-semibold text-[#566173]">Kemasan {{ $product.PackSizeDisplay }}</p>
+                                                <p class="mt-1 text-[11px] font-semibold text-[#8b95a5]">
+                                                    {{ if gt $product.PcsPerCarton 0 }}1 carton = {{ $product.PcsPerCarton }} pcs{{ else }}1 carton = -{{ end }}
+                                                    &middot;
+                                                    {{ if gt $product.PcsPerBox 0 }}1 box = {{ $product.PcsPerBox }} pcs{{ else }}1 box = -{{ end }}
+                                                </p>
                                             </td>
                                             <td class="px-5 py-5">
                                                 <div class="flex items-center gap-4">
@@ -238,6 +243,8 @@
                                                         data-reorder-point="{{ $product.ReorderPoint }}"
                                                         data-default-lead-time-days="{{ $product.DefaultLeadTimeDays }}"
                                                         data-pack-size="{{ $product.PackSize }}"
+                                                        data-pcs-per-box="{{ $product.PcsPerBox }}"
+                                                        data-pcs-per-carton="{{ $product.PcsPerCarton }}"
                                                         data-is-active="{{ if $product.IsActive }}1{{ else }}0{{ end }}"
                                                         data-supplier-id="{{ $product.PrimarySupplierID }}"
                                                         data-last-price="{{ $product.PrimarySupplierPrice }}">
@@ -411,6 +418,14 @@
                             <input type="number" id="pack_size" name="pack_size" min="0.01" step="0.01" value="1" class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500">
                         </div>
                         <div>
+                            <label for="pcs_per_box" class="text-[10px] font-extrabold uppercase text-[#566173]">1 Box = Berapa Pcs</label>
+                            <input type="number" id="pcs_per_box" name="pcs_per_box" min="0" step="1" value="0" class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500">
+                        </div>
+                        <div>
+                            <label for="pcs_per_carton" class="text-[10px] font-extrabold uppercase text-[#566173]">1 Carton = Berapa Pcs</label>
+                            <input type="number" id="pcs_per_carton" name="pcs_per_carton" min="0" step="1" value="0" class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500">
+                        </div>
+                        <div>
                             <label for="is_active" class="text-[10px] font-extrabold uppercase text-[#566173]">Status</label>
                             <select id="is_active" name="is_active" class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500">
                                 <option value="1" selected>Aktif</option>
@@ -506,6 +521,14 @@
                         <div>
                             <label for="edit_pack_size" class="text-[10px] font-extrabold uppercase text-[#566173]">Ukuran Kemasan</label>
                             <input type="number" id="edit_pack_size" name="pack_size" min="0.01" step="0.01" class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500">
+                        </div>
+                        <div>
+                            <label for="edit_pcs_per_box" class="text-[10px] font-extrabold uppercase text-[#566173]">1 Box = Berapa Pcs</label>
+                            <input type="number" id="edit_pcs_per_box" name="pcs_per_box" min="0" step="1" class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500">
+                        </div>
+                        <div>
+                            <label for="edit_pcs_per_carton" class="text-[10px] font-extrabold uppercase text-[#566173]">1 Carton = Berapa Pcs</label>
+                            <input type="number" id="edit_pcs_per_carton" name="pcs_per_carton" min="0" step="1" class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500">
                         </div>
                         <div>
                             <label for="edit_is_active" class="text-[10px] font-extrabold uppercase text-[#566173]">Status</label>
@@ -617,6 +640,8 @@
                         editModalEl.querySelector('#edit_reorder_point').value = btn.getAttribute('data-reorder-point') || '0';
                         editModalEl.querySelector('#edit_default_lead_time_days').value = btn.getAttribute('data-default-lead-time-days') || '0';
                         editModalEl.querySelector('#edit_pack_size').value = btn.getAttribute('data-pack-size') || '1';
+                        editModalEl.querySelector('#edit_pcs_per_box').value = btn.getAttribute('data-pcs-per-box') || '0';
+                        editModalEl.querySelector('#edit_pcs_per_carton').value = btn.getAttribute('data-pcs-per-carton') || '0';
                         editModalEl.querySelector('#edit_is_active').value = btn.getAttribute('data-is-active') || '1';
                         editModalEl.querySelector('#edit_supplier_id').value = btn.getAttribute('data-supplier-id') || '0';
                         editModalEl.querySelector('#edit_last_price').value = btn.getAttribute('data-last-price') || '0';

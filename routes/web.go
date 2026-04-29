@@ -26,6 +26,7 @@ func RegisterWebRoutes(r *gin.Engine) {
 		auth.GET("/stock-checker/sessions/:id/input", controllers.StockCheckCheckerSessionInput)
 		auth.GET("/stock-checker/sessions/:id/scan", controllers.StockCheckCheckerSessionScanPage)
 		auth.POST("/stock-checker/sessions/:id/input", controllers.StockCheckCheckerSessionScan)
+		auth.POST("/stock-checker/sessions/:id/suggest", controllers.StockCheckCheckerSessionSuggest)
 		auth.GET("/stock-checker/:id/sessions/new", controllers.StockCheckCheckerSessionCreatePage)
 		auth.GET("/stock-checker/:id", controllers.StockCheckCheckerSupplierDetail)
 		auth.GET("/stock-check-sessions", controllers.StockCheckSessionIndex)

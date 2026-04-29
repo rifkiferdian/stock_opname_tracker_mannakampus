@@ -175,6 +175,12 @@ func sanitizeProductCreateInput(input *models.ProductCreateInput) {
 	if input.PackSize <= 0 {
 		input.PackSize = 1
 	}
+	if input.PcsPerBox < 0 {
+		input.PcsPerBox = 0
+	}
+	if input.PcsPerCarton < 0 {
+		input.PcsPerCarton = 0
+	}
 	if input.LastPrice < 0 {
 		input.LastPrice = 0
 	}
@@ -199,6 +205,12 @@ func sanitizeProductUpdateInput(input *models.ProductUpdateInput) {
 	}
 	if input.PackSize <= 0 {
 		input.PackSize = 1
+	}
+	if input.PcsPerBox < 0 {
+		input.PcsPerBox = 0
+	}
+	if input.PcsPerCarton < 0 {
+		input.PcsPerCarton = 0
 	}
 	if input.LastPrice < 0 {
 		input.LastPrice = 0

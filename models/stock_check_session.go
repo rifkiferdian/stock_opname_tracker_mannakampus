@@ -54,8 +54,17 @@ type StockCheckSessionCheckerScanInput struct {
 	SessionID int
 	Location  string
 	Barcode   string
-	Qty       float64
+	QtyCarton int
+	QtyBox    int
+	QtyPcs    int
 	UpdatedBy int
+}
+
+type StockCheckSessionCheckerSuggestInput struct {
+	SessionID      int
+	ItemID         int
+	SuggestCarton  int
+	UpdatedBy      int
 }
 
 type StockCheckSessionUpdateInput struct {
@@ -85,9 +94,11 @@ type StockCheckSessionReviewItemEditForm struct {
 }
 
 type StockCheckSessionCheckerScanForm struct {
-	Location string
-	Barcode  string
-	Qty      string
+	Location  string
+	Barcode   string
+	QtyCarton string
+	QtyBox    string
+	QtyPcs    string
 }
 
 type StockCheckSessionDetailPage struct {
@@ -105,6 +116,7 @@ type StockCheckSessionCheckerInputPage struct {
 type StockCheckSessionCheckerScanPage struct {
 	Session StockCheckSession
 	Item    StockCheckSessionCheckerInputItem
+	Items   []StockCheckSessionCheckerInputItem
 }
 
 type StockCheckSessionDetail struct {
@@ -166,22 +178,37 @@ type StockCheckSessionReviewItem struct {
 }
 
 type StockCheckSessionCheckerInputItem struct {
-	ID                  int
-	ProductID           int
-	ProductCode         string
-	Barcode             string
-	ProductName         string
-	CategoryName        string
-	UnitName            string
-	QtyStore            float64
-	QtyStoreDisplay     string
-	QtyWarehouse        float64
-	QtyWarehouseDisplay string
-	TotalQty            float64
-	TotalQtyDisplay     string
-	Status              string
-	StatusLabel         string
-	HasBarcode          bool
+	ID                         int
+	ProductID                  int
+	ProductCode                string
+	Barcode                    string
+	ProductName                string
+	CategoryName               string
+	UnitName                   string
+	PcsPerBox                  int
+	PcsPerCarton               int
+	QtyStoreCarton             int
+	QtyStoreBox                int
+	QtyStorePcs                int
+	QtyStore                   float64
+	QtyStoreDisplay            string
+	QtyStoreBreakdownDisplay   string
+	QtyWarehouseCarton         int
+	QtyWarehouseBox            int
+	QtyWarehousePcs            int
+	QtyWarehouse               float64
+	QtyWarehouseDisplay        string
+	QtyWarehouseBreakdownDisplay string
+	TotalQty                   float64
+	TotalQtyDisplay            string
+	SuggestBuyQty              float64
+	SuggestBuyQtyDisplay       string
+	SuggestBuyCarton           int
+	SuggestBuyCartonDisplay    string
+	ConversionDisplay          string
+	Status                     string
+	StatusLabel                string
+	HasBarcode                 bool
 }
 
 type StockCheckSessionOverviewCard struct {
