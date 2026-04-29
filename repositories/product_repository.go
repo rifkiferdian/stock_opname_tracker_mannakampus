@@ -212,6 +212,7 @@ func (r *ProductRepository) GetByID(id int) (models.ProductDetail, error) {
 			p.default_lead_time_days,
 			p.pack_size,
 			COALESCE(p.pcs_per_box, 0) AS pcs_per_box,
+			COALESCE(p.box_per_carton, 0) AS box_per_carton,
 			COALESCE(p.pcs_per_carton, 0) AS pcs_per_carton,
 			p.is_active,
 			COALESCE((
@@ -309,6 +310,7 @@ func (r *ProductRepository) GetByID(id int) (models.ProductDetail, error) {
 		&detail.DefaultLeadTimeDays,
 		&packSize,
 		&detail.PcsPerBox,
+		&detail.BoxPerCarton,
 		&detail.PcsPerCarton,
 		&isActive,
 		&detail.PrimarySupplierID,
@@ -624,9 +626,10 @@ func (r *ProductRepository) Create(input models.ProductCreateInput) error {
 			default_lead_time_days,
 			pack_size,
 			pcs_per_box,
+			box_per_carton,
 			pcs_per_carton,
 			is_active
-		) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+		) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 	`,
 		input.ProductCode,
 		nullableString(input.Barcode),
@@ -640,6 +643,7 @@ func (r *ProductRepository) Create(input models.ProductCreateInput) error {
 		input.DefaultLeadTimeDays,
 		input.PackSize,
 		input.PcsPerBox,
+		input.BoxPerCarton,
 		input.PcsPerCarton,
 		boolToInt(input.IsActive),
 	)
@@ -683,6 +687,7 @@ func (r *ProductRepository) Update(input models.ProductUpdateInput) error {
 			default_lead_time_days = ?,
 			pack_size = ?,
 			pcs_per_box = ?,
+			box_per_carton = ?,
 			pcs_per_carton = ?,
 			is_active = ?
 		WHERE id = ?
@@ -699,6 +704,7 @@ func (r *ProductRepository) Update(input models.ProductUpdateInput) error {
 		input.DefaultLeadTimeDays,
 		input.PackSize,
 		input.PcsPerBox,
+		input.BoxPerCarton,
 		input.PcsPerCarton,
 		boolToInt(input.IsActive),
 		input.ID,
@@ -748,6 +754,7 @@ func buildProductListQuery(filter models.ProductListFilter, countOnly bool) (str
 			p.default_lead_time_days,
 			p.pack_size,
 			COALESCE(p.pcs_per_box, 0) AS pcs_per_box,
+			COALESCE(p.box_per_carton, 0) AS box_per_carton,
 			COALESCE(p.pcs_per_carton, 0) AS pcs_per_carton,
 			p.is_active,
 			COALESCE((
@@ -854,6 +861,7 @@ func scanProduct(scanner interface {
 		&product.DefaultLeadTimeDays,
 		&packSize,
 		&product.PcsPerBox,
+		&product.BoxPerCarton,
 		&product.PcsPerCarton,
 		&isActive,
 		&product.PrimarySupplierID,

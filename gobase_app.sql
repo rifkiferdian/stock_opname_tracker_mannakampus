@@ -111,6 +111,7 @@ CREATE TABLE `products` (
   `default_lead_time_days` int(11) NOT NULL DEFAULT 0,
   `pack_size` decimal(18,2) NOT NULL DEFAULT 1.00,
   `pcs_per_box` int(10) unsigned NOT NULL DEFAULT 0,
+  `box_per_carton` int(10) unsigned NOT NULL DEFAULT 0,
   `pcs_per_carton` int(10) unsigned NOT NULL DEFAULT 0,
   `is_active` tinyint(1) NOT NULL DEFAULT 1,
   `created_by` int(11) DEFAULT NULL,
@@ -123,10 +124,10 @@ CREATE TABLE `products` (
 -- Dumping data for table `products`
 --
 
-INSERT INTO `products` (`id`, `product_code`, `barcode`, `product_name`, `category_id`, `unit_id`, `brand`, `min_stock`, `max_stock`, `reorder_point`, `default_lead_time_days`, `pack_size`, `pcs_per_box`, `pcs_per_carton`, `is_active`, `created_by`, `updated_by`, `created_at`, `updated_at`) VALUES
-(1, 'BRG-0001', '899999000001', 'Indomie Goreng', 1, 1, 'Indomie', 20.00, 200.00, 30.00, 2, 1.00, 40, 400, 1, 1, NULL, '2026-04-17 06:09:43', '2026-04-17 06:09:43'),
-(2, 'BRG-0002', '899999000002', 'Sabun Mandi ABC', 2, 1, 'ABC', 10.00, 100.00, 15.00, 3, 1.00, 24, 144, 1, 1, NULL, '2026-04-17 06:09:43', '2026-04-17 06:09:43'),
-(3, 'BRG-0003', '899999000003', 'Tisu Wajah', 3, 1, 'Nice', 15.00, 120.00, 20.00, 2, 1.00, 12, 72, 1, 1, NULL, '2026-04-17 06:09:43', '2026-04-17 06:09:43');
+INSERT INTO `products` (`id`, `product_code`, `barcode`, `product_name`, `category_id`, `unit_id`, `brand`, `min_stock`, `max_stock`, `reorder_point`, `default_lead_time_days`, `pack_size`, `pcs_per_box`, `box_per_carton`, `pcs_per_carton`, `is_active`, `created_by`, `updated_by`, `created_at`, `updated_at`) VALUES
+(1, 'BRG-0001', '899999000001', 'Indomie Goreng', 1, 1, 'Indomie', 20.00, 200.00, 30.00, 2, 1.00, 40, 10, 400, 1, 1, NULL, '2026-04-17 06:09:43', '2026-04-17 06:09:43'),
+(2, 'BRG-0002', '899999000002', 'Sabun Mandi ABC', 2, 1, 'ABC', 10.00, 100.00, 15.00, 3, 1.00, 24, 6, 144, 1, 1, NULL, '2026-04-17 06:09:43', '2026-04-17 06:09:43'),
+(3, 'BRG-0003', '899999000003', 'Tisu Wajah', 3, 1, 'Nice', 15.00, 120.00, 20.00, 2, 1.00, 12, 6, 72, 1, 1, NULL, '2026-04-17 06:09:43', '2026-04-17 06:09:43');
 
 -- --------------------------------------------------------
 

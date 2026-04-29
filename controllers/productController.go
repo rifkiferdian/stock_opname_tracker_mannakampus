@@ -55,6 +55,7 @@ func ProductStore(c *gin.Context) {
 		DefaultLeadTimeDays int     `form:"default_lead_time_days"`
 		PackSize            float64 `form:"pack_size"`
 		PcsPerBox           int     `form:"pcs_per_box"`
+		BoxPerCarton        int     `form:"box_per_carton"`
 		PcsPerCarton        int     `form:"pcs_per_carton"`
 		IsActive            int     `form:"is_active"`
 		SupplierID          int     `form:"supplier_id"`
@@ -82,6 +83,7 @@ func ProductStore(c *gin.Context) {
 		DefaultLeadTimeDays: form.DefaultLeadTimeDays,
 		PackSize:            form.PackSize,
 		PcsPerBox:           form.PcsPerBox,
+		BoxPerCarton:        form.BoxPerCarton,
 		PcsPerCarton:        form.PcsPerCarton,
 		IsActive:            form.IsActive == 1,
 		SupplierID:          form.SupplierID,
@@ -110,6 +112,7 @@ func ProductUpdate(c *gin.Context) {
 		DefaultLeadTimeDays int     `form:"default_lead_time_days"`
 		PackSize            float64 `form:"pack_size"`
 		PcsPerBox           int     `form:"pcs_per_box"`
+		BoxPerCarton        int     `form:"box_per_carton"`
 		PcsPerCarton        int     `form:"pcs_per_carton"`
 		IsActive            int     `form:"is_active"`
 		SupplierID          int     `form:"supplier_id"`
@@ -138,6 +141,7 @@ func ProductUpdate(c *gin.Context) {
 		DefaultLeadTimeDays: form.DefaultLeadTimeDays,
 		PackSize:            form.PackSize,
 		PcsPerBox:           form.PcsPerBox,
+		BoxPerCarton:        form.BoxPerCarton,
 		PcsPerCarton:        form.PcsPerCarton,
 		IsActive:            form.IsActive == 1,
 		SupplierID:          form.SupplierID,

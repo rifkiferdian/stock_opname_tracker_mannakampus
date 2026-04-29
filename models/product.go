@@ -20,6 +20,7 @@ type Product struct {
 	PackSize                    float64
 	PackSizeDisplay             string
 	PcsPerBox                   int
+	BoxPerCarton                int
 	PcsPerCarton                int
 	IsActive                    bool
 	StatusLabel                 string
@@ -131,6 +132,7 @@ type ProductCreateInput struct {
 	DefaultLeadTimeDays int
 	PackSize            float64
 	PcsPerBox           int
+	BoxPerCarton        int
 	PcsPerCarton        int
 	IsActive            bool
 	SupplierID          int
@@ -151,6 +153,7 @@ type ProductUpdateInput struct {
 	DefaultLeadTimeDays int
 	PackSize            float64
 	PcsPerBox           int
+	BoxPerCarton        int
 	PcsPerCarton        int
 	IsActive            bool
 	SupplierID          int

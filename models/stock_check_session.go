@@ -186,6 +186,7 @@ type StockCheckSessionCheckerInputItem struct {
 	CategoryName               string
 	UnitName                   string
 	PcsPerBox                  int
+	BoxPerCarton               int
 	PcsPerCarton               int
 	QtyStoreCarton             int
 	QtyStoreBox                int

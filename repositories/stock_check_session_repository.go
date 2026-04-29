@@ -606,6 +606,7 @@ func (r *StockCheckSessionRepository) GetCheckerInputItems(sessionID int) ([]mod
 			COALESCE(pc.category_name, 'Tanpa Kategori') AS category_name,
 			COALESCE(un.unit_name, '-') AS unit_name,
 			COALESCE(p.pcs_per_box, 0) AS pcs_per_box,
+			COALESCE(p.box_per_carton, 0) AS box_per_carton,
 			COALESCE(p.pcs_per_carton, 0) AS pcs_per_carton,
 			COALESCE(si.qty_store_carton, 0) AS qty_store_carton,
 			COALESCE(si.qty_store_box, 0) AS qty_store_box,
@@ -649,6 +650,7 @@ func (r *StockCheckSessionRepository) GetCheckerInputItems(sessionID int) ([]mod
 			&item.CategoryName,
 			&item.UnitName,
 			&item.PcsPerBox,
+			&item.BoxPerCarton,
 			&item.PcsPerCarton,
 			&item.QtyStoreCarton,
 			&item.QtyStoreBox,
@@ -685,7 +687,7 @@ func (r *StockCheckSessionRepository) GetCheckerInputItems(sessionID int) ([]mod
 		item.SuggestBuyCarton, item.SuggestBuyCartonDisplay = formatStockCheckSuggestCarton(item.SuggestBuyQty, item.PcsPerCarton)
 		item.QtyStoreBreakdownDisplay = formatStockCheckUnitBreakdown(item.QtyStoreCarton, item.QtyStoreBox, item.QtyStorePcs)
 		item.QtyWarehouseBreakdownDisplay = formatStockCheckUnitBreakdown(item.QtyWarehouseCarton, item.QtyWarehouseBox, item.QtyWarehousePcs)
-		item.ConversionDisplay = formatStockCheckConversion(item.PcsPerBox, item.PcsPerCarton)
+		item.ConversionDisplay = formatStockCheckConversion(item.PcsPerBox, item.BoxPerCarton, item.PcsPerCarton)
 		item.StatusLabel, _, _ = stockCheckSessionStatusMeta(item.Status)
 		item.HasBarcode = strings.TrimSpace(item.Barcode) != ""
 
@@ -1119,12 +1121,16 @@ func formatStockCheckUnitBreakdown(carton int, box int, pcs int) string {
 	return strings.Join(parts, " ")
 }
 
-func formatStockCheckConversion(pcsPerBox int, pcsPerCarton int) string {
-	parts := make([]string, 0, 2)
+func formatStockCheckConversion(pcsPerBox int, boxPerCarton int, pcsPerCarton int) string {
+	parts := make([]string, 0, 3)
 	if pcsPerBox > 0 {
 		parts = append(parts, fmt.Sprintf("1 box = %d pcs", pcsPerBox))
 	}
-	if pcsPerCarton > 0 {
+	if boxPerCarton > 0 && pcsPerCarton > 0 {
+		parts = append(parts, fmt.Sprintf("1 carton = %d box = %d pcs", boxPerCarton, pcsPerCarton))
+	} else if boxPerCarton > 0 {
+		parts = append(parts, fmt.Sprintf("1 carton = %d box", boxPerCarton))
+	} else if pcsPerCarton > 0 {
 		parts = append(parts, fmt.Sprintf("1 carton = %d pcs", pcsPerCarton))
 	}
 	if len(parts) == 0 {
