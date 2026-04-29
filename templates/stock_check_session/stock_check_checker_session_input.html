@@ -315,6 +315,34 @@
                 min-width: 0;
             }
 
+            .item-edit-link {
+                display: inline-flex;
+                min-height: 2rem;
+                align-items: center;
+                justify-content: center;
+                gap: 0.3rem;
+                border-radius: 0.7rem;
+                border: 1px solid #cbd5e1;
+                background: #fff;
+                padding: 0.45rem 0.75rem;
+                font-size: 0.72rem;
+                font-weight: 800;
+                color: #153e8a;
+                transition: all 0.18s ease;
+            }
+
+            .item-edit-link:hover {
+                background: #eff6ff;
+                border-color: #93c5fd;
+            }
+
+            .item-edit-link.disabled {
+                cursor: not-allowed;
+                color: #94a3b8;
+                background: #f8fafc;
+                border-color: #e2e8f0;
+            }
+
             .compact-qty {
                 display: grid;
                 grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -364,6 +392,74 @@
                 display: flex;
                 flex-direction: column;
                 gap: 0.75rem;
+            }
+
+            .mode-switch {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 0.5rem;
+                margin-top: 1rem;
+            }
+
+            .mode-button {
+                display: inline-flex;
+                min-height: 2.5rem;
+                align-items: center;
+                justify-content: center;
+                gap: 0.4rem;
+                border-radius: 0.85rem;
+                border: 1px solid #cbd5e1;
+                background: #fff;
+                padding: 0.65rem 0.95rem;
+                font-size: 0.82rem;
+                font-weight: 800;
+                color: #475569;
+                transition: all 0.18s ease;
+            }
+
+            .mode-button.active {
+                border-color: #153e8a;
+                background: #eff6ff;
+                color: #153e8a;
+                box-shadow: 0 10px 20px -18px rgba(21, 62, 138, 0.8);
+            }
+
+            .item-search-shell {
+                display: none;
+                align-items: center;
+                gap: 0.65rem;
+                margin-top: 1rem;
+                border: 1px solid #e2e8f0;
+                border-radius: 0.95rem;
+                background: #fff;
+                padding: 0.8rem 0.95rem;
+            }
+
+            .item-search-shell.active {
+                display: flex;
+            }
+
+            .item-search-input {
+                width: 100%;
+                border: 0;
+                background: transparent;
+                font-size: 0.92rem;
+                font-weight: 700;
+                color: #0f172a;
+                outline: none;
+            }
+
+            .item-search-input::placeholder {
+                color: #94a3b8;
+            }
+
+            .search-empty-state {
+                display: none;
+                padding: 1rem;
+                text-align: center;
+                font-size: 0.85rem;
+                font-weight: 700;
+                color: #64748b;
             }
 
             .desktop-table {
@@ -429,8 +525,7 @@
                                 <div class="scanner-icon-wrap">
                                     <i class="bx bx-barcode-reader text-3xl"></i>
                                 </div>
-                                <h2 class="mt-4 text-2xl font-extrabold">External Scanner Active</h2>
-                                <p class="mt-1 text-sm font-semibold text-white/65">Connected ready to scan barcode item session</p>
+                                <h2 class="mt-4 text-2xl font-extrabold">Scan Barcode Item di sini</h2>
 
                                 <form id="scannerForm" data-scan-url="/stock-checker/sessions/{{ .Session.ID }}/scan" data-back-url="{{ .CurrentURL }}" class="mt-5 w-full max-w-xl space-y-4">
                                     <input type="hidden" name="location" id="scan_location" value="{{ if eq .ScanForm.Location "warehouse" }}warehouse{{ else }}store{{ end }}">
@@ -467,41 +562,64 @@
                         <section class="surface-card overflow-hidden">
                             <div class="border-b border-slate-100 px-4 py-4 sm:px-5">
                                 <h2 class="text-lg font-extrabold text-[#153e8a]">Daftar Item</h2>
-                                <p class="mt-1 text-sm font-medium text-slate-500">Versi mobile dibuat ringkas, hanya info inti dan qty.</p>
+                                <p class="mt-1 text-sm font-medium text-slate-500">Keterangan singkat: C = carton, B = box, P = pcs.</p>
+                                <div class="mode-switch">
+                                    <button type="button" id="scanModeButton" class="mode-button active">
+                                        <i class="bx bx-barcode-reader"></i>
+                                        <span>Mode Scan</span>
+                                    </button>
+                                    <button type="button" id="searchModeButton" class="mode-button">
+                                        <i class="bx bx-search"></i>
+                                        <span>Cari Item</span>
+                                    </button>
+                                </div>
+                                <div id="itemSearchShell" class="item-search-shell">
+                                    <i class="bx bx-search text-lg text-slate-400"></i>
+                                    <input id="itemSearchInput" type="text" class="item-search-input" placeholder="Cari nama item, SKU, atau barcode..." autocomplete="off">
+                                </div>
                             </div>
 
                             <div class="compact-list p-4">
                                 {{ range .Items }}
-                                <article class="compact-item">
+                                <article class="compact-item" data-filter-item data-filter-text="{{ .ProductName }} {{ .ProductCode }} {{ .Barcode }}">
                                     <div class="flex items-start justify-between gap-3">
                                         <div class="compact-item-meta">
                                             <h3 class="truncate text-sm font-extrabold text-slate-800">{{ .ProductName }}</h3>
                                             <p class="mt-0.5 truncate text-[11px] font-semibold text-slate-400">{{ .ProductCode }}{{ if .HasBarcode }} &middot; {{ .Barcode }}{{ end }}</p>
                                         </div>
-                                        <span class="rounded-full bg-slate-100 px-2.5 py-1 text-[10px] font-extrabold uppercase text-slate-600">{{ .StatusLabel }}</span>
+                                        <div class="flex flex-col items-end gap-2">
+                                            <span class="rounded-full bg-slate-100 px-2.5 py-1 text-[10px] font-extrabold uppercase text-slate-600">{{ .StatusLabel }}</span>
+                                            {{ if .HasBarcode }}
+                                            <a href="/stock-checker/sessions/{{ $.Session.ID }}/scan?barcode={{ .Barcode }}&location={{ $.ScanForm.Location }}&back_to={{ $.CurrentURL }}" class="item-edit-link">
+                                                <i class="bx bx-pencil"></i>
+                                                <span>Edit</span>
+                                            </a>
+                                            {{ else }}
+                                            <span class="item-edit-link disabled">
+                                                <i class="bx bx-block"></i>
+                                                <span>Tanpa Barcode</span>
+                                            </span>
+                                            {{ end }}
+                                        </div>
                                     </div>
 
                                     <div class="compact-qty">
                                         <div>
                                             <span>Toko</span>
                                             <div class="compact-unit-lines">
-                                                <p>{{ .QtyStoreCarton }} carton</p>
-                                                <p>{{ .QtyStoreBox }} box</p>
-                                                <p>{{ .QtyStorePcs }} pcs</p>
+                                                <p><b style="color: #d35400;">{{ .QtyStoreCarton }}</b>c - <b style="color: #d35400;">{{ .QtyStoreBox }}</b>b - <b style="color: #d35400;">{{ .QtyStorePcs }}</b>p</p>
                                             </div>
                                         </div>
                                         <div>
                                             <span>Gudang</span>
                                             <div class="compact-unit-lines">
-                                                <p>{{ .QtyWarehouseCarton }} carton</p>
-                                                <p>{{ .QtyWarehouseBox }} box</p>
-                                                <p>{{ .QtyWarehousePcs }} pcs</p>
+                                                <p><b style="color: #d35400;">{{ .QtyWarehouseCarton }}</b>c - <b style="color: #d35400;">{{ .QtyWarehouseBox }}</b>b - <b style="color: #d35400;">{{ .QtyWarehousePcs }}</b>p</p>
                                             </div>
                                         </div>
                                         <div>
                                             <span>Suggest</span>
                                             <div class="compact-unit-lines">
-                                                <p>{{ .SuggestBuyCartonDisplay }}</p>
+                                                <p><b style="color: #d35400;">{{ .SuggestBuyCartonDisplay }}</b></p>
                                             </div>
                                         </div>
                                     </div>
@@ -511,6 +629,9 @@
                                     Belum ada item pada session ini.
                                 </div>
                                 {{ end }}
+                            </div>
+                            <div id="searchEmptyState" class="search-empty-state">
+                                Item tidak ditemukan.
                             </div>
 
                             <div class="desktop-table overflow-x-auto">
@@ -523,11 +644,12 @@
                                             <th class="px-5 py-4 text-left">Qty Gudang</th>
                                             <th class="px-5 py-4 text-left">Suggest</th>
                                             <th class="px-5 py-4 text-left">Status</th>
+                                            <th class="px-5 py-4 text-left">Aksi</th>
                                         </tr>
                                     </thead>
                                     <tbody class="divide-y divide-slate-100">
                                         {{ range .Items }}
-                                        <tr>
+                                        <tr data-filter-item data-filter-text="{{ .ProductName }} {{ .ProductCode }} {{ .Barcode }}">
                                             <td class="px-5 py-4">
                                                 <p class="font-extrabold text-slate-800">{{ .ProductName }}</p>
                                                 <p class="mt-1 text-xs font-semibold text-slate-400">{{ .ProductCode }} &middot; {{ .UnitName }}</p>
@@ -539,10 +661,23 @@
                                             <td class="px-5 py-4">
                                                 <span class="rounded-full bg-slate-100 px-3 py-1 text-[11px] font-extrabold uppercase text-slate-600">{{ .StatusLabel }}</span>
                                             </td>
+                                            <td class="px-5 py-4">
+                                                {{ if .HasBarcode }}
+                                                <a href="/stock-checker/sessions/{{ $.Session.ID }}/scan?barcode={{ .Barcode }}&location={{ $.ScanForm.Location }}&back_to={{ $.CurrentURL }}" class="item-edit-link">
+                                                    <i class="bx bx-pencil"></i>
+                                                    <span>Edit</span>
+                                                </a>
+                                                {{ else }}
+                                                <span class="item-edit-link disabled">
+                                                    <i class="bx bx-block"></i>
+                                                    <span>Tanpa Barcode</span>
+                                                </span>
+                                                {{ end }}
+                                            </td>
                                         </tr>
                                         {{ else }}
                                         <tr>
-                                            <td colspan="6" class="px-5 py-10 text-center text-sm font-semibold text-slate-500">
+                                            <td colspan="7" class="px-5 py-10 text-center text-sm font-semibold text-slate-500">
                                                 Belum ada item pada session ini.
                                             </td>
                                         </tr>
@@ -588,7 +723,14 @@
                 var locationHelper = document.getElementById('selectedLocationHelper');
                 var locationLabel = document.getElementById('selectedLocationLabel');
                 var statusLabel = document.getElementById('scannerStatus');
+                var scanModeButton = document.getElementById('scanModeButton');
+                var searchModeButton = document.getElementById('searchModeButton');
+                var itemSearchShell = document.getElementById('itemSearchShell');
+                var itemSearchInput = document.getElementById('itemSearchInput');
+                var searchEmptyState = document.getElementById('searchEmptyState');
+                var filterNodes = document.querySelectorAll('[data-filter-item]');
                 var scanCommitTimer = null;
+                var activeMode = 'scan';
                 var locationStorageKey = 'stock-checker-location:{{ .Session.ID }}';
 
                 var items = {};
@@ -641,6 +783,7 @@
                 }
 
                 function focusScannerInput() {
+                    if (activeMode !== 'scan') return;
                     if (!barcodeInput) return;
                     barcodeInput.focus();
                     if (typeof barcodeInput.setSelectionRange === 'function') {
@@ -701,7 +844,67 @@
                     statusLabel.textContent = 'Barcode Item ini tidak ada di supplier ini.';
                 }
 
+                function setInteractionMode(mode) {
+                    activeMode = mode === 'search' ? 'search' : 'scan';
+
+                    if (scanModeButton) {
+                        scanModeButton.classList.toggle('active', activeMode === 'scan');
+                    }
+                    if (searchModeButton) {
+                        searchModeButton.classList.toggle('active', activeMode === 'search');
+                    }
+                    if (itemSearchShell) {
+                        itemSearchShell.classList.toggle('active', activeMode === 'search');
+                    }
+                    if (barcodeInput) {
+                        barcodeInput.disabled = activeMode !== 'scan';
+                    }
+
+                    if (activeMode === 'search') {
+                        clearScannerInput();
+                        statusLabel.textContent = 'Mode cari aktif. Scan barcode dijeda sementara.';
+                        if (itemSearchInput) {
+                            itemSearchInput.focus();
+                            if (typeof itemSearchInput.setSelectionRange === 'function') {
+                                var searchLength = itemSearchInput.value.length;
+                                itemSearchInput.setSelectionRange(searchLength, searchLength);
+                            }
+                        }
+                        return;
+                    }
+
+                    if (itemSearchInput) {
+                        itemSearchInput.value = '';
+                    }
+                    applyItemSearchFilter();
+                    setPreviewEmpty();
+                    focusScannerInput();
+                }
+
+                function applyItemSearchFilter() {
+                    var keyword = '';
+                    var visibleCount = 0;
+
+                    if (itemSearchInput) {
+                        keyword = (itemSearchInput.value || '').trim().toLowerCase();
+                    }
+
+                    filterNodes.forEach(function (node) {
+                        var haystack = (node.getAttribute('data-filter-text') || '').toLowerCase();
+                        var matched = !keyword || haystack.indexOf(keyword) !== -1;
+                        node.style.display = matched ? '' : 'none';
+                        if (matched) {
+                            visibleCount += 1;
+                        }
+                    });
+
+                    if (searchEmptyState) {
+                        searchEmptyState.style.display = visibleCount === 0 ? 'block' : 'none';
+                    }
+                }
+
                 function redirectToScanPage(barcode) {
+                    if (activeMode !== 'scan') return;
                     if (!scannerForm) return;
                     var scanURL = scannerForm.getAttribute('data-scan-url') || '';
                     if (!scanURL) return;
@@ -716,6 +919,7 @@
                 }
 
                 function commitScannedBarcode() {
+                    if (activeMode !== 'scan') return false;
                     if (!barcodeInput) return false;
                     if (scanCommitTimer) {
                         window.clearTimeout(scanCommitTimer);
@@ -744,6 +948,7 @@
                 }
 
                 function scheduleScanCommit() {
+                    if (activeMode !== 'scan') return;
                     if (!barcodeInput) return;
 
                     var rawBarcode = barcodeInput.value.trim();
@@ -788,6 +993,7 @@
 
                 if (barcodeInput) {
                     barcodeInput.addEventListener('input', function () {
+                        if (activeMode !== 'scan') return;
                         var normalizedBarcode = normalizeBarcode(barcodeInput.value);
                         if (!normalizedBarcode) {
                             setPreviewEmpty();
@@ -799,6 +1005,7 @@
                         scheduleScanCommit();
                     });
                     barcodeInput.addEventListener('keydown', function (event) {
+                        if (activeMode !== 'scan') return;
                         if (event.key === 'Enter' || event.key === 'Tab') {
                             event.preventDefault();
                             window.setTimeout(function () {
@@ -808,6 +1015,7 @@
                         }
                     });
                     barcodeInput.addEventListener('blur', function () {
+                        if (activeMode !== 'scan') return;
                         window.setTimeout(function () {
                             focusScannerInput();
                         }, 0);
@@ -824,6 +1032,28 @@
                     });
                 }
 
+                if (itemSearchInput) {
+                    itemSearchInput.addEventListener('input', applyItemSearchFilter);
+                    itemSearchInput.addEventListener('keydown', function (event) {
+                        if (event.key === 'Escape') {
+                            event.preventDefault();
+                            setInteractionMode('scan');
+                        }
+                    });
+                }
+
+                if (scanModeButton) {
+                    scanModeButton.addEventListener('click', function () {
+                        setInteractionMode('scan');
+                    });
+                }
+
+                if (searchModeButton) {
+                    searchModeButton.addEventListener('click', function () {
+                        setInteractionMode('search');
+                    });
+                }
+
                 try {
                     var currentURL = new URL(window.location.href);
                     var hasLocationInURL = currentURL.searchParams.has('location');
@@ -837,7 +1067,8 @@
 
                 persistLocation(locationInput.value);
                 updateLocationUI();
-                setPreviewEmpty();
+                applyItemSearchFilter();
+                setInteractionMode('scan');
             });
         </script>
     </body>
