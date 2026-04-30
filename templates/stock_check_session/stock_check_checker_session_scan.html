@@ -78,10 +78,68 @@
 
             .toolbar-actions {
                 display: flex;
-                flex-wrap: wrap;
+                flex-direction: column;
                 gap: 0.75rem;
+                width: 100%;
+                align-items: stretch;
+            }
+
+            .session-meta-card {
+                display: grid;
+                grid-template-columns: minmax(0, 1.6fr) minmax(6.5rem, 0.9fr);
+                width: 100%;
+                border: 1px solid #e2e8f0;
+                border-radius: 1rem;
+                background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+                padding: 0.95rem 1rem;
+                box-shadow: 0 14px 28px -26px rgba(15, 23, 42, 0.32);
+            }
+
+            .session-meta-block {
+                display: grid;
+                gap: 0.35rem;
+                min-width: 0;
+            }
+
+            .session-meta-block + .session-meta-block {
+                border-top: 0;
+                border-left: 1px solid #e2e8f0;
+                padding-top: 0;
+                padding-left: 0.9rem;
+            }
+
+            .session-meta-label {
+                font-size: 0.64rem;
+                font-weight: 800;
+                letter-spacing: 0.18em;
+                text-transform: uppercase;
+                color: #94a3b8;
+            }
+
+            .session-meta-value {
+                min-width: 0;
+                font-size: 0.98rem;
+                line-height: 1.35;
+                font-weight: 800;
+                color: #0f172a;
+                overflow-wrap: anywhere;
+            }
+
+            .session-meta-code {
+                display: inline-flex;
+                width: fit-content;
+                max-width: 100%;
                 align-items: center;
-                justify-content: space-between;
+                border-radius: 999px;
+                border: 1px solid #bfdbfe;
+                background: #eff6ff;
+                padding: 0.28rem 0.65rem;
+                font-size: 0.68rem;
+                font-weight: 800;
+                letter-spacing: 0.14em;
+                text-transform: uppercase;
+                color: #153e8a;
+                overflow-wrap: anywhere;
             }
 
             .item-preview {
@@ -449,6 +507,17 @@
                     justify-content: space-between;
                 }
 
+                .toolbar-actions {
+                    width: auto;
+                    align-items: flex-end;
+                }
+
+                .session-meta-card {
+                    grid-template-columns: minmax(0, 1.5fr) minmax(11rem, auto);
+                    align-items: center;
+                    padding: 1rem 1.1rem;
+                }
+
                 .form-actions {
                     display: flex;
                     justify-content: flex-end;
@@ -506,17 +575,15 @@
                             </a>
 
                             <div class="toolbar-actions">
-                                <div class="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-left shadow-sm">
-                                    <div class="mt-2 border-t border-slate-100 pt-2">
-                                        <p class="text-[10px] font-extrabold uppercase tracking-[0.18em] text-slate-400">Supplier</p>
-                                        <div class="mt-1 flex items-center gap-2">
-                                            <p class="text-sm font-extrabold text-slate-800">{{ .Session.SupplierName }}</p>
-                                            <p class="text-xs font-bold uppercase tracking-[0.16em] text-[#153e8a]">{{ .Session.SupplierCode }}</p>
-                                        </div>
+                                <div class="session-meta-card">
+                                    <div class="session-meta-block">
+                                        <p class="session-meta-label">Supplier</p>
+                                        <p class="session-meta-value">{{ .Session.SupplierName }}</p>
+                                        <p class="session-meta-code">{{ .Session.SupplierCode }}</p>
                                     </div>
-                                    <p class="text-[10px] font-extrabold uppercase tracking-[0.18em] text-slate-400">Session</p>
-                                    <div class="mt-1 flex items-center gap-2">
-                                        <p class="text-sm font-extrabold text-slate-800">{{ .Session.SessionDateDisplay }}</p>
+                                    <div class="session-meta-block">
+                                        <p class="session-meta-label">Session</p>
+                                        <p class="session-meta-value">{{ .Session.SessionDateDisplay }}</p>
                                     </div>
                                 </div>
                             </div>

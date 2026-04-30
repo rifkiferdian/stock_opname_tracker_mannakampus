@@ -600,13 +600,21 @@ func StockCheckSessionUpdate(c *gin.Context) {
 		InitiationType string `form:"initiation_type" binding:"required"`
 		Status         string `form:"status" binding:"required"`
 		Notes          string `form:"notes"`
+		ReturnTo       string `form:"return_to"`
 	}
 
 	var form stockCheckSessionForm
 	service := buildStockCheckSessionService()
 	filter := buildStockCheckSessionFilter(c)
+	redirectTarget := ""
 
 	if err := c.ShouldBind(&form); err != nil {
+		redirectTarget = sanitizeRedirectTarget(form.ReturnTo)
+		if redirectTarget != "" {
+			c.Redirect(http.StatusSeeOther, appendRedirectMessage(redirectTarget, "error", "Form edit stock check session tidak lengkap"))
+			return
+		}
+
 		renderStockCheckSessionPage(c, service, "Form edit stock check session tidak lengkap", "edit", models.StockCheckSession{
 			ID:             form.ID,
 			SessionNumber:  form.SessionNumber,
@@ -619,6 +627,7 @@ func StockCheckSessionUpdate(c *gin.Context) {
 		}, filter)
 		return
 	}
+	redirectTarget = sanitizeRedirectTarget(form.ReturnTo)
 
 	err := service.UpdateSession(models.StockCheckSessionUpdateInput{
 		ID:             form.ID,
@@ -630,6 +639,11 @@ func StockCheckSessionUpdate(c *gin.Context) {
 		Notes:          form.Notes,
 	})
 	if err != nil {
+		if redirectTarget != "" {
+			c.Redirect(http.StatusSeeOther, appendRedirectMessage(redirectTarget, "error", err.Error()))
+			return
+		}
+
 		renderStockCheckSessionPage(c, service, err.Error(), "edit", models.StockCheckSession{
 			ID:             form.ID,
 			SessionNumber:  form.SessionNumber,
@@ -640,6 +654,11 @@ func StockCheckSessionUpdate(c *gin.Context) {
 			Status:         form.Status,
 			Notes:          form.Notes,
 		}, filter)
+		return
+	}
+
+	if redirectTarget != "" {
+		c.Redirect(http.StatusSeeOther, appendRedirectMessage(redirectTarget, "success", "Status session berhasil diperbarui"))
 		return
 	}
 
