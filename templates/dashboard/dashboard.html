@@ -26,216 +26,262 @@
 
                 <main class="min-w-0 flex-1 px-4 py-5 sm:px-6 lg:px-8">
                     <div class="mx-auto flex w-full max-w-7xl flex-col gap-5">
-                        <section class="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-                            <div>
-                                <h1 class="text-xl font-extrabold leading-tight text-[#001e62] sm:text-2xl">Good Morning, Admin</h1>
-                                <p class="mt-1 text-sm font-medium text-[#566173]">Here is what's happening with your inventory today.</p>
-                            </div>
-
-                    <div class="flex flex-wrap items-center gap-3">
-                        <button type="button" class="inline-flex items-center justify-center gap-2 rounded-md bg-white px-5 py-3 text-sm font-extrabold text-[#001e62] shadow-sm transition hover:bg-[#eef3ff]">
-                            <i class="bx bx-book-open text-base"></i>
-                            Run Buyer Review
-                        </button>
-                        <button type="button" class="inline-flex items-center justify-center gap-2 rounded-md bg-[#001e62] px-5 py-3 text-sm font-extrabold text-white shadow-md shadow-[#001e62]/20 transition hover:bg-[#002f95]">
-                            <i class="bx bx-plus-circle text-base"></i>
-                            Create New Session
-                        </button>
-                    </div>
-                </section>
-
-                <section class="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-                    <article class="rounded-lg bg-white p-5 shadow-sm">
-                        <div class="flex items-start justify-between">
-                            <span class="inline-flex h-9 w-9 items-center justify-center rounded-md bg-[#eef3ff] text-[#001e62]">
-                                <i class="bx bx-stopwatch text-lg"></i>
-                            </span>
-                            <span class="text-[10px] font-extrabold uppercase tracking-wide text-[#1e2b42]">Today</span>
-                        </div>
-                        <p class="mt-5 text-3xl font-extrabold leading-none text-black">12</p>
-                        <p class="mt-2 text-sm font-semibold text-[#111827]">Active Sessions</p>
-                    </article>
-
-                    <article class="rounded-lg bg-white p-5 shadow-sm">
-                        <div class="flex items-start justify-between">
-                            <span class="inline-flex h-9 w-9 items-center justify-center rounded-md bg-[#eef3f8] text-[#617489]">
-                                <i class="bx bx-truck text-lg"></i>
-                            </span>
-                            <span class="text-[10px] font-extrabold uppercase tracking-wide text-[#1e2b42]">Live</span>
-                        </div>
-                        <p class="mt-5 text-3xl font-extrabold leading-none text-black">48</p>
-                        <p class="mt-2 text-sm font-semibold text-[#111827]">Suppliers Checked</p>
-                    </article>
-
-                    <article class="rounded-lg bg-white p-5 shadow-sm">
-                        <div class="flex items-start justify-between">
-                            <span class="inline-flex h-9 w-9 items-center justify-center rounded-md bg-[#fff0e8] text-[#f37a4a]">
-                                <i class="bx bx-list-check text-lg"></i>
-                            </span>
-                            <span class="text-[10px] font-extrabold uppercase tracking-wide text-[#1e2b42]">Waiting</span>
-                        </div>
-                        <p class="mt-5 text-3xl font-extrabold leading-none text-black">156</p>
-                        <p class="mt-2 text-sm font-semibold text-[#111827]">Pending Inputs</p>
-                    </article>
-
-                    <article class="rounded-lg bg-white p-5 shadow-sm">
-                        <div class="flex items-start justify-between">
-                            <span class="inline-flex h-9 w-9 items-center justify-center rounded-md bg-[#fff1e6] text-[#d5793c]">
-                                <i class="bx bx-clipboard text-lg"></i>
-                            </span>
-                            <span class="text-[10px] font-extrabold uppercase tracking-wide text-[#1e2b42]">Critical</span>
-                        </div>
-                        <p class="mt-5 text-3xl font-extrabold leading-none text-black">84</p>
-                        <p class="mt-2 text-sm font-semibold text-[#111827]">Buyer Reviews</p>
-                    </article>
-
-                    <article class="rounded-lg bg-white p-5 shadow-sm">
-                        <div class="flex items-start justify-between">
-                            <span class="inline-flex h-9 w-9 items-center justify-center rounded-md bg-[#eff2ff] text-[#98a9ff]">
-                                <i class="bx bx-badge-check text-lg"></i>
-                            </span>
-                            <span class="text-[10px] font-extrabold uppercase tracking-wide text-[#1e2b42]">Ready</span>
-                        </div>
-                        <p class="mt-5 text-3xl font-extrabold leading-none text-black">312</p>
-                        <p class="mt-2 text-sm font-semibold text-[#111827]">Approved for PO</p>
-                    </article>
-                </section>
-
-                <section class="grid gap-5 lg:grid-cols-[minmax(0,2.15fr)_minmax(18rem,1fr)]">
-                    <article class="rounded-lg bg-white p-5 shadow-sm">
-                        <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                            <div>
-                                <h2 class="text-base font-extrabold text-[#001e62]">Daily Progress</h2>
-                                <p class="mt-1 text-sm font-medium text-[#566173]">Stock opname completion rate by hour</p>
-                            </div>
-                            <div class="flex items-center gap-4 text-[11px] font-bold text-[#1e2b42]">
-                                <span class="inline-flex items-center gap-1.5">
-                                    <span class="h-2 w-2 rounded-full bg-[#001e62]"></span>
-                                    Completed
-                                </span>
-                                <span class="inline-flex items-center gap-1.5">
-                                    <span class="h-2 w-2 rounded-full bg-[#d1d5db]"></span>
-                                    Target
-                                </span>
-                            </div>
-                        </div>
-
-                        <div class="relative mt-7 h-[19rem] overflow-hidden rounded-md bg-white sm:h-[22rem] lg:h-[26rem]">
-                            <div class="absolute inset-x-8 top-3 bottom-8 border-b border-[#edf1f7]">
-                                <div class="h-full w-full bg-[linear-gradient(to_bottom,#f5f7fb_1px,transparent_1px)] bg-[length:100%_25%]"></div>
-                            </div>
-
-                            <svg class="absolute inset-x-8 bottom-8 top-3 h-[calc(100%-2.75rem)] w-[calc(100%-4rem)] overflow-visible" viewBox="0 0 640 260" preserveAspectRatio="none" aria-hidden="true">
-                                <polyline points="0,210 128,190 256,150 384,120 512,82 640,55" fill="none" stroke="#d1d5db" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" opacity="0.85" />
-                                <polyline points="0,224 128,206 256,172 384,128 512,92 640,38" fill="none" stroke="#001e62" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" />
-                                <circle cx="0" cy="224" r="5" fill="#001e62" />
-                                <circle cx="128" cy="206" r="5" fill="#001e62" />
-                                <circle cx="256" cy="172" r="5" fill="#001e62" />
-                                <circle cx="384" cy="128" r="5" fill="#001e62" />
-                                <circle cx="512" cy="92" r="5" fill="#001e62" />
-                                <circle cx="640" cy="38" r="5" fill="#001e62" />
-                            </svg>
-
-                            <div class="absolute inset-x-8 bottom-0 grid grid-cols-6 text-[10px] font-extrabold text-[#1e2b42]">
-                                <span>08:00</span>
-                                <span class="text-center">10:00</span>
-                                <span class="text-center">12:00</span>
-                                <span class="text-center">14:00</span>
-                                <span class="text-center">16:00</span>
-                                <span class="text-right">18:00</span>
-                            </div>
-                        </div>
-                    </article>
-
-                    <article class="rounded-lg bg-white shadow-sm">
-                        <div class="border-b border-[#edf1f7] px-5 py-5">
-                            <h2 class="text-base font-extrabold text-[#001e62]">Recent Activity</h2>
-                        </div>
-
-                        <div class="px-5 py-4">
-                            <div class="space-y-5">
-                                <div class="flex gap-4">
-                                    <span class="inline-flex h-10 w-10 flex-none items-center justify-center rounded-lg bg-[#dcfae7] text-[#19a856]">
-                                        <i class="bx bx-check-circle text-xl"></i>
-                                    </span>
+                        <section class="lg:w-1/2">
+                            <article class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+                                <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                                     <div class="min-w-0">
-                                        <p class="text-sm font-extrabold text-[#07142f]">Fresh PO Stocked</p>
-                                        <p class="mt-1 text-xs font-semibold leading-relaxed text-[#566173]">Session <span class="font-extrabold text-[#001e62]">A492</span> completed by <span class="font-extrabold text-[#001e62]">John Doe</span>. 42 items updated.</p>
-                                        <p class="mt-1 text-[11px] font-medium text-[#8b95a5]">2 minutes ago</p>
+                                        <p class="text-[11px] font-extrabold uppercase tracking-[0.18em] text-slate-400">Dashboard Buyer</p>
+                                        <h1 class="mt-2 text-2xl font-extrabold leading-tight text-[#001e62] sm:text-3xl">
+                                            Ringkasan kerja buyer hari ini.
+                                        </h1>
+                                        <p class="mt-3 max-w-3xl text-sm font-medium leading-relaxed text-slate-600">
+                                            Halo, {{ .Dashboard.GreetingName }}. Halaman ini menampilkan informasi inti untuk review sesi stock opname, supplier minggu ini, dan antrean keputusan buyer.
+                                        </p>
+                                    </div>
+                                    <div class="rounded-xl bg-[#eef3ff] px-4 py-3 text-right">
+                                        <p class="text-[11px] font-extrabold uppercase tracking-[0.18em] text-[#617489]">Tanggal</p>
+                                        <p class="mt-1 text-sm font-extrabold text-[#001e62]">{{ .Dashboard.DateLabel }}</p>
                                     </div>
                                 </div>
 
-                                <div class="flex gap-4">
-                                    <span class="inline-flex h-10 w-10 flex-none items-center justify-center rounded-lg bg-[#fff2c9] text-[#f4a51c]">
-                                        <i class="bx bx-error text-xl"></i>
-                                    </span>
-                                    <div class="min-w-0">
-                                        <p class="text-sm font-extrabold text-[#07142f]">Variance Detected</p>
-                                        <p class="mt-1 text-xs font-semibold leading-relaxed text-[#566173]">Major discrepancy in <span class="font-extrabold text-[#001e62]">Electronics Aisle 4</span>. Manual review required.</p>
-                                        <p class="mt-1 text-[11px] font-medium text-[#8b95a5]">14 minutes ago</p>
+                                <div class="mt-5 grid gap-3 sm:grid-cols-2">
+                                    {{ range .Dashboard.HeroHighlights }}
+                                        <div class="rounded-xl border border-slate-200 bg-slate-50 px-4 py-4">
+                                            <p class="text-[11px] font-extrabold uppercase tracking-[0.18em] text-slate-400">{{ .Label }}</p>
+                                            <p class="mt-2 text-2xl font-extrabold text-[#001e62]">{{ .Value }}</p>
+                                        </div>
+                                    {{ end }}
+                                </div>
+                            </article>
+                        </section>
+
+                        <section class="grid gap-3 md:grid-cols-3">
+                            {{ range .Dashboard.MetricCards }}
+                                <article class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+                                    <div class="flex items-center justify-between gap-3">
+                                        <div class="min-w-0">
+                                            <p class="text-[10px] font-extrabold uppercase tracking-[0.18em] text-slate-400">{{ .Label }}</p>
+                                            <p class="mt-2 text-xl font-extrabold leading-none text-[#001e62]">{{ .Value }}</p>
+                                        </div>
+                                        <span class="inline-flex h-9 w-9 items-center justify-center rounded-lg
+                                            {{ if eq .Tone "blue" }}bg-[#eef3ff] text-[#001e62]
+                                            {{ else if eq .Tone "amber" }}bg-[#fff0e8] text-[#f37a4a]
+                                            {{ else if eq .Tone "emerald" }}bg-[#dcfae7] text-[#19a856]
+                                            {{ else }}bg-slate-100 text-slate-600{{ end }}">
+                                            <i class="{{ .Icon }} text-lg"></i>
+                                        </span>
+                                    </div>
+                                    <p class="mt-2 text-xs font-medium leading-relaxed text-slate-500">{{ .Caption }}</p>
+                                </article>
+                            {{ end }}
+                        </section>
+
+                        <section class="grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(18rem,0.95fr)]">
+                            <article class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+                                <div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+                                    <div>
+                                        <p class="text-[11px] font-extrabold uppercase tracking-[0.18em] text-slate-400">Pipeline Buyer</p>
+                                        <h2 class="mt-1 text-xl font-extrabold text-[#001e62]">Status item yang sedang berjalan</h2>
+                                    </div>
+                                    <p class="text-sm font-medium text-slate-500">Urutkan beban kerja dari checker sampai final approve.</p>
+                                </div>
+
+                                <div class="mt-6 grid gap-4 md:grid-cols-2">
+                                    {{ range .Dashboard.Stages }}
+                                        <div class="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                                            <div class="flex items-start justify-between gap-3">
+                                                <div>
+                                                    <p class="text-sm font-extrabold text-slate-800">{{ .Label }}</p>
+                                                    <p class="mt-1 text-sm font-medium leading-relaxed text-slate-500">{{ .Note }}</p>
+                                                </div>
+                                                <span class="text-3xl font-extrabold
+                                                    {{ if eq .Tone "amber" }}text-[#f37a4a]
+                                                    {{ else if eq .Tone "emerald" }}text-[#19a856]
+                                                    {{ else if eq .Tone "rose" }}text-rose-600
+                                                    {{ else }}text-[#617489]{{ end }}">
+                                                    {{ .Count }}
+                                                </span>
+                                            </div>
+                                            <div class="mt-4 h-2 rounded-full bg-slate-200">
+                                                <div class="h-2 rounded-full
+                                                    {{ if eq .Tone "amber" }}bg-[#f37a4a]
+                                                    {{ else if eq .Tone "emerald" }}bg-[#19a856]
+                                                    {{ else if eq .Tone "rose" }}bg-rose-500
+                                                    {{ else }}bg-[#617489]{{ end }}"
+                                                    style="width: {{ .ProgressPercent }}%;"></div>
+                                            </div>
+                                        </div>
+                                    {{ end }}
+                                </div>
+                            </article>
+
+                            <article class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+                                <p class="text-[11px] font-extrabold uppercase tracking-[0.18em] text-slate-400">PO 12 Bulan Terakhir</p>
+                                <h2 class="mt-1 text-xl font-extrabold text-[#001e62]">Trend approval dan PO buyer</h2>
+                                <p class="mt-2 text-sm font-medium leading-relaxed text-slate-500">
+                                    Jumlah item yang sudah approved atau sudah dibuatkan PO selama 12 bulan terakhir.
+                                </p>
+
+                                <div
+                                    class="mt-6 rounded-xl border border-slate-200 bg-slate-50 px-3 py-4"
+                                    data-buyer-po-chart
+                                    data-series='{{ .Dashboard.POTrendSeriesJSON }}'
+                                    data-labels='{{ .Dashboard.POTrendLabelsJSON }}'>
+                                    <div class="h-64 w-full"></div>
+                                </div>
+                            </article>
+                        </section>
+
+                        <section>
+                            <article class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+                                <div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+                                    <div>
+                                        <p class="text-[11px] font-extrabold uppercase tracking-[0.18em] text-slate-400">Supplier Minggu Ini</p>
+                                        <h2 class="mt-1 text-xl font-extrabold text-[#001e62]">List supplier yang di-SO minggu ini</h2>
+                                    </div>
+                                    <p class="text-sm font-medium text-slate-500">{{ .Dashboard.WeekRangeLabel }}</p>
+                                </div>
+
+                                <div class="mt-6 overflow-hidden rounded-xl border border-slate-200">
+                                    <div class="overflow-x-auto">
+                                        <table class="min-w-[960px] w-full divide-y divide-slate-100">
+                                            <thead class="bg-slate-50">
+                                                <tr class="text-left text-[11px] font-extrabold uppercase tracking-[0.18em] text-slate-400">
+                                                    <th class="px-4 py-4">Supplier</th>
+                                                    <th class="px-4 py-4">Store</th>
+                                                    <th class="px-4 py-4 text-center">Sesi SO</th>
+                                                    <th class="px-4 py-4 text-center">Pending</th>
+                                                    <th class="px-4 py-4 text-center">Approved</th>
+                                                    <th class="px-4 py-4">SO Terakhir</th>
+                                                    <th class="px-4 py-4">Aksi</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody class="divide-y divide-slate-100 bg-white">
+                                                {{ if .Dashboard.WeeklySuppliers }}
+                                                    {{ range .Dashboard.WeeklySuppliers }}
+                                                        <tr class="align-top">
+                                                            <td class="px-4 py-4">
+                                                                <div class="min-w-[15rem]">
+                                                                    <p class="text-sm font-extrabold text-slate-800">{{ .SupplierName }}</p>
+                                                                    <p class="mt-1 text-xs font-semibold uppercase tracking-[0.12em] text-slate-400">{{ .SupplierCode }}</p>
+                                                                </div>
+                                                            </td>
+                                                            <td class="px-4 py-4">
+                                                                <p class="text-sm font-medium text-slate-700">{{ .StoreNames }}</p>
+                                                            </td>
+                                                            <td class="px-4 py-4 text-center">
+                                                                <span class="text-sm font-extrabold text-[#001e62]">{{ .SessionCount }}</span>
+                                                            </td>
+                                                            <td class="px-4 py-4 text-center">
+                                                                <span class="text-sm font-extrabold text-[#f37a4a]">{{ .PendingItems }}</span>
+                                                            </td>
+                                                            <td class="px-4 py-4 text-center">
+                                                                <span class="text-sm font-extrabold text-[#19a856]">{{ .ApprovedItems }}</span>
+                                                            </td>
+                                                            <td class="px-4 py-4">
+                                                                <p class="text-sm font-medium text-slate-700">{{ .LatestSessionDateDisplay }}</p>
+                                                            </td>
+                                                            <td class="px-4 py-4">
+                                                                <div class="flex gap-2">
+                                                                    <a href="{{ .SessionListURL }}" class="inline-flex items-center justify-center rounded-lg bg-[#eef3ff] px-3 py-1.5 text-[11px] font-extrabold text-[#001e62] transition hover:bg-[#dbeafe]">
+                                                                        Lihat sesi
+                                                                    </a>
+                                                                    <a href="{{ .SupplierURL }}" class="inline-flex items-center justify-center rounded-lg bg-white px-3 py-1.5 text-[11px] font-extrabold text-slate-700 ring-1 ring-slate-200 transition hover:bg-slate-50">
+                                                                        Supplier
+                                                                    </a>
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                    {{ end }}
+                                                {{ else }}
+                                                    <tr>
+                                                        <td colspan="7" class="px-4 py-10 text-center">
+                                                            <p class="text-sm font-extrabold text-slate-800">Belum ada supplier yang masuk sesi SO minggu ini.</p>
+                                                            <p class="mt-1 text-sm font-medium text-slate-500">Saat sesi stock opname minggu ini dibuat, supplier akan tampil di tabel ini.</p>
+                                                        </td>
+                                                    </tr>
+                                                {{ end }}
+                                            </tbody>
+                                        </table>
                                     </div>
                                 </div>
+                            </article>
+                        </section>
 
-                                <div class="flex gap-4">
-                                    <span class="inline-flex h-10 w-10 flex-none items-center justify-center rounded-lg bg-[#e0ebff] text-[#2766e3]">
-                                        <i class="bx bx-calendar-plus text-xl"></i>
-                                    </span>
-                                    <div class="min-w-0">
-                                        <p class="text-sm font-extrabold text-[#07142f]">New Session Started</p>
-                                        <p class="mt-1 text-xs font-semibold leading-relaxed text-[#566173]">System initialized <span class="font-extrabold text-[#001e62]">Monthly Full Audit</span> for Warehouse 2.</p>
-                                        <p class="mt-1 text-[11px] font-medium text-[#8b95a5]">45 minutes ago</p>
-                                    </div>
-                                </div>
-
-                                <div class="flex gap-4">
-                                    <span class="inline-flex h-10 w-10 flex-none items-center justify-center rounded-lg bg-[#edf1f7] text-[#617489]">
-                                        <i class="bx bx-truck text-xl"></i>
-                                    </span>
-                                    <div class="min-w-0">
-                                        <p class="text-sm font-extrabold text-[#07142f]">Supplier Check-in</p>
-                                        <p class="mt-1 text-xs font-semibold leading-relaxed text-[#566173]"><span class="font-extrabold text-[#001e62]">Global Logistics Co.</span> delivery verified at Dock 3.</p>
-                                        <p class="mt-1 text-[11px] font-medium text-[#8b95a5]">1 hour ago</p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <a href="#" class="mt-6 inline-flex w-full items-center justify-center rounded-md px-4 py-2 text-sm font-extrabold text-[#001e62] transition hover:bg-[#eef3ff]">View Full Audit Log</a>
-                        </div>
-                    </article>
-                </section>
-
-                <section class="grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(18rem,0.95fr)]">
-                    <article class="rounded-lg bg-[#24408f] p-6 text-white shadow-sm">
-                        <div class="flex items-start justify-between gap-4">
-                            <div>
-                                <h2 class="text-base font-extrabold">Warehouse Efficiency</h2>
-                                <div class="mt-3 flex flex-wrap items-end gap-3">
-                                    <p class="text-4xl font-extrabold leading-none">94.2%</p>
-                                    <p class="pb-1 text-sm font-semibold text-[#a9b9e9]">+2.4% from last week</p>
-                                </div>
-                            </div>
-                            <i class="bx bx-trending-up text-5xl text-white/25"></i>
-                        </div>
-                        <div class="mt-5 h-2 w-full max-w-xs rounded-full bg-white/20">
-                            <div class="h-2 w-[94%] rounded-full bg-white"></div>
-                        </div>
-                    </article>
-
-                    <article class="rounded-lg bg-white p-6 shadow-sm">
-                        <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                            <div class="flex items-center gap-4">
-                                <span class="inline-flex h-12 w-12 flex-none items-center justify-center rounded-lg bg-[#fff0e8] text-[#f37a4a]">
-                                    <i class="bx bx-package text-2xl"></i>
-                                </span>
+                        <section class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+                            <div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
                                 <div>
-                                    <h2 class="text-base font-extrabold text-[#07142f]">Auto-Procurement Status</h2>
-                                    <p class="mt-1 max-w-xs text-sm font-medium leading-relaxed text-[#566173]">System is ready to generate 14 purchase orders.</p>
+                                    <p class="text-[11px] font-extrabold uppercase tracking-[0.18em] text-slate-400">Review Queue</p>
+                                    <h2 class="mt-1 text-lg font-extrabold text-[#001e62]">Sesi yang perlu segera ditindaklanjuti buyer</h2>
+                                </div>
+                                <a href="/stock-check-sessions" class="text-sm font-extrabold text-[#001e62] transition hover:text-[#24408f]">Buka daftar sesi</a>
+                            </div>
+
+                            <div class="mt-4 overflow-hidden rounded-xl border border-slate-200">
+                                <div class="overflow-x-auto">
+                                    <table class="min-w-[960px] w-full divide-y divide-slate-100">
+                                        <thead class="bg-slate-50">
+                                            <tr class="text-left text-[11px] font-extrabold uppercase tracking-[0.18em] text-slate-400">
+                                                <th class="px-4 py-3">Sesi</th>
+                                                <th class="px-4 py-3">Tanggal</th>
+                                                <th class="px-4 py-3">Store / Supplier</th>
+                                                <th class="px-4 py-3">Status</th>
+                                                <th class="px-4 py-3 text-center">Pending</th>
+                                                <th class="px-4 py-3 text-center">Approved</th>
+                                                <th class="px-4 py-3 text-center">Reject</th>
+                                                <th class="px-4 py-3">Nilai Pending</th>
+                                                <th class="px-4 py-3">Aksi</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="divide-y divide-slate-100 bg-white">
+                                            {{ if .Dashboard.Sessions }}
+                                                {{ range .Dashboard.Sessions }}
+                                                    <tr class="align-top">
+                                                        <td class="px-4 py-4">
+                                                            <p class="text-sm font-extrabold text-slate-800">{{ .SessionNumber }}</p>
+                                                        </td>
+                                                        <td class="px-4 py-4">
+                                                            <p class="text-sm font-medium text-slate-600">{{ .SessionDateDisplay }}</p>
+                                                        </td>
+                                                        <td class="px-4 py-4">
+                                                            <p class="text-sm font-medium text-slate-700">{{ .StoreName }}</p>
+                                                            <p class="mt-1 text-xs font-medium text-slate-500">{{ .SupplierName }}</p>
+                                                        </td>
+                                                        <td class="px-4 py-4">
+                                                            <span class="text-xs font-extrabold {{ .StatusTextClass }}">{{ .StatusLabel }}</span>
+                                                        </td>
+                                                        <td class="px-4 py-4 text-center">
+                                                            <span class="text-sm font-extrabold text-[#001e62]">{{ .PendingItems }}</span>
+                                                        </td>
+                                                        <td class="px-4 py-4 text-center">
+                                                            <span class="text-sm font-extrabold text-[#19a856]">{{ .ApprovedItems }}</span>
+                                                        </td>
+                                                        <td class="px-4 py-4 text-center">
+                                                            <span class="text-sm font-extrabold text-rose-600">{{ .RejectedItems }}</span>
+                                                        </td>
+                                                        <td class="px-4 py-4">
+                                                            <p class="text-sm font-extrabold text-slate-800">{{ .SuggestedValueDisplay }}</p>
+                                                        </td>
+                                                        <td class="px-4 py-4">
+                                                            <a href="{{ .DetailURL }}" class="inline-flex items-center justify-center rounded-lg bg-[#eef3ff] px-3 py-1.5 text-[11px] font-extrabold text-[#001e62] transition hover:bg-[#dbeafe]">
+                                                                Detail
+                                                            </a>
+                                                        </td>
+                                                    </tr>
+                                                {{ end }}
+                                            {{ else }}
+                                                <tr>
+                                                    <td colspan="9" class="px-4 py-12 text-center">
+                                                        <p class="text-sm font-extrabold text-slate-800">Tidak ada sesi review aktif saat ini.</p>
+                                                        <p class="mt-1 text-sm font-medium text-slate-500">Begitu ada sesi draft, submitted, atau reviewed, antrean kerja buyer akan muncul di sini.</p>
+                                                    </td>
+                                                </tr>
+                                            {{ end }}
+                                        </tbody>
+                                    </table>
                                 </div>
                             </div>
-                            <button type="button" class="inline-flex min-w-[7rem] items-center justify-center rounded-md border-2 border-[#24408f] bg-white px-5 py-3 text-sm font-extrabold text-[#001e62] transition hover:bg-[#eef3ff]">Run Auto-PO</button>
-                        </div>
-                    </article>
-                </section>
+                        </section>
                     </div>
                 </main>
             </div>
@@ -243,8 +289,151 @@
 
         <div id="sidebar-overlay" class="fixed inset-0 z-40 hidden bg-slate-900/50 lg:hidden"></div>
 
+        <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
         <script>
             document.addEventListener('DOMContentLoaded', function () {
+                function buyerChartNiceStep(value) {
+                    if (!value || value <= 0) return 100;
+
+                    var exponent = Math.floor(Math.log10(value));
+                    var fraction = value / Math.pow(10, exponent);
+
+                    if (fraction <= 1) return Math.pow(10, exponent);
+                    if (fraction <= 2) return 2 * Math.pow(10, exponent);
+                    if (fraction <= 5) return 5 * Math.pow(10, exponent);
+                    return 10 * Math.pow(10, exponent);
+                }
+
+                function renderBuyerPOChart(element) {
+                    var holder = element.querySelector('div');
+                    if (!holder || !window.ApexCharts) return;
+
+                    var rawSeries = [];
+                    var labels = [];
+
+                    try {
+                        rawSeries = JSON.parse(element.getAttribute('data-series') || '[]');
+                        labels = JSON.parse(element.getAttribute('data-labels') || '[]');
+                    } catch (error) {
+                        rawSeries = [];
+                        labels = [];
+                    }
+
+                    var series = rawSeries.map(function (value) {
+                        var number = Number(value);
+                        return Number.isFinite(number) ? number : 0;
+                    });
+
+                    if (series.length === 0) {
+                        holder.innerHTML = '';
+                        return;
+                    }
+
+                    var maxValue = Math.max.apply(null, series);
+                    var step = buyerChartNiceStep(maxValue / 4);
+                    var yMax = Math.max(step * 4, Math.ceil(maxValue / step) * step);
+                    if (!Number.isFinite(yMax) || yMax <= 0) {
+                        yMax = 400;
+                        step = 100;
+                    }
+
+                    holder.innerHTML = '';
+
+                    var chart = new ApexCharts(holder, {
+                        chart: {
+                            type: 'bar',
+                            height: 220,
+                            toolbar: { show: false },
+                            animations: { enabled: false },
+                            zoom: { enabled: false },
+                            parentHeightOffset: 0
+                        },
+                        series: [{
+                            name: 'PO',
+                            data: series
+                        }],
+                        colors: ['#f97316'],
+                        plotOptions: {
+                            bar: {
+                                columnWidth: '42%',
+                                borderRadius: 4,
+                                borderRadiusApplication: 'end'
+                            }
+                        },
+                        dataLabels: {
+                            enabled: false
+                        },
+                        fill: {
+                            opacity: 1
+                        },
+                        grid: {
+                            borderColor: '#d9e3f0',
+                            strokeDashArray: 4,
+                            xaxis: {
+                                lines: { show: false }
+                            },
+                            yaxis: {
+                                lines: { show: true }
+                            },
+                            padding: {
+                                left: 8,
+                                right: 12,
+                                top: 8,
+                                bottom: 0
+                            }
+                        },
+                        xaxis: {
+                            categories: labels,
+                            axisBorder: { show: false },
+                            axisTicks: { show: false },
+                            labels: {
+                                rotate: 0,
+                                style: {
+                                    colors: '#cbd5e1',
+                                    fontSize: '10px',
+                                    fontWeight: 700
+                                },
+                                formatter: function (value) {
+                                    return String(value || '').split(' ')[0];
+                                }
+                            }
+                        },
+                        yaxis: {
+                            min: 0,
+                            max: yMax,
+                            tickAmount: 4,
+                            forceNiceScale: true,
+                            labels: {
+                                style: {
+                                    colors: '#94a3b8',
+                                    fontSize: '11px',
+                                    fontWeight: 700
+                                },
+                                formatter: function (value) {
+                                    return Math.round(value);
+                                }
+                            }
+                        },
+                        tooltip: {
+                            theme: 'light',
+                            y: {
+                                formatter: function (value) {
+                                    return value + ' item';
+                                }
+                            }
+                        },
+                        legend: {
+                            show: false
+                        }
+                    });
+
+                    chart.render();
+                }
+
+                document.querySelectorAll('[data-buyer-po-chart]').forEach(function (element) {
+                    renderBuyerPOChart(element);
+                });
+
                 var sidebar = document.getElementById('app-sidebar');
                 var overlay = document.getElementById('sidebar-overlay');
                 var toggleButtons = document.querySelectorAll('[data-sidebar-toggle]');

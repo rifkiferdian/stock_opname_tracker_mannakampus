@@ -688,7 +688,7 @@ func (r *StockCheckSessionRepository) GetCheckerInputItems(sessionID int) ([]mod
 		item.QtyStoreBreakdownDisplay = formatStockCheckUnitBreakdown(item.QtyStoreCarton, item.QtyStoreBox, item.QtyStorePcs)
 		item.QtyWarehouseBreakdownDisplay = formatStockCheckUnitBreakdown(item.QtyWarehouseCarton, item.QtyWarehouseBox, item.QtyWarehousePcs)
 		item.ConversionDisplay = formatStockCheckConversion(item.PcsPerBox, item.BoxPerCarton, item.PcsPerCarton)
-		item.StatusLabel, _, _ = stockCheckSessionStatusMeta(item.Status)
+		item.StatusLabel, _ = stockCheckSessionItemStatusMeta(item.Status)
 		item.HasBarcode = strings.TrimSpace(item.Barcode) != ""
 
 		items = append(items, item)
@@ -1195,8 +1195,10 @@ func stockCheckSessionItemStatusMeta(status string) (string, string) {
 		return "Approved", "item-status-approved"
 	case "po_created":
 		return "PO Created", "item-status-po-created"
-	case "reviewed", "submitted":
-		return "Pending Review", "item-status-pending"
+	case "reviewed":
+		return "Reviewed", "item-status-pending"
+	case "submitted":
+		return "Submitted", "item-status-pending"
 	case "rejected":
 		return "Rejected", "item-status-rejected"
 	default:

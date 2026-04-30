@@ -86,7 +86,7 @@
                     <div class="inline-flex items-center gap-2 sm:gap-3 text-slate-600">
                         <div class="hidden text-right sm:block sm:text-left">
                             <div class="text-[13px] font-semibold text-slate-800" key="t-henry">{{ if .User }}{{ index .User "name" }}{{ end }}</div>
-                            <div class="text-[11px] text-slate-400">Super Admin</div>
+                            <div class="text-[11px] text-slate-400">{{ if .CurrentRole }}{{ .CurrentRole }}{{ else if .User }}{{ index .User "role" }}{{ else }}User{{ end }}</div>
                         </div>
                         <div class="inline-flex h-9 w-9 items-center justify-center rounded-full bg-brand-auth-500 text-sm font-semibold text-white sm:h-10 sm:w-10" style="background-color: #f97316;">
                             {{ if .Initials }}{{ .Initials }}{{ end }}
