@@ -985,8 +985,8 @@
                                             <td class="px-5 py-4 font-extrabold text-[#153e8a]">{{ .QtyStoreDisplay }}</td>
                                             <td class="px-5 py-4 font-extrabold text-[#153e8a]">{{ .QtyWarehouseDisplay }}</td>
                                             <td class="px-5 py-4 font-extrabold text-[#153e8a]">
-                                                <p>{{ .SuggestBuyCartonDisplay }}</p>
-                                                <p class="mt-1 text-xs font-semibold text-slate-400">{{ .SuggestBuyBreakdownDisplay }}</p>
+                                                <p>{{ .SuggestBuyCarton }}c - {{ .SuggestBuyBox }}b - {{ .SuggestBuyPcs }}p</p>
+                                                <p class="mt-1 text-xs font-semibold text-slate-400">Total {{ .SuggestBuyQtyDisplay }} pcs</p>
                                             </td>
                                             <td class="px-5 py-4">
                                                 <span class="item-status-badge px-3 py-1 text-[11px] {{ if eq .Status "submitted" }}item-status-badge-submitted{{ else if eq .StatusLabel "Unknown" }}item-status-badge-unknown{{ else }}item-status-badge-default{{ end }}">{{ .StatusLabel }}</span>

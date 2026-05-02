@@ -617,6 +617,9 @@ func (r *StockCheckSessionRepository) GetCheckerInputItems(sessionID int) ([]mod
 			COALESCE(si.qty_warehouse_pcs, 0) AS qty_warehouse_pcs,
 			COALESCE(si.qty_warehouse, 0) AS qty_warehouse,
 			COALESCE(si.total_qty, 0) AS total_qty,
+			COALESCE(si.suggest_buy_carton, 0) AS suggest_buy_carton,
+			COALESCE(si.suggest_buy_box, 0) AS suggest_buy_box,
+			COALESCE(si.suggest_buy_pcs, 0) AS suggest_buy_pcs,
 			COALESCE(si.suggest_buy_qty, 0) AS suggest_buy_qty,
 			COALESCE(si.status, 'draft') AS status
 		FROM stock_check_session_items si
@@ -661,6 +664,9 @@ func (r *StockCheckSessionRepository) GetCheckerInputItems(sessionID int) ([]mod
 			&item.QtyWarehousePcs,
 			&qtyWarehouse,
 			&totalQty,
+			&item.SuggestBuyCarton,
+			&item.SuggestBuyBox,
+			&item.SuggestBuyPcs,
 			&suggestQty,
 			&item.Status,
 		); err != nil {
@@ -684,7 +690,14 @@ func (r *StockCheckSessionRepository) GetCheckerInputItems(sessionID int) ([]mod
 		item.QtyWarehouseDisplay = formatStockCheckWholeNumber(item.QtyWarehouse)
 		item.TotalQtyDisplay = formatStockCheckWholeNumber(item.TotalQty)
 		item.SuggestBuyQtyDisplay = formatStockCheckWholeNumber(item.SuggestBuyQty)
-		item.SuggestBuyCarton, item.SuggestBuyBox, item.SuggestBuyPcs, item.SuggestBuyCartonDisplay, item.SuggestBuyBreakdownDisplay = formatStockCheckSuggestBreakdown(item.SuggestBuyQty, item.PcsPerBox, item.PcsPerCarton)
+		item.SuggestBuyCarton, item.SuggestBuyBox, item.SuggestBuyPcs, item.SuggestBuyCartonDisplay, item.SuggestBuyBreakdownDisplay = resolveStockCheckSuggestBreakdown(
+			item.SuggestBuyQty,
+			item.SuggestBuyCarton,
+			item.SuggestBuyBox,
+			item.SuggestBuyPcs,
+			item.PcsPerBox,
+			item.PcsPerCarton,
+		)
 		item.QtyStoreBreakdownDisplay = formatStockCheckUnitBreakdown(item.QtyStoreCarton, item.QtyStoreBox, item.QtyStorePcs)
 		item.QtyWarehouseBreakdownDisplay = formatStockCheckUnitBreakdown(item.QtyWarehouseCarton, item.QtyWarehouseBox, item.QtyWarehousePcs)
 		item.ConversionDisplay = formatStockCheckConversion(item.PcsPerBox, item.BoxPerCarton, item.PcsPerCarton)
@@ -862,10 +875,13 @@ func (r *StockCheckSessionRepository) UpdateCheckerItemSuggest(sessionID int, it
 	_, err = tx.Exec(`
 		UPDATE stock_check_session_items
 		SET
+			suggest_buy_carton = ?,
+			suggest_buy_box = ?,
+			suggest_buy_pcs = ?,
 			suggest_buy_qty = ?,
 			updated_by = ?
 		WHERE stock_check_session_id = ? AND id = ?
-	`, suggestQty, updatedBy, sessionID, itemID)
+	`, suggestCarton, suggestBox, suggestPcs, suggestQty, updatedBy, sessionID, itemID)
 	if err != nil {
 		return err
 	}
@@ -1165,7 +1181,7 @@ func formatStockCheckSuggestCarton(suggestQty float64, pcsPerCarton int) (int, s
 func formatStockCheckSuggestBreakdown(suggestQty float64, pcsPerBox int, pcsPerCarton int) (int, int, int, string, string) {
 	totalPcs := int(math.Round(suggestQty))
 	if totalPcs <= 0 {
-		return 0, 0, 0, "0 carton", "0 pcs"
+		return 0, 0, 0, "0 pcs", "0 pcs"
 	}
 
 	carton := 0
@@ -1181,12 +1197,26 @@ func formatStockCheckSuggestBreakdown(suggestQty float64, pcsPerBox int, pcsPerC
 		pcs = pcs % pcsPerBox
 	}
 
-	cartonDisplay := "0 carton"
-	if pcsPerCarton > 0 {
-		cartonDisplay = fmt.Sprintf("%d carton", carton)
+	return carton, box, pcs, formatStockCheckSuggestHeadline(carton, box, pcs), formatStockCheckUnitBreakdown(carton, box, pcs)
+}
+
+func resolveStockCheckSuggestBreakdown(suggestQty float64, suggestCarton int, suggestBox int, suggestPcs int, pcsPerBox int, pcsPerCarton int) (int, int, int, string, string) {
+	if suggestCarton == 0 && suggestBox == 0 && suggestPcs == 0 && suggestQty > 0 {
+		return formatStockCheckSuggestBreakdown(suggestQty, pcsPerBox, pcsPerCarton)
 	}
 
-	return carton, box, pcs, cartonDisplay, formatStockCheckUnitBreakdown(carton, box, pcs)
+	return suggestCarton, suggestBox, suggestPcs, formatStockCheckSuggestHeadline(suggestCarton, suggestBox, suggestPcs), formatStockCheckUnitBreakdown(suggestCarton, suggestBox, suggestPcs)
+}
+
+func formatStockCheckSuggestHeadline(carton int, box int, pcs int) string {
+	switch {
+	case carton > 0:
+		return fmt.Sprintf("%d carton", carton)
+	case box > 0:
+		return fmt.Sprintf("%d box", box)
+	default:
+		return fmt.Sprintf("%d pcs", pcs)
+	}
 }
 
 func stockCheckSessionItemStatusMeta(status string) (string, string) {

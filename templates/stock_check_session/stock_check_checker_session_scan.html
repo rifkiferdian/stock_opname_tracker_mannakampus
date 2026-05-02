@@ -437,6 +437,18 @@
                 gap: 0.75rem;
             }
 
+            .modal-qty-field {
+                display: flex;
+                flex-direction: column;
+            }
+
+            .modal-field-note {
+                margin-top: 0.35rem;
+                font-size: 0.72rem;
+                font-weight: 700;
+                color: #94a3b8;
+            }
+
             .modal-form label {
                 display: block;
                 font-size: 0.72rem;
@@ -734,9 +746,21 @@
                     <div>
                         <label>Suggest Qty</label>
                         <div class="modal-qty-grid">
-                            <input type="number" id="suggest_carton" name="suggest_carton" min="0" step="1" value="{{ .Item.SuggestBuyCarton }}" placeholder="Carton" required>
-                            <input type="number" id="suggest_box" name="suggest_box" min="0" step="1" value="{{ .Item.SuggestBuyBox }}" placeholder="Box">
-                            <input type="number" id="suggest_pcs" name="suggest_pcs" min="0" step="1" value="{{ .Item.SuggestBuyPcs }}" placeholder="Pcs">
+                            <div class="modal-qty-field">
+                                <label for="suggest_carton">Carton</label>
+                                <input type="number" id="suggest_carton" name="suggest_carton" min="0" step="1" value="{{ .Item.SuggestBuyCarton }}" placeholder="0" required>
+                                <p class="modal-field-note">Isi jumlah karton penuh.</p>
+                            </div>
+                            <div class="modal-qty-field">
+                                <label for="suggest_box">Box</label>
+                                <input type="number" id="suggest_box" name="suggest_box" min="0" step="1" value="{{ .Item.SuggestBuyBox }}" placeholder="0">
+                                <p class="modal-field-note">Isi sisa box di luar carton.</p>
+                            </div>
+                            <div class="modal-qty-field">
+                                <label for="suggest_pcs">Pcs</label>
+                                <input type="number" id="suggest_pcs" name="suggest_pcs" min="0" step="1" value="{{ .Item.SuggestBuyPcs }}" placeholder="0">
+                                <p class="modal-field-note">Isi sisa pcs satuan terkecil.</p>
+                            </div>
                         </div>
                         <p id="suggestModalHint" class="modal-hint">{{ .Item.ConversionDisplay }}</p>
                         <p class="modal-hint">Breakdown saat ini: {{ .Item.SuggestBuyBreakdownDisplay }}</p>

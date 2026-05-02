@@ -52,6 +52,9 @@ type StockOpnameReportHistoryPoint struct {
 	POCarton         int
 	POBox            int
 	POPcs            int
+	SuggestCarton    int
+	SuggestBox       int
+	SuggestPcs       int
 	SuggestBreakdown string
 }
 

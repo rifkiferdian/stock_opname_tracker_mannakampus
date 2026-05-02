@@ -29,6 +29,9 @@ type stockOpnameReportSnapshot struct {
 	QtyWarehouse       float64
 	SystemQtyStore     float64
 	SystemQtyWarehouse float64
+	SuggestCarton      int
+	SuggestBox         int
+	SuggestPcs         int
 	PurchaseQty        float64
 	SuggestQty         float64
 	ApprovedQty        float64
@@ -190,6 +193,9 @@ func buildStockOpnameReportRows(records []repositories.StockOpnameReportRecord, 
 		snapshot.ItemCount++
 		if snapshot.ItemID == 0 {
 			snapshot.ItemID = record.ItemID
+			snapshot.SuggestCarton = record.SuggestBuyCarton
+			snapshot.SuggestBox = record.SuggestBuyBox
+			snapshot.SuggestPcs = record.SuggestBuyPcs
 			snapshot.SuggestQty = record.SuggestBuyQty
 			snapshot.ApprovedQty = record.ApprovedBuyQty
 			snapshot.CheckerNotes = strings.TrimSpace(record.CheckerNotes)
@@ -234,7 +240,14 @@ func buildStockOpnameReportRows(records []repositories.StockOpnameReportRecord, 
 		aggregate.Current = current
 		currentShopBreakdown := reportFormatSnapshotUnitBreakdown(current.LatestSessionID > 0, current.QtyStoreCarton, current.QtyStoreBox, current.QtyStorePcs)
 		currentWHBreakdown := reportFormatSnapshotUnitBreakdown(current.LatestSessionID > 0, current.QtyWarehouseCarton, current.QtyWarehouseBox, current.QtyWarehousePcs)
-		currentSuggestCarton, currentSuggestBox, currentSuggestPcs, currentSuggestBreakdown := reportFormatSuggestBreakdown(current.SuggestQty, aggregate.PcsPerBox, aggregate.PcsPerCarton)
+		currentSuggestCarton, currentSuggestBox, currentSuggestPcs, currentSuggestBreakdown := reportResolveSuggestBreakdown(
+			current.SuggestQty,
+			current.SuggestCarton,
+			current.SuggestBox,
+			current.SuggestPcs,
+			aggregate.PcsPerBox,
+			aggregate.PcsPerCarton,
+		)
 		currentPOCarton, currentPOBox, currentPOPcs, currentPOBreakdown := reportFormatSuggestBreakdown(current.PurchaseQty, aggregate.PcsPerBox, aggregate.PcsPerCarton)
 
 		if current.QtyStore > 0 || current.QtyWarehouse > 0 || current.PurchaseQty > 0 || current.LatestSessionID > 0 {
@@ -302,6 +315,14 @@ func buildStockOpnameReportRows(records []repositories.StockOpnameReportRecord, 
 		for _, historyDate := range historyDates {
 			historyDateKey := historyDate.Format("2006-01-02")
 			history := aggregate.HistoryByDate[historyDateKey]
+			historySuggestCarton, historySuggestBox, historySuggestPcs, historySuggestBreakdown := reportResolveSuggestBreakdown(
+				history.SuggestQty,
+				history.SuggestCarton,
+				history.SuggestBox,
+				history.SuggestPcs,
+				aggregate.PcsPerBox,
+				aggregate.PcsPerCarton,
+			)
 			historyPOCarton, historyPOBox, historyPOPcs, historyPOBreakdown := reportFormatSuggestBreakdown(history.PurchaseQty, aggregate.PcsPerBox, aggregate.PcsPerCarton)
 			row.History = append(row.History, models.StockOpnameReportHistoryPoint{
 				DateLabel:        historyDate.Format("02 Jan 2006"),
@@ -320,7 +341,10 @@ func buildStockOpnameReportRows(records []repositories.StockOpnameReportRecord, 
 				POCarton:         historyPOCarton,
 				POBox:            historyPOBox,
 				POPcs:            historyPOPcs,
-				SuggestBreakdown: currentSuggestBreakdown,
+				SuggestCarton:    historySuggestCarton,
+				SuggestBox:       historySuggestBox,
+				SuggestPcs:       historySuggestPcs,
+				SuggestBreakdown: historySuggestBreakdown,
 			})
 		}
 
@@ -726,6 +750,14 @@ func reportFormatSuggestBreakdown(qty float64, pcsPerBox int, pcsPerCarton int) 
 	if pcsPerBox > 0 {
 		box = pcs / pcsPerBox
 		pcs = pcs % pcsPerBox
+	}
+
+	return carton, box, pcs, reportFormatUnitBreakdown(carton, box, pcs)
+}
+
+func reportResolveSuggestBreakdown(qty float64, carton int, box int, pcs int, pcsPerBox int, pcsPerCarton int) (int, int, int, string) {
+	if carton == 0 && box == 0 && pcs == 0 && qty > 0 {
+		return reportFormatSuggestBreakdown(qty, pcsPerBox, pcsPerCarton)
 	}
 
 	return carton, box, pcs, reportFormatUnitBreakdown(carton, box, pcs)
