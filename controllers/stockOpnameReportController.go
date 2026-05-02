@@ -88,6 +88,33 @@ func StockOpnameReportDetail(c *gin.Context) {
 	})
 }
 
+func StockOpnameReportApplyAllSubmitted(c *gin.Context) {
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil || id <= 0 {
+		c.String(http.StatusBadRequest, "invalid supplier id")
+		return
+	}
+
+	redirectTo := sanitizeRedirectTarget(c.PostForm("redirect_to"))
+	if redirectTo == "" {
+		redirectTo = fmt.Sprintf("/reports/stock-opname/%d", id)
+	}
+
+	service := buildStockCheckSessionService()
+	appliedCount, err := service.ApplyAllSubmittedLatestBySupplier(id, extractCurrentUserID(c))
+	if err != nil {
+		c.Redirect(http.StatusSeeOther, appendRedirectMessage(redirectTo, "error", err.Error()))
+		return
+	}
+
+	if appliedCount == 0 {
+		c.Redirect(http.StatusSeeOther, appendRedirectMessage(redirectTo, "success", "Tidak ada item submitted pada SO terbaru yang perlu di-apply"))
+		return
+	}
+
+	c.Redirect(http.StatusSeeOther, appendRedirectMessage(redirectTo, "success", fmt.Sprintf("%d item submitted pada SO terbaru berhasil di-apply", appliedCount)))
+}
+
 func buildStockOpnameReportService() *services.StockOpnameReportService {
 	repo := &repositories.StockOpnameReportRepository{DB: config.DB}
 	return &services.StockOpnameReportService{Repo: repo}

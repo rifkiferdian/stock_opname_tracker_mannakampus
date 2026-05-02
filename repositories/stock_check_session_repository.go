@@ -14,6 +14,14 @@ type StockCheckSessionRepository struct {
 	DB *sql.DB
 }
 
+type StockCheckLatestSubmittedItem struct {
+	SessionID      int
+	ItemID         int
+	SuggestBuyQty  float64
+	ApprovedBuyQty float64
+	BuyerNotes     string
+}
+
 func (r *StockCheckSessionRepository) GetAll(filter models.StockCheckSessionListFilter) ([]models.StockCheckSession, error) {
 	query, args := buildStockCheckSessionListQuery(filter, false)
 	query += " ORDER BY scs.session_date DESC, scs.id DESC LIMIT ? OFFSET ?"
@@ -548,6 +556,61 @@ func (r *StockCheckSessionRepository) UpdateReviewItem(input models.StockCheckSe
 
 	err = tx.Commit()
 	return err
+}
+
+func (r *StockCheckSessionRepository) GetLatestSubmittedItemsBySupplier(supplierID int) ([]StockCheckLatestSubmittedItem, error) {
+	rows, err := r.DB.Query(`
+		SELECT
+			si.stock_check_session_id,
+			si.id,
+			COALESCE(si.suggest_buy_qty, 0) AS suggest_buy_qty,
+			COALESCE(si.approved_buy_qty, 0) AS approved_buy_qty,
+			COALESCE(si.buyer_notes, '') AS buyer_notes
+		FROM stock_check_session_items si
+		INNER JOIN stock_check_sessions scs ON scs.id = si.stock_check_session_id
+		WHERE scs.supplier_id = ?
+			AND scs.session_date = (
+				SELECT MAX(scs_latest.session_date)
+				FROM stock_check_sessions scs_latest
+				WHERE scs_latest.supplier_id = ?
+			)
+			AND si.status = 'submitted'
+		ORDER BY scs.id DESC, si.id ASC
+	`, supplierID, supplierID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	items := make([]StockCheckLatestSubmittedItem, 0)
+	for rows.Next() {
+		var (
+			item           StockCheckLatestSubmittedItem
+			suggestBuyQty  sql.NullFloat64
+			approvedBuyQty sql.NullFloat64
+		)
+
+		if err := rows.Scan(
+			&item.SessionID,
+			&item.ItemID,
+			&suggestBuyQty,
+			&approvedBuyQty,
+			&item.BuyerNotes,
+		); err != nil {
+			return nil, err
+		}
+
+		if suggestBuyQty.Valid {
+			item.SuggestBuyQty = suggestBuyQty.Float64
+		}
+		if approvedBuyQty.Valid {
+			item.ApprovedBuyQty = approvedBuyQty.Float64
+		}
+
+		items = append(items, item)
+	}
+
+	return items, rows.Err()
 }
 
 func (r *StockCheckSessionRepository) DeleteByID(id int) error {

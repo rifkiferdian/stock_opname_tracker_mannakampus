@@ -64,6 +64,7 @@ type stockOpnameReportSummaryMetrics struct {
 	TotalSystemQty      float64
 	TotalActualQty      float64
 	PendingItems        int
+	SubmittedItems      int
 }
 
 type stockOpnamePOMonthlyTrend struct {
@@ -87,17 +88,18 @@ func (s *StockOpnameReportService) GetDetailPage(supplierID int, filter models.S
 	}
 
 	page := models.StockOpnameReportPage{
-		Filter:             filter,
-		CurrentStatusLabel: stockOpnameReportStatusFilterLabel(filter.Status),
-		ReviewListURL:      fmt.Sprintf("/stock-check-sessions?supplier_id=%d", supplierID),
-		CurrentDateLabel:   "-",
-		HistoryDateLabels:  []string{},
-		SummaryCards:       buildStockOpnameReportSummaryCards(stockOpnameReportSummaryMetrics{}, time.Time{}),
-		TrendBars:          buildStockOpnameReportTrendBars(time.Now(), map[string]int{}),
-		AuditFindings:      []models.StockOpnameReportAuditFinding{},
-		ReportRows:         []models.StockOpnameReportRow{},
-		LatestSessionCount: 0,
-		TotalRows:          0,
+		Filter:                 filter,
+		CurrentStatusLabel:     stockOpnameReportStatusFilterLabel(filter.Status),
+		ReviewListURL:          fmt.Sprintf("/stock-check-sessions?supplier_id=%d", supplierID),
+		CurrentDateLabel:       "-",
+		HistoryDateLabels:      []string{},
+		SummaryCards:           buildStockOpnameReportSummaryCards(stockOpnameReportSummaryMetrics{}, time.Time{}),
+		TrendBars:              buildStockOpnameReportTrendBars(time.Now(), map[string]int{}),
+		AuditFindings:          []models.StockOpnameReportAuditFinding{},
+		ReportRows:             []models.StockOpnameReportRow{},
+		LatestSessionCount:     0,
+		TotalRows:              0,
+		ApplyAllSubmittedCount: 0,
 	}
 
 	if len(sessionDates) == 0 {
@@ -145,6 +147,7 @@ func (s *StockOpnameReportService) GetDetailPage(supplierID int, filter models.S
 	page.SummaryCards = buildStockOpnameReportSummaryCards(summaryMetrics, currentDate)
 	page.LatestSessionCount = summaryMetrics.TotalSessionCount
 	page.TotalRows = len(rows)
+	page.ApplyAllSubmittedCount = summaryMetrics.SubmittedItems
 
 	anchorDate := currentDate
 	monthlyCounts, err := s.Repo.GetMonthlyApprovalCounts(supplierID, time.Date(anchorDate.Year(), anchorDate.Month(), 1, 0, 0, 0, 0, anchorDate.Location()).AddDate(0, -11, 0))
@@ -228,6 +231,9 @@ func buildStockOpnameReportRows(records []repositories.StockOpnameReportRecord, 
 			metrics.TotalActualQty += record.QtyStore + record.QtyWarehouse
 			if stockOpnameIsPending(record.Status) {
 				metrics.PendingItems++
+			}
+			if record.Status == "submitted" {
+				metrics.SubmittedItems++
 			}
 		}
 	}

@@ -7,20 +7,21 @@ type StockOpnameReportFilter struct {
 }
 
 type StockOpnameReportPage struct {
-	Filter             StockOpnameReportFilter
-	StatusOptions      []StockOpnameReportStatusOption
-	CurrentStatusLabel string
-	CurrentDateLabel   string
-	HistoryDateLabels  []string
-	SummaryCards       []StockOpnameReportSummaryCard
-	ReportRows         []StockOpnameReportRow
-	TrendBars          []StockOpnameReportTrendBar
-	AuditFindings      []StockOpnameReportAuditFinding
-	Pagination         Pagination
-	TotalRows          int
-	LatestSessionCount int
-	ReviewListURL      string
-	ExportURL          string
+	Filter                 StockOpnameReportFilter
+	StatusOptions          []StockOpnameReportStatusOption
+	CurrentStatusLabel     string
+	CurrentDateLabel       string
+	HistoryDateLabels      []string
+	SummaryCards           []StockOpnameReportSummaryCard
+	ReportRows             []StockOpnameReportRow
+	TrendBars              []StockOpnameReportTrendBar
+	AuditFindings          []StockOpnameReportAuditFinding
+	Pagination             Pagination
+	TotalRows              int
+	LatestSessionCount     int
+	ApplyAllSubmittedCount int
+	ReviewListURL          string
+	ExportURL              string
 }
 
 type StockOpnameReportStatusOption struct {

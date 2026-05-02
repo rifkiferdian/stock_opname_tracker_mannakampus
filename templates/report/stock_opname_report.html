@@ -92,7 +92,8 @@
             }
 
             .link-button,
-            .filter-button {
+            .filter-button,
+            .toolbar-button {
                 display: inline-flex;
                 align-items: center;
                 justify-content: center;
@@ -108,8 +109,23 @@
             }
 
             .link-button:hover,
-            .filter-button:hover {
+            .filter-button:hover,
+            .toolbar-button:hover {
                 background: #edf3ff;
+            }
+
+            .toolbar-button {
+                cursor: pointer;
+            }
+
+            .toolbar-button.success {
+                border-color: #c9e8d5;
+                background: #edf9f1;
+                color: #1e8a59;
+            }
+
+            .toolbar-button.success:hover {
+                background: #def4e5;
             }
 
             .summary-grid {
@@ -226,8 +242,8 @@
                 border-collapse: collapse;
             }
 
-            .report-table th:first-child,
-            .report-table td:first-child {
+            .report-table > thead > tr > th:first-child,
+            .report-table > tbody > tr > td:first-child {
                 position: sticky;
                 left: 0;
                 z-index: 3;
@@ -252,7 +268,7 @@
                 white-space: nowrap;
             }
 
-            .report-table thead th:first-child {
+            .report-table > thead > tr > th:first-child {
                 z-index: 5;
                 background: #fbfcff;
                 box-shadow: 12px 0 18px -18px rgba(15, 23, 42, 0.28);
@@ -262,7 +278,7 @@
                 background: #fafcff;
             }
 
-            .report-table tbody tr:hover td:first-child {
+            .report-table tbody tr:hover > td:first-child {
                 background: #fafcff;
             }
 
@@ -317,24 +333,65 @@
             .status-box {
                 display: flex;
                 flex-direction: column;
-                gap: 0.4rem;
-                min-width: 7.4rem;
+                align-items: center;
+                gap: 0.3rem;
                 border-radius: 0.95rem;
                 background: #f6f8fc;
-                padding: 0.6rem;
+                padding: 0.45rem;
             }
 
-            .status-grid {
-                display: grid;
-                grid-template-columns: repeat(3, minmax(0, 1fr));
-                gap: 0.25rem;
-                align-items: start;
-            }
-
-            .status-metric {
+            .status-mini-table {
+                width: auto;
                 min-width: 0;
-                padding: 0.05rem 0.1rem;
+                border-collapse: collapse;
+                font-size: 0.56rem;
+                color: #18315f;
+            }
+
+            .status-mini-table th,
+            .status-mini-table td {
+                min-width: 0 !important;
+                padding: 0.14rem 0.22rem;
                 text-align: center;
+                white-space: nowrap;
+            }
+
+            .status-mini-table thead th {
+                font-size: 0.45rem;
+                font-weight: 800;
+                letter-spacing: 0.04em;
+                text-transform: uppercase;
+                color: #8a99b0;
+            }
+
+            .status-mini-table thead th:first-child,
+            .status-mini-table tbody th {
+                text-align: left;
+            }
+
+            .status-mini-table tbody th {
+                font-size: 0.52rem;
+                font-weight: 800;
+                color: #334768;
+            }
+
+            .status-mini-table tbody td {
+                font-weight: 700;
+            }
+
+            .status-mini-table tbody tr + tr th,
+            .status-mini-table tbody tr + tr td {
+                border-top: 1px solid rgba(148, 163, 184, 0.16);
+            }
+
+            .status-mini-table tbody tr.history-po-row th,
+            .status-mini-table tbody tr.history-po-row td {
+                font-size: 0.68rem;
+                font-weight: 800;
+            }
+
+            .status-mini-table tbody tr.history-po-row td {
+                color: #d97706;
             }
 
             .status-metric span,
@@ -377,12 +434,40 @@
                 width: fit-content;
                 align-items: center;
                 border-radius: 999px;
-                padding: 0.22rem 0.45rem;
-                font-size: 0.52rem;
+                padding: 0.3rem 0.58rem;
+                font-size: 0.6rem;
                 font-weight: 800;
                 letter-spacing: 0.04em;
                 text-transform: uppercase;
                 white-space: nowrap;
+            }
+
+            .status-pill {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                border-radius: 999px;
+                padding: 0.38rem 0.75rem;
+                font-size: 0.62rem;
+                font-weight: 800;
+                letter-spacing: 0.08em;
+                text-transform: uppercase;
+                white-space: nowrap;
+            }
+
+            .status-pill.stable {
+                background: #edf9f1;
+                color: #1e8a59;
+            }
+
+            .status-pill.input {
+                background: #edf3ff;
+                color: #204184;
+            }
+
+            .status-pill.low {
+                background: #fff1f1;
+                color: #d14343;
             }
 
             .status-box.stable {
@@ -401,7 +486,8 @@
                 display: flex;
                 flex-direction: column;
                 gap: 0.4rem;
-                min-width: 5.8rem;
+                align-items: center;
+                min-width: 0;
             }
 
             .history-grid {
@@ -832,6 +918,16 @@
                                 </div>
 
                                 <div class="report-toolbar">
+                                    {{ if gt .Report.ApplyAllSubmittedCount 0 }}
+                                    <form method="post" action="/reports/stock-opname/{{ .Supplier.ID }}/apply-all-submitted" class="filter-form" onsubmit="return confirm('Apply semua item submitted di SO terbaru dengan nilai suggest checker?');">
+                                        <input type="hidden" name="redirect_to" value="" data-report-redirect>
+                                        <button type="submit" class="toolbar-button success">
+                                            <i class="bx bx-check-double"></i>
+                                            <span>Apply All Submitted ({{ .Report.ApplyAllSubmittedCount }})</span>
+                                        </button>
+                                    </form>
+                                    {{ end }}
+
                                     <form method="get" action="/reports/stock-opname/{{ .Supplier.ID }}" class="filter-form">
                                         <select name="status" class="filter-select">
                                             <option value="">Semua status</option>
@@ -857,6 +953,7 @@
                                     <thead>
                                         <tr>
                                             <th>Produk</th>
+                                            <th>Status</th>
                                             <th>SO Terbaru <br>({{ .Report.CurrentDateLabel }})</th>
                                             <th>PO / Bulan</th>
                                             {{ range .Report.HistoryDateLabels }}
@@ -879,28 +976,9 @@
                                                 </div>
                                             </td>
                                             <td>
-                                                <div class="status-box {{ .StatusTone }}">
-                                                    <center>
-                                                    <div class="status-grid">
-                                                        <div class="status-metric">
-                                                            <span>Toko</span>
-                                                            <div class="compact-unit-lines">
-                                                                <p><b>{{ .CurrentShopCarton }}</b>c <br> <b>{{ .CurrentShopBox }}</b>b <br> <b>{{ .CurrentShopPcs }}</b>p</p>
-                                                            </div>
-                                                        </div>
-                                                        <div class="status-metric">
-                                                            <span>Gud</span>
-                                                            <div class="compact-unit-lines">
-                                                                <p><b>{{ .CurrentWHCarton }}</b>c <br> <b>{{ .CurrentWHBox }}</b>b <br> <b>{{ .CurrentWHPcs }}</b>p</p>
-                                                            </div>
-                                                        </div>
-                                                        <div class="status-metric">
-                                                            <span>Suggest</span>
-                                                            <div class="compact-unit-lines">
-                                                                <p><b>{{ .CurrentSuggestCarton }}</b>c <br> <b>{{ .CurrentSuggestBox }}</b>b <br> <b>{{ .CurrentSuggestPcs }}</b>p</p>
-                                                            </div>
-                                                        </div>
-                                                    </div>
+                                                <center>
+                                                    <span class="status-pill {{ .StatusTone }}">{{ .CurrentStatus }}</span>
+                                                    <br><br>
                                                     {{ if .CanInlineApprove }}
                                                     <button
                                                         type="button"
@@ -922,7 +1000,40 @@
                                                     {{ else }}
                                                     <span class="history-pill">PO : {{ .CurrentPOCarton }}c</span>
                                                     {{ end }}
-                                                    </center>
+                                                </center>
+                                            </td>
+                                            <td>
+                                                <div class="status-box {{ .StatusTone }}">
+                                                    <table class="status-mini-table">
+                                                        <thead>
+                                                            <tr>
+                                                                <td>&nbsp;</td>
+                                                                <td>Carton</td>
+                                                                <td>Box</td>
+                                                                <td>Pcs</td>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            <tr>
+                                                                <td style="min-width: 0rem;">Toko</td>
+                                                                <td style="min-width: 0rem;">{{ .CurrentShopCarton }}</td>
+                                                                <td style="min-width: 0rem;">{{ .CurrentShopBox }}</td>
+                                                                <td style="min-width: 0rem;">{{ .CurrentShopPcs }}</td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td style="min-width: 0rem;">Gudang</td>
+                                                                <td style="min-width: 0rem;">{{ .CurrentWHCarton }}</td>
+                                                                <td style="min-width: 0rem;">{{ .CurrentWHBox }}</td>
+                                                                <td style="min-width: 0rem;">{{ .CurrentWHPcs }}</td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td style="min-width: 0rem;">Suggest</td>
+                                                                <td style="min-width: 0rem;">{{ .CurrentSuggestCarton }}</td>
+                                                                <td style="min-width: 0rem;">{{ .CurrentSuggestBox }}</td>
+                                                                <td style="min-width: 0rem;">{{ .CurrentSuggestPcs }}</td>
+                                                            </tr>
+                                                        </tbody>
+                                                    </table>
                                                 </div>
                                             </td>
                                             <td class="po-trend-cell">
@@ -943,21 +1054,34 @@
                                             <td>
                                                 <div class="history-box">
                                                     <center>
-                                                    <div class="history-grid">
-                                                        <div class="history-metric">
-                                                            <span>Toko</span>
-                                                            <div class="compact-unit-lines">
-                                                                <p><b>{{ .ShopCarton }}</b>c <br> <b>{{ .ShopBox }}</b>b <br> <b>{{ .ShopPcs }}</b>p</p>
-                                                            </div>
-                                                        </div>
-                                                        <div class="history-metric">
-                                                            <span>Gudang</span>
-                                                            <div class="compact-unit-lines">
-                                                                <p><b>{{ .WHSCarton }}</b>c <br> <b>{{ .WHSBox }}</b>b <br> <b>{{ .WHSPcs }}</b>p</p>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <span class="history-pill">PO : {{ .POCarton }}c</span>
+                                                    <table class="status-mini-table">
+                                                        <thead>
+                                                            <tr>
+                                                                <th>&nbsp;</th>
+                                                                <th>Carton</th>
+                                                                <th>Box</th>
+                                                                <th>Pcs</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            <tr>
+                                                                <th>Toko</th>
+                                                                <td>{{ .ShopCarton }}</td>
+                                                                <td>{{ .ShopBox }}</td>
+                                                                <td>{{ .ShopPcs }}</td>
+                                                            </tr>
+                                                            <tr>
+                                                                <th>Gudang</th>
+                                                                <td>{{ .WHSCarton }}</td>
+                                                                <td>{{ .WHSBox }}</td>
+                                                                <td>{{ .WHSPcs }}</td>
+                                                            </tr>
+                                                            <tr class="history-po-row">
+                                                                <th>PO</th>
+                                                                <td>{{ .POCarton }}</td>
+                                                            </tr>
+                                                        </tbody>
+                                                    </table>
                                                     </center>
                                                 </div>
                                             </td>
@@ -1163,6 +1287,10 @@
 
                         openModal(reviewModalEl);
                     });
+                });
+
+                document.querySelectorAll('[data-report-redirect]').forEach(function (input) {
+                    input.value = window.location.pathname + window.location.search;
                 });
 
                 document.querySelectorAll('[data-po-trend]').forEach(function (element) {
