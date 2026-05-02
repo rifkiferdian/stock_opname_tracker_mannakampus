@@ -53,12 +53,12 @@ func StockOpnameReportDetail(c *gin.Context) {
 		return
 	}
 
-	categoryID, _ := strconv.Atoi(c.DefaultQuery("category_id", "0"))
+	status := c.Query("status")
 	reportService := buildStockOpnameReportService()
 
 	if c.Query("export") == "csv" {
 		exportPage, err := reportService.GetDetailPage(id, models.StockOpnameReportFilter{
-			CategoryID: categoryID,
+			Status: status,
 		})
 		if err != nil {
 			c.String(http.StatusInternalServerError, err.Error())
@@ -69,7 +69,7 @@ func StockOpnameReportDetail(c *gin.Context) {
 	}
 
 	reportPage, err := reportService.GetDetailPage(id, models.StockOpnameReportFilter{
-		CategoryID: categoryID,
+		Status: status,
 	})
 	if err != nil {
 		c.String(http.StatusInternalServerError, err.Error())
@@ -77,7 +77,6 @@ func StockOpnameReportDetail(c *gin.Context) {
 	}
 
 	reportPage.ExportURL = buildStockOpnameReportExportURL(id, reportPage.Filter)
-	reportPage.CurrentCategoryLabel = findStockOpnameReportCategoryLabel(reportPage.Categories, reportPage.Filter.CategoryID)
 
 	Render(c, "stock_opname_report.html", gin.H{
 		"Title":    "Laporan Stock Opname",
@@ -289,23 +288,9 @@ func buildStockOpnameReportPageURL(filter models.SupplierListFilter, page int) s
 
 func buildStockOpnameReportExportURL(supplierID int, filter models.StockOpnameReportFilter) string {
 	values := url.Values{}
-	if filter.CategoryID > 0 {
-		values.Set("category_id", strconv.Itoa(filter.CategoryID))
+	if filter.Status != "" {
+		values.Set("status", filter.Status)
 	}
 	values.Set("export", "csv")
 	return fmt.Sprintf("/reports/stock-opname/%d?%s", supplierID, values.Encode())
-}
-
-func findStockOpnameReportCategoryLabel(categories []models.ProductCategory, categoryID int) string {
-	if categoryID <= 0 {
-		return "Semua kategori"
-	}
-
-	for _, category := range categories {
-		if category.ID == categoryID {
-			return category.CategoryName
-		}
-	}
-
-	return "Kategori terpilih"
 }

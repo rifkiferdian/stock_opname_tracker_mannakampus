@@ -3,7 +3,6 @@ package repositories
 import (
 	"database/sql"
 	"fmt"
-	"gobase-app/models"
 	"strings"
 	"time"
 )
@@ -21,9 +20,18 @@ type StockOpnameReportRecord struct {
 	Brand               string
 	CategoryName        string
 	DefaultLeadTimeDays int
+	PcsPerBox           int
+	BoxPerCarton        int
+	PcsPerCarton        int
 	SessionID           int
 	SessionDate         time.Time
+	QtyStoreCarton      int
+	QtyStoreBox         int
+	QtyStorePcs         int
 	QtyStore            float64
+	QtyWarehouseCarton  int
+	QtyWarehouseBox     int
+	QtyWarehousePcs     int
 	QtyWarehouse        float64
 	SystemQtyStore      float64
 	SystemQtyWarehouse  float64
@@ -41,25 +49,15 @@ type StockOpnameProductMonthlyPORecord struct {
 	POQty     float64
 }
 
-func (r *StockOpnameReportRepository) GetDistinctSessionDates(supplierID int, categoryID int, limit int) ([]time.Time, error) {
+func (r *StockOpnameReportRepository) GetDistinctSessionDates(supplierID int, limit int) ([]time.Time, error) {
 	query := `
 		SELECT DISTINCT scs.session_date
 		FROM stock_check_sessions scs
 	`
 	args := []interface{}{supplierID}
-	if categoryID > 0 {
-		query += `
-		INNER JOIN stock_check_session_items si ON si.stock_check_session_id = scs.id
-		INNER JOIN products p ON p.id = si.product_id
-		`
-	}
 	query += `
 		WHERE scs.supplier_id = ?
 	`
-	if categoryID > 0 {
-		query += " AND p.category_id = ?"
-		args = append(args, categoryID)
-	}
 	query += `
 		ORDER BY scs.session_date DESC
 		LIMIT ?
@@ -86,62 +84,49 @@ func (r *StockOpnameReportRepository) GetDistinctSessionDates(supplierID int, ca
 	return dates, rows.Err()
 }
 
-func (r *StockOpnameReportRepository) GetCategoryOptions(supplierID int) ([]models.ProductCategory, error) {
+func (r *StockOpnameReportRepository) GetStatusOptions(supplierID int, currentDate time.Time) ([]string, error) {
 	rows, err := r.DB.Query(`
-		SELECT DISTINCT pc.id, pc.category_name
+		SELECT DISTINCT COALESCE(si.status, '') AS status
 		FROM stock_check_session_items si
 		INNER JOIN stock_check_sessions scs ON scs.id = si.stock_check_session_id
-		INNER JOIN products p ON p.id = si.product_id
-		INNER JOIN product_categories pc ON pc.id = p.category_id
 		WHERE scs.supplier_id = ?
-		ORDER BY pc.category_name ASC
-	`, supplierID)
+			AND scs.session_date = ?
+			AND COALESCE(si.status, '') <> ''
+		ORDER BY status ASC
+	`, supplierID, currentDate.Format("2006-01-02"))
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
-	categories := make([]models.ProductCategory, 0)
+	statuses := make([]string, 0)
 	for rows.Next() {
-		var category models.ProductCategory
-		if err := rows.Scan(&category.ID, &category.CategoryName); err != nil {
+		var status string
+		if err := rows.Scan(&status); err != nil {
 			return nil, err
 		}
-		categories = append(categories, category)
+		statuses = append(statuses, status)
 	}
 
-	return categories, rows.Err()
+	return statuses, rows.Err()
 }
 
-func (r *StockOpnameReportRepository) CountSessions(supplierID int, categoryID int) (int, error) {
+func (r *StockOpnameReportRepository) CountSessions(supplierID int) (int, error) {
 	query := `
 		SELECT COUNT(DISTINCT scs.id)
 		FROM stock_check_sessions scs
 	`
 	args := []interface{}{supplierID}
-
-	if categoryID > 0 {
-		query += `
-		INNER JOIN stock_check_session_items si ON si.stock_check_session_id = scs.id
-		INNER JOIN products p ON p.id = si.product_id
-		`
-	}
-
 	query += `
 		WHERE scs.supplier_id = ?
 	`
-
-	if categoryID > 0 {
-		query += " AND p.category_id = ?"
-		args = append(args, categoryID)
-	}
 
 	var total int
 	err := r.DB.QueryRow(query, args...).Scan(&total)
 	return total, err
 }
 
-func (r *StockOpnameReportRepository) GetReportRecords(supplierID int, categoryID int, dates []time.Time) ([]StockOpnameReportRecord, error) {
+func (r *StockOpnameReportRepository) GetReportRecords(supplierID int, status string, currentDate time.Time, dates []time.Time) ([]StockOpnameReportRecord, error) {
 	if len(dates) == 0 {
 		return []StockOpnameReportRecord{}, nil
 	}
@@ -164,9 +149,18 @@ func (r *StockOpnameReportRepository) GetReportRecords(supplierID int, categoryI
 			COALESCE(p.brand, '') AS brand,
 			COALESCE(pc.category_name, 'Tanpa Kategori') AS category_name,
 			COALESCE(p.default_lead_time_days, 0) AS default_lead_time_days,
+			COALESCE(p.pcs_per_box, 0) AS pcs_per_box,
+			COALESCE(p.box_per_carton, 0) AS box_per_carton,
+			COALESCE(p.pcs_per_carton, 0) AS pcs_per_carton,
 			scs.id AS session_id,
 			scs.session_date,
+			COALESCE(si.qty_store_carton, 0) AS qty_store_carton,
+			COALESCE(si.qty_store_box, 0) AS qty_store_box,
+			COALESCE(si.qty_store_pcs, 0) AS qty_store_pcs,
 			COALESCE(si.qty_store, 0) AS qty_store,
+			COALESCE(si.qty_warehouse_carton, 0) AS qty_warehouse_carton,
+			COALESCE(si.qty_warehouse_box, 0) AS qty_warehouse_box,
+			COALESCE(si.qty_warehouse_pcs, 0) AS qty_warehouse_pcs,
 			COALESCE(si.qty_warehouse, 0) AS qty_warehouse,
 			COALESCE(si.system_qty_store, 0) AS system_qty_store,
 			COALESCE(si.system_qty_warehouse, 0) AS system_qty_warehouse,
@@ -184,9 +178,27 @@ func (r *StockOpnameReportRepository) GetReportRecords(supplierID int, categoryI
 			AND scs.session_date IN (%s)
 	`, strings.Join(placeholders, ","))
 
-	if categoryID > 0 {
-		query += " AND p.category_id = ?"
-		args = append(args, categoryID)
+	if strings.TrimSpace(status) != "" {
+		query += `
+			AND EXISTS (
+				SELECT 1
+				FROM stock_check_session_items si_current
+				INNER JOIN stock_check_sessions scs_current ON scs_current.id = si_current.stock_check_session_id
+				WHERE scs_current.supplier_id = ?
+					AND scs_current.session_date = ?
+					AND si_current.product_id = p.id
+					AND si_current.status = ?
+					AND scs_current.id = (
+						SELECT MAX(scs_latest.id)
+						FROM stock_check_session_items si_latest
+						INNER JOIN stock_check_sessions scs_latest ON scs_latest.id = si_latest.stock_check_session_id
+						WHERE scs_latest.supplier_id = scs_current.supplier_id
+							AND scs_latest.session_date = scs_current.session_date
+							AND si_latest.product_id = si_current.product_id
+					)
+			)
+		`
+		args = append(args, supplierID, currentDate.Format("2006-01-02"), status)
 	}
 
 	query += `
@@ -225,9 +237,18 @@ func (r *StockOpnameReportRepository) GetReportRecords(supplierID int, categoryI
 			&record.Brand,
 			&record.CategoryName,
 			&record.DefaultLeadTimeDays,
+			&record.PcsPerBox,
+			&record.BoxPerCarton,
+			&record.PcsPerCarton,
 			&record.SessionID,
 			&sessionDate,
+			&record.QtyStoreCarton,
+			&record.QtyStoreBox,
+			&record.QtyStorePcs,
 			&qtyStore,
+			&record.QtyWarehouseCarton,
+			&record.QtyWarehouseBox,
+			&record.QtyWarehousePcs,
 			&qtyWarehouse,
 			&systemQtyStore,
 			&systemQtyWarehouse,
@@ -270,7 +291,7 @@ func (r *StockOpnameReportRepository) GetReportRecords(supplierID int, categoryI
 }
 
 func (r *StockOpnameReportRepository) GetMonthlyApprovalCounts(supplierID int, fromDate time.Time) (map[string]int, error) {
-	rows, err := r.DB.Query(`
+	query := `
 		SELECT
 			DATE_FORMAT(scs.session_date, '%Y-%m') AS month_key,
 			COALESCE(SUM(CASE WHEN si.status IN ('approved', 'po_created') THEN 1 ELSE 0 END), 0) AS approval_count
@@ -278,9 +299,13 @@ func (r *StockOpnameReportRepository) GetMonthlyApprovalCounts(supplierID int, f
 		LEFT JOIN stock_check_session_items si ON si.stock_check_session_id = scs.id
 		WHERE scs.supplier_id = ?
 			AND scs.session_date >= ?
+	`
+	args := []interface{}{supplierID, fromDate.Format("2006-01-02")}
+	query += `
 		GROUP BY DATE_FORMAT(scs.session_date, '%Y-%m')
 		ORDER BY month_key ASC
-	`, supplierID, fromDate.Format("2006-01-02"))
+	`
+	rows, err := r.DB.Query(query, args...)
 	if err != nil {
 		return nil, err
 	}
@@ -299,7 +324,7 @@ func (r *StockOpnameReportRepository) GetMonthlyApprovalCounts(supplierID int, f
 	return counts, rows.Err()
 }
 
-func (r *StockOpnameReportRepository) GetProductMonthlyPORecords(supplierID int, categoryID int, fromDate time.Time) ([]StockOpnameProductMonthlyPORecord, error) {
+func (r *StockOpnameReportRepository) GetProductMonthlyPORecords(supplierID int, status string, currentDate time.Time, fromDate time.Time) ([]StockOpnameProductMonthlyPORecord, error) {
 	query := `
 		SELECT
 			si.product_id,
@@ -313,15 +338,32 @@ func (r *StockOpnameReportRepository) GetProductMonthlyPORecords(supplierID int,
 			), 0) AS po_qty
 		FROM stock_check_sessions scs
 		INNER JOIN stock_check_session_items si ON si.stock_check_session_id = scs.id
-		INNER JOIN products p ON p.id = si.product_id
 		WHERE scs.supplier_id = ?
 			AND scs.session_date >= ?
 	`
 	args := []interface{}{supplierID, fromDate.Format("2006-01-02")}
 
-	if categoryID > 0 {
-		query += " AND p.category_id = ?"
-		args = append(args, categoryID)
+	if strings.TrimSpace(status) != "" {
+		query += `
+			AND EXISTS (
+				SELECT 1
+				FROM stock_check_session_items si_current
+				INNER JOIN stock_check_sessions scs_current ON scs_current.id = si_current.stock_check_session_id
+				WHERE scs_current.supplier_id = ?
+					AND scs_current.session_date = ?
+					AND si_current.product_id = si.product_id
+					AND si_current.status = ?
+					AND scs_current.id = (
+						SELECT MAX(scs_latest.id)
+						FROM stock_check_session_items si_latest
+						INNER JOIN stock_check_sessions scs_latest ON scs_latest.id = si_latest.stock_check_session_id
+						WHERE scs_latest.supplier_id = scs_current.supplier_id
+							AND scs_latest.session_date = scs_current.session_date
+							AND si_latest.product_id = si_current.product_id
+					)
+			)
+		`
+		args = append(args, supplierID, currentDate.Format("2006-01-02"), status)
 	}
 
 	query += `

@@ -19,7 +19,13 @@ type StockOpnameReportService struct {
 
 type stockOpnameReportSnapshot struct {
 	ItemID             int
+	QtyStoreCarton     int
+	QtyStoreBox        int
+	QtyStorePcs        int
 	QtyStore           float64
+	QtyWarehouseCarton int
+	QtyWarehouseBox    int
+	QtyWarehousePcs    int
 	QtyWarehouse       float64
 	SystemQtyStore     float64
 	SystemQtyWarehouse float64
@@ -42,6 +48,9 @@ type stockOpnameReportAggregation struct {
 	Brand               string
 	CategoryName        string
 	DefaultLeadTimeDays int
+	PcsPerBox           int
+	BoxPerCarton        int
+	PcsPerCarton        int
 	Current             stockOpnameReportSnapshot
 	HistoryByDate       map[string]stockOpnameReportSnapshot
 }
@@ -64,24 +73,19 @@ func (s *StockOpnameReportService) GetDetailPage(supplierID int, filter models.S
 		return models.StockOpnameReportPage{}, errors.New("supplier id tidak valid")
 	}
 
-	categories, err := s.Repo.GetCategoryOptions(supplierID)
+	totalSessions, err := s.Repo.CountSessions(supplierID)
 	if err != nil {
 		return models.StockOpnameReportPage{}, err
 	}
 
-	totalSessions, err := s.Repo.CountSessions(supplierID, filter.CategoryID)
-	if err != nil {
-		return models.StockOpnameReportPage{}, err
-	}
-
-	sessionDates, err := s.Repo.GetDistinctSessionDates(supplierID, filter.CategoryID, 13)
+	sessionDates, err := s.Repo.GetDistinctSessionDates(supplierID, 13)
 	if err != nil {
 		return models.StockOpnameReportPage{}, err
 	}
 
 	page := models.StockOpnameReportPage{
 		Filter:             filter,
-		Categories:         categories,
+		CurrentStatusLabel: stockOpnameReportStatusFilterLabel(filter.Status),
 		ReviewListURL:      fmt.Sprintf("/stock-check-sessions?supplier_id=%d", supplierID),
 		CurrentDateLabel:   "-",
 		HistoryDateLabels:  []string{},
@@ -98,6 +102,16 @@ func (s *StockOpnameReportService) GetDetailPage(supplierID int, filter models.S
 	}
 
 	currentDate := sessionDates[0]
+	statuses, err := s.Repo.GetStatusOptions(supplierID, currentDate)
+	if err != nil {
+		return models.StockOpnameReportPage{}, err
+	}
+	statusOptions := buildStockOpnameReportStatusOptions(statuses)
+	filter.Status = normalizeStockOpnameReportStatusFilter(filter.Status, statusOptions)
+	page.Filter = filter
+	page.StatusOptions = statusOptions
+	page.CurrentStatusLabel = stockOpnameReportStatusFilterLabel(filter.Status)
+
 	historyDates := []time.Time{}
 	historyDepth := 0
 	if len(sessionDates) > 1 {
@@ -111,13 +125,13 @@ func (s *StockOpnameReportService) GetDetailPage(supplierID int, filter models.S
 		page.HistoryDateLabels = append(page.HistoryDateLabels, sessionDates[index].Format("02 Jan 2006"))
 	}
 
-	records, err := s.Repo.GetReportRecords(supplierID, filter.CategoryID, sessionDates)
+	records, err := s.Repo.GetReportRecords(supplierID, filter.Status, currentDate, sessionDates)
 	if err != nil {
 		return models.StockOpnameReportPage{}, err
 	}
 
 	poTrendStart := time.Date(currentDate.Year(), currentDate.Month(), 1, 0, 0, 0, 0, currentDate.Location()).AddDate(0, -5, 0)
-	poMonthlyRecords, err := s.Repo.GetProductMonthlyPORecords(supplierID, filter.CategoryID, poTrendStart)
+	poMonthlyRecords, err := s.Repo.GetProductMonthlyPORecords(supplierID, filter.Status, currentDate, poTrendStart)
 	if err != nil {
 		return models.StockOpnameReportPage{}, err
 	}
@@ -163,6 +177,9 @@ func buildStockOpnameReportRows(records []repositories.StockOpnameReportRecord, 
 				Brand:               record.Brand,
 				CategoryName:        reportDefaultText(record.CategoryName, "Tanpa Kategori"),
 				DefaultLeadTimeDays: record.DefaultLeadTimeDays,
+				PcsPerBox:           record.PcsPerBox,
+				BoxPerCarton:        record.BoxPerCarton,
+				PcsPerCarton:        record.PcsPerCarton,
 				HistoryByDate:       map[string]stockOpnameReportSnapshot{},
 			}
 			productMap[record.ProductID] = aggregate
@@ -178,7 +195,13 @@ func buildStockOpnameReportRows(records []repositories.StockOpnameReportRecord, 
 			snapshot.CheckerNotes = strings.TrimSpace(record.CheckerNotes)
 			snapshot.BuyerNotes = strings.TrimSpace(record.BuyerNotes)
 		}
+		snapshot.QtyStoreCarton += record.QtyStoreCarton
+		snapshot.QtyStoreBox += record.QtyStoreBox
+		snapshot.QtyStorePcs += record.QtyStorePcs
 		snapshot.QtyStore += record.QtyStore
+		snapshot.QtyWarehouseCarton += record.QtyWarehouseCarton
+		snapshot.QtyWarehouseBox += record.QtyWarehouseBox
+		snapshot.QtyWarehousePcs += record.QtyWarehousePcs
 		snapshot.QtyWarehouse += record.QtyWarehouse
 		snapshot.SystemQtyStore += record.SystemQtyStore
 		snapshot.SystemQtyWarehouse += record.SystemQtyWarehouse
@@ -209,35 +232,55 @@ func buildStockOpnameReportRows(records []repositories.StockOpnameReportRecord, 
 	for _, aggregate := range productMap {
 		current := aggregate.HistoryByDate[currentDateKey]
 		aggregate.Current = current
+		currentShopBreakdown := reportFormatSnapshotUnitBreakdown(current.LatestSessionID > 0, current.QtyStoreCarton, current.QtyStoreBox, current.QtyStorePcs)
+		currentWHBreakdown := reportFormatSnapshotUnitBreakdown(current.LatestSessionID > 0, current.QtyWarehouseCarton, current.QtyWarehouseBox, current.QtyWarehousePcs)
+		currentSuggestCarton, currentSuggestBox, currentSuggestPcs, currentSuggestBreakdown := reportFormatSuggestBreakdown(current.SuggestQty, aggregate.PcsPerBox, aggregate.PcsPerCarton)
+		currentPOCarton, currentPOBox, currentPOPcs, currentPOBreakdown := reportFormatSuggestBreakdown(current.PurchaseQty, aggregate.PcsPerBox, aggregate.PcsPerCarton)
 
 		if current.QtyStore > 0 || current.QtyWarehouse > 0 || current.PurchaseQty > 0 || current.LatestSessionID > 0 {
 			metrics.CurrentProductCount++
 		}
 		row := models.StockOpnameReportRow{
-			ProductID:          aggregate.ProductID,
-			Name:               aggregate.ProductName,
-			SKU:                aggregate.ProductCode,
-			Barcode:            reportDefaultText(aggregate.Barcode, "-"),
-			Brand:              reportDefaultText(aggregate.Brand, "-"),
-			CategoryName:       aggregate.CategoryName,
-			LeadTimeLabel:      fmt.Sprintf("%d hari", aggregate.DefaultLeadTimeDays),
-			AvatarText:         stockOpnameReportInitials(aggregate.ProductName),
-			AvatarClass:        stockOpnameReportAvatarClass(aggregate.ProductName),
-			CurrentShop:        reportFormatSnapshotWholeNumber(current.LatestSessionID > 0, current.QtyStore),
-			CurrentWH:          reportFormatSnapshotWholeNumber(current.LatestSessionID > 0, current.QtyWarehouse),
-			CurrentPO:          reportFormatSnapshotWholeNumber(current.LatestSessionID > 0, current.PurchaseQty),
-			CurrentStatus:      stockOpnameReportStatusLabel(current.Status),
-			StatusTone:         stockOpnameReportStatusTone(current.Status),
-			CurrentSessionID:   current.LatestSessionID,
-			CurrentItemID:      current.ItemID,
-			CurrentSuggestQty:  reportFormatSnapshotWholeNumber(current.ItemID > 0, current.SuggestQty),
-			CurrentCheckerNote: reportDefaultText(current.CheckerNotes, "-"),
-			CurrentBuyerNotes:  current.BuyerNotes,
-			CurrentApproveSeed: stockOpnameReportApproveSeed(current),
-			CanInlineApprove:   current.ItemCount == 1 && current.ItemID > 0 && current.LatestSessionID > 0,
-			ActionLabel:        "Lihat Sesi",
-			LatestSessionID:    current.LatestSessionID,
-			LatestSessionDate:  currentDate.Format("02 Jan 2006"),
+			ProductID:               aggregate.ProductID,
+			Name:                    aggregate.ProductName,
+			SKU:                     aggregate.ProductCode,
+			Barcode:                 reportDefaultText(aggregate.Barcode, "-"),
+			Brand:                   reportDefaultText(aggregate.Brand, "-"),
+			CategoryName:            aggregate.CategoryName,
+			LeadTimeLabel:           fmt.Sprintf("%d hari", aggregate.DefaultLeadTimeDays),
+			AvatarText:              stockOpnameReportInitials(aggregate.ProductName),
+			AvatarClass:             stockOpnameReportAvatarClass(aggregate.ProductName),
+			CurrentShop:             reportFormatSnapshotWholeNumber(current.LatestSessionID > 0, current.QtyStore),
+			CurrentShopBreakdown:    currentShopBreakdown,
+			CurrentShopCarton:       current.QtyStoreCarton,
+			CurrentShopBox:          current.QtyStoreBox,
+			CurrentShopPcs:          current.QtyStorePcs,
+			CurrentWH:               reportFormatSnapshotWholeNumber(current.LatestSessionID > 0, current.QtyWarehouse),
+			CurrentWHBreakdown:      currentWHBreakdown,
+			CurrentWHCarton:         current.QtyWarehouseCarton,
+			CurrentWHBox:            current.QtyWarehouseBox,
+			CurrentWHPcs:            current.QtyWarehousePcs,
+			CurrentPO:               reportFormatSnapshotWholeNumber(current.LatestSessionID > 0, current.PurchaseQty),
+			CurrentPOBreakdown:      currentPOBreakdown,
+			CurrentPOCarton:         currentPOCarton,
+			CurrentPOBox:            currentPOBox,
+			CurrentPOPcs:            currentPOPcs,
+			CurrentStatus:           stockOpnameReportStatusLabel(current.Status),
+			StatusTone:              stockOpnameReportStatusTone(current.Status),
+			CurrentSessionID:        current.LatestSessionID,
+			CurrentItemID:           current.ItemID,
+			CurrentSuggestQty:       reportFormatSnapshotWholeNumber(current.ItemID > 0, current.SuggestQty),
+			CurrentSuggestBreakdown: currentSuggestBreakdown,
+			CurrentSuggestCarton:    currentSuggestCarton,
+			CurrentSuggestBox:       currentSuggestBox,
+			CurrentSuggestPcs:       currentSuggestPcs,
+			CurrentCheckerNote:      reportDefaultText(current.CheckerNotes, "-"),
+			CurrentBuyerNotes:       current.BuyerNotes,
+			CurrentApproveSeed:      stockOpnameReportApproveSeed(current),
+			CanInlineApprove:        current.ItemCount == 1 && current.ItemID > 0 && current.LatestSessionID > 0,
+			ActionLabel:             "Lihat Sesi",
+			LatestSessionID:         current.LatestSessionID,
+			LatestSessionDate:       currentDate.Format("02 Jan 2006"),
 		}
 		if current.LatestSessionID > 0 {
 			row.ActionURL = fmt.Sprintf("/stock-check-sessions/%d", current.LatestSessionID)
@@ -259,11 +302,25 @@ func buildStockOpnameReportRows(records []repositories.StockOpnameReportRecord, 
 		for _, historyDate := range historyDates {
 			historyDateKey := historyDate.Format("2006-01-02")
 			history := aggregate.HistoryByDate[historyDateKey]
+			historyPOCarton, historyPOBox, historyPOPcs, historyPOBreakdown := reportFormatSuggestBreakdown(history.PurchaseQty, aggregate.PcsPerBox, aggregate.PcsPerCarton)
 			row.History = append(row.History, models.StockOpnameReportHistoryPoint{
-				DateLabel: historyDate.Format("02 Jan 2006"),
-				ShopCount: reportFormatSnapshotWholeNumber(history.LatestSessionID > 0, history.QtyStore),
-				WHSCount:  reportFormatSnapshotWholeNumber(history.LatestSessionID > 0, history.QtyWarehouse),
-				POCount:   reportFormatSnapshotWholeNumber(history.LatestSessionID > 0, history.PurchaseQty),
+				DateLabel:        historyDate.Format("02 Jan 2006"),
+				ShopCount:        reportFormatSnapshotWholeNumber(history.LatestSessionID > 0, history.QtyStore),
+				ShopBreakdown:    reportFormatSnapshotUnitBreakdown(history.LatestSessionID > 0, history.QtyStoreCarton, history.QtyStoreBox, history.QtyStorePcs),
+				ShopCarton:       history.QtyStoreCarton,
+				ShopBox:          history.QtyStoreBox,
+				ShopPcs:          history.QtyStorePcs,
+				WHSCount:         reportFormatSnapshotWholeNumber(history.LatestSessionID > 0, history.QtyWarehouse),
+				WHSBreakdown:     reportFormatSnapshotUnitBreakdown(history.LatestSessionID > 0, history.QtyWarehouseCarton, history.QtyWarehouseBox, history.QtyWarehousePcs),
+				WHSCarton:        history.QtyWarehouseCarton,
+				WHSBox:           history.QtyWarehouseBox,
+				WHSPcs:           history.QtyWarehousePcs,
+				POCount:          reportFormatSnapshotWholeNumber(history.LatestSessionID > 0, history.PurchaseQty),
+				POBreakdown:      historyPOBreakdown,
+				POCarton:         historyPOCarton,
+				POBox:            historyPOBox,
+				POPcs:            historyPOPcs,
+				SuggestBreakdown: currentSuggestBreakdown,
 			})
 		}
 
@@ -497,6 +554,82 @@ func stockOpnameReportStatusTone(status string) string {
 	}
 }
 
+func buildStockOpnameReportStatusOptions(statuses []string) []models.StockOpnameReportStatusOption {
+	baseOrder := []string{"draft", "submitted", "reviewed", "approved", "po_created", "rejected", "closed", "cancelled"}
+	allowed := make(map[string]bool, len(statuses))
+	for _, status := range statuses {
+		status = strings.TrimSpace(status)
+		if status == "" {
+			continue
+		}
+		allowed[status] = true
+	}
+
+	options := make([]models.StockOpnameReportStatusOption, 0, len(allowed))
+	for _, status := range baseOrder {
+		if !allowed[status] {
+			continue
+		}
+		options = append(options, models.StockOpnameReportStatusOption{
+			Value: status,
+			Label: stockOpnameReportStatusFilterLabel(status),
+		})
+		delete(allowed, status)
+	}
+
+	if len(allowed) > 0 {
+		extra := make([]string, 0, len(allowed))
+		for status := range allowed {
+			extra = append(extra, status)
+		}
+		sort.Strings(extra)
+		for _, status := range extra {
+			options = append(options, models.StockOpnameReportStatusOption{
+				Value: status,
+				Label: stockOpnameReportStatusFilterLabel(status),
+			})
+		}
+	}
+
+	return options
+}
+
+func normalizeStockOpnameReportStatusFilter(status string, options []models.StockOpnameReportStatusOption) string {
+	status = strings.TrimSpace(status)
+	if status == "" {
+		return ""
+	}
+	for _, option := range options {
+		if option.Value == status {
+			return status
+		}
+	}
+	return ""
+}
+
+func stockOpnameReportStatusFilterLabel(status string) string {
+	switch strings.TrimSpace(status) {
+	case "draft":
+		return "Draft"
+	case "submitted":
+		return "Submitted"
+	case "reviewed":
+		return "Reviewed"
+	case "approved":
+		return "Approved"
+	case "po_created":
+		return "PO Created"
+	case "rejected":
+		return "Rejected"
+	case "closed":
+		return "Closed"
+	case "cancelled":
+		return "Cancelled"
+	default:
+		return "Semua status"
+	}
+}
+
 func stockOpnameReportInitials(name string) string {
 	parts := strings.Fields(strings.TrimSpace(name))
 	if len(parts) == 0 {
@@ -555,6 +688,47 @@ func reportFormatSnapshotWholeNumber(exists bool, value float64) string {
 		return "-"
 	}
 	return reportFormatWholeNumber(value)
+}
+
+func reportFormatSnapshotUnitBreakdown(exists bool, carton int, box int, pcs int) string {
+	if !exists {
+		return "-"
+	}
+	return reportFormatUnitBreakdown(carton, box, pcs)
+}
+
+func reportFormatSnapshotSuggestBreakdown(exists bool, qty float64, pcsPerBox int, pcsPerCarton int) string {
+	if !exists {
+		return "-"
+	}
+	_, _, _, breakdown := reportFormatSuggestBreakdown(qty, pcsPerBox, pcsPerCarton)
+	return breakdown
+}
+
+func reportFormatUnitBreakdown(carton int, box int, pcs int) string {
+	return fmt.Sprintf("%d ctn %d box %d pcs", carton, box, pcs)
+}
+
+func reportFormatSuggestBreakdown(qty float64, pcsPerBox int, pcsPerCarton int) (int, int, int, string) {
+	totalPcs := int(math.Round(qty))
+	if totalPcs <= 0 {
+		return 0, 0, 0, "0 pcs"
+	}
+
+	carton := 0
+	box := 0
+	pcs := totalPcs
+
+	if pcsPerCarton > 0 {
+		carton = pcs / pcsPerCarton
+		pcs = pcs % pcsPerCarton
+	}
+	if pcsPerBox > 0 {
+		box = pcs / pcsPerBox
+		pcs = pcs % pcsPerBox
+	}
+
+	return carton, box, pcs, reportFormatUnitBreakdown(carton, box, pcs)
 }
 
 func mustMarshalStockOpnameReportJSON(value interface{}) string {

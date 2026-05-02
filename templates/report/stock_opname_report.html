@@ -317,32 +317,32 @@
             .status-box {
                 display: flex;
                 flex-direction: column;
-                gap: 0.55rem;
-                min-width: 8rem;
+                gap: 0.4rem;
+                min-width: 7.4rem;
                 border-radius: 0.95rem;
                 background: #f6f8fc;
-                padding: 0.75rem;
+                padding: 0.6rem;
             }
 
             .status-grid {
                 display: grid;
                 grid-template-columns: repeat(3, minmax(0, 1fr));
-                gap: 0.35rem;
+                gap: 0.25rem;
                 align-items: start;
             }
 
             .status-metric {
                 min-width: 0;
-                padding: 0.1rem 0.15rem;
+                padding: 0.05rem 0.1rem;
                 text-align: center;
             }
 
             .status-metric span,
             .history-metric span {
                 display: block;
-                font-size: 0.55rem;
+                font-size: 0.48rem;
                 font-weight: 800;
-                letter-spacing: 0.1em;
+                letter-spacing: 0.08em;
                 text-transform: uppercase;
                 color: #8a99b0;
             }
@@ -350,10 +350,26 @@
             .status-metric strong,
             .history-metric strong {
                 display: block;
-                margin-top: 0.12rem;
-                font-size: 0.8rem;
-                font-weight: 800;
+                margin-top: 0.08rem;
+                font-size: 0.6rem;
+                font-weight: 700;
+                line-height: 1.2;
+                white-space: nowrap;
                 color: #18315f;
+            }
+
+            .compact-unit-lines p {
+                margin-top: 0.08rem;
+                font-size: 0.6rem;
+                font-weight: 600;
+                line-height: 1.15;
+                white-space: nowrap;
+                color: #5f6f88;
+            }
+
+            .compact-unit-lines b {
+                color: #d35400;
+                font-weight: 800;
             }
 
             .history-pill {
@@ -361,11 +377,12 @@
                 width: fit-content;
                 align-items: center;
                 border-radius: 999px;
-                padding: 0.28rem 0.58rem;
-                font-size: 0.6rem;
+                padding: 0.22rem 0.45rem;
+                font-size: 0.52rem;
                 font-weight: 800;
-                letter-spacing: 0.05em;
+                letter-spacing: 0.04em;
                 text-transform: uppercase;
+                white-space: nowrap;
             }
 
             .status-box.stable {
@@ -383,14 +400,14 @@
             .history-box {
                 display: flex;
                 flex-direction: column;
-                gap: 0.55rem;
-                min-width: 6.2rem;
+                gap: 0.4rem;
+                min-width: 5.8rem;
             }
 
             .history-grid {
                 display: grid;
                 grid-template-columns: repeat(2, minmax(0, 1fr));
-                gap: 0.45rem;
+                gap: 0.3rem;
             }
 
             .history-pill {
@@ -765,7 +782,7 @@
                                     <span>{{ .Supplier.SupplierCode }}</span>
                                     <span>PIC: {{ if .Supplier.PICName }}{{ .Supplier.PICName }}{{ else }}-{{ end }}</span>
                                     <span>Telepon: {{ if .Supplier.Phone }}{{ .Supplier.Phone }}{{ else }}-{{ end }}</span>
-                                    <span>Kategori: {{ .Report.CurrentCategoryLabel }}</span>
+                                    <span>Status SO: {{ .Report.CurrentStatusLabel }}</span>
                                 </div>
                             </div>
 
@@ -816,10 +833,10 @@
 
                                 <div class="report-toolbar">
                                     <form method="get" action="/reports/stock-opname/{{ .Supplier.ID }}" class="filter-form">
-                                        <select name="category_id" class="filter-select">
-                                            <option value="0">Semua kategori</option>
-                                            {{ range .Report.Categories }}
-                                            <option value="{{ .ID }}" {{ if eq $.Report.Filter.CategoryID .ID }}selected{{ end }}>{{ .CategoryName }}</option>
+                                        <select name="status" class="filter-select">
+                                            <option value="">Semua status</option>
+                                            {{ range .Report.StatusOptions }}
+                                            <option value="{{ .Value }}" {{ if eq $.Report.Filter.Status .Value }}selected{{ end }}>{{ .Label }}</option>
                                             {{ end }}
                                         </select>
                                         <button type="submit" class="filter-button">
@@ -855,9 +872,9 @@
                                                     <span class="item-avatar {{ .AvatarClass }}">{{ .AvatarText }}</span>
                                                     <div class="min-w-0">
                                                         <p class="item-name">{{ .Name }}</p>
-                                                        <p class="item-meta">SKU: {{ .SKU }}</p>
+                                                        <p class="item-meta">SKU: <strong class="font-extrabold text-slate-700">{{ .SKU }}</strong></p>
                                                         <p class="item-meta">Barcode: {{ .Barcode }}</p>
-                                                        <p class="item-meta">{{ .CategoryName }} • Lead time {{ .LeadTimeLabel }}</p>
+                                                        <p class="item-meta">Lead time {{ .LeadTimeLabel }}</p>
                                                     </div>
                                                 </div>
                                             </td>
@@ -867,15 +884,21 @@
                                                     <div class="status-grid">
                                                         <div class="status-metric">
                                                             <span>Toko</span>
-                                                            <strong>{{ .CurrentShop }}</strong>
+                                                            <div class="compact-unit-lines">
+                                                                <p><b>{{ .CurrentShopCarton }}</b>c <br> <b>{{ .CurrentShopBox }}</b>b <br> <b>{{ .CurrentShopPcs }}</b>p</p>
+                                                            </div>
                                                         </div>
                                                         <div class="status-metric">
                                                             <span>Gud</span>
-                                                            <strong>{{ .CurrentWH }}</strong>
+                                                            <div class="compact-unit-lines">
+                                                                <p><b>{{ .CurrentWHCarton }}</b>c <br> <b>{{ .CurrentWHBox }}</b>b <br> <b>{{ .CurrentWHPcs }}</b>p</p>
+                                                            </div>
                                                         </div>
                                                         <div class="status-metric">
                                                             <span>Suggest</span>
-                                                            <strong>{{ .CurrentSuggestQty }}</strong>
+                                                            <div class="compact-unit-lines">
+                                                                <p><b>{{ .CurrentSuggestCarton }}</b>c <br> <b>{{ .CurrentSuggestBox }}</b>b <br> <b>{{ .CurrentSuggestPcs }}</b>p</p>
+                                                            </div>
                                                         </div>
                                                     </div>
                                                     {{ if .CanInlineApprove }}
@@ -890,14 +913,14 @@
                                                         data-checker-notes="{{ .CurrentCheckerNote }}"
                                                         data-suggest-buy-qty="{{ .CurrentSuggestQty }}"
                                                     >
-                                                        PO : {{ .CurrentPO }}
+                                                        PO : {{ .CurrentPOCarton }}c
                                                     </button>
                                                     {{ else if .ActionURL }}
                                                     <a href="{{ .ActionURL }}" class="history-pill history-pill-action">
-                                                        PO : {{ .CurrentPO }}
+                                                        PO : {{ .CurrentPOCarton }}c
                                                     </a>
                                                     {{ else }}
-                                                    <span class="history-pill">PO : {{ .CurrentPO }}</span>
+                                                    <span class="history-pill">PO : {{ .CurrentPOCarton }}c</span>
                                                     {{ end }}
                                                     </center>
                                                 </div>
@@ -923,14 +946,18 @@
                                                     <div class="history-grid">
                                                         <div class="history-metric">
                                                             <span>Toko</span>
-                                                            <strong>{{ .ShopCount }}</strong>
+                                                            <div class="compact-unit-lines">
+                                                                <p><b>{{ .ShopCarton }}</b>c <br> <b>{{ .ShopBox }}</b>b <br> <b>{{ .ShopPcs }}</b>p</p>
+                                                            </div>
                                                         </div>
                                                         <div class="history-metric">
                                                             <span>Gudang</span>
-                                                            <strong>{{ .WHSCount }}</strong>
+                                                            <div class="compact-unit-lines">
+                                                                <p><b>{{ .WHSCarton }}</b>c <br> <b>{{ .WHSBox }}</b>b <br> <b>{{ .WHSPcs }}</b>p</p>
+                                                            </div>
                                                         </div>
                                                     </div>
-                                                    <span class="history-pill">PO : {{ .POCount }}</span>
+                                                    <span class="history-pill">PO : {{ .POCarton }}c</span>
                                                     </center>
                                                 </div>
                                             </td>
