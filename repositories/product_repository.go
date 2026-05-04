@@ -170,30 +170,6 @@ func (r *ProductRepository) GetSuppliers() ([]models.ProductSupplierOption, erro
 	return suppliers, rows.Err()
 }
 
-func (r *ProductRepository) GetBrands() ([]string, error) {
-	rows, err := r.DB.Query(`
-		SELECT DISTINCT brand
-		FROM products
-		WHERE brand IS NOT NULL AND brand <> ''
-		ORDER BY brand ASC
-	`)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	var brands []string
-	for rows.Next() {
-		var brand string
-		if err := rows.Scan(&brand); err != nil {
-			return nil, err
-		}
-		brands = append(brands, brand)
-	}
-
-	return brands, rows.Err()
-}
-
 func (r *ProductRepository) GetByID(id int) (models.ProductDetail, error) {
 	row := r.DB.QueryRow(`
 		SELECT
@@ -845,19 +821,11 @@ func buildProductListQuery(filter models.ProductListFilter, countOnly bool) (str
 		conditions = append(conditions, `(LOWER(p.product_code) LIKE ? OR LOWER(COALESCE(p.barcode, '')) LIKE ? OR LOWER(COALESCE(p.barcode_box, '')) LIKE ? OR LOWER(COALESCE(p.barcode_carton, '')) LIKE ? OR LOWER(p.product_name) LIKE ? OR LOWER(COALESCE(p.brand, '')) LIKE ?)`)
 		args = append(args, keyword, keyword, keyword, keyword, keyword, keyword)
 	}
-	if filter.CategoryID > 0 {
-		conditions = append(conditions, "p.category_id = ?")
-		args = append(args, filter.CategoryID)
-	}
 	switch filter.Status {
 	case "active":
 		conditions = append(conditions, "p.is_active = 1")
 	case "inactive":
 		conditions = append(conditions, "p.is_active = 0")
-	}
-	if filter.Brand != "" {
-		conditions = append(conditions, "LOWER(COALESCE(p.brand, '')) = ?")
-		args = append(args, strings.ToLower(filter.Brand))
 	}
 
 	if len(conditions) > 0 {

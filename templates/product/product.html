@@ -88,24 +88,10 @@
                                     <input type="text" name="search" value="{{ .Filters.Search }}" class="w-full rounded-md border border-slate-200 bg-slate-50 py-3 pl-10 pr-4 text-sm font-semibold text-slate-600 outline-none transition focus:border-brand-500 focus:bg-white" placeholder="Cari SKU, barcode, atau nama produk...">
                                 </label>
 
-                                <select name="category_id" class="rounded-md border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-extrabold text-[#1e2b42] outline-none transition focus:border-brand-500 focus:bg-white">
-                                    <option value="0">Kategori: Semua</option>
-                                    {{ range .Categories }}
-                                    <option value="{{ .ID }}" {{ if eq $.Filters.CategoryID .ID }}selected{{ end }}>{{ .CategoryName }}</option>
-                                    {{ end }}
-                                </select>
-
                                 <select name="status" class="rounded-md border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-extrabold text-[#1e2b42] outline-none transition focus:border-brand-500 focus:bg-white">
                                     <option value="">Status: Semua</option>
                                     <option value="active" {{ if eq .Filters.Status "active" }}selected{{ end }}>Aktif</option>
                                     <option value="inactive" {{ if eq .Filters.Status "inactive" }}selected{{ end }}>Nonaktif</option>
-                                </select>
-
-                                <select name="brand" class="rounded-md border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-extrabold text-[#1e2b42] outline-none transition focus:border-brand-500 focus:bg-white">
-                                    <option value="">Merek: Semua</option>
-                                    {{ range .Brands }}
-                                    <option value="{{ . }}" {{ if eq $.Filters.Brand . }}selected{{ end }}>{{ . }}</option>
-                                    {{ end }}
                                 </select>
 
                                 <select name="sort" class="rounded-md border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-extrabold text-[#1e2b42] outline-none transition focus:border-brand-500 focus:bg-white">
@@ -120,7 +106,7 @@
                                         <i class="bx bx-filter-alt text-base"></i>
                                         Terapkan
                                     </button>
-                                    {{ if or .Filters.Search (gt .Filters.CategoryID 0) .Filters.Status .Filters.Brand (ne .Filters.Sort "recent") }}
+                                    {{ if or .Filters.Search .Filters.Status (ne .Filters.Sort "recent") }}
                                     <a href="/products" class="inline-flex items-center justify-center gap-2 rounded-md bg-slate-50 px-5 py-3 text-sm font-extrabold text-[#566173] transition hover:bg-slate-100">
                                         <i class="bx bx-reset text-base"></i>
                                         Reset
@@ -138,9 +124,10 @@
 
                         <section class="overflow-hidden rounded-lg bg-white shadow-sm">
                             <div class="overflow-x-auto">
-                                <table class="w-full text-sm" style="min-width: 980px;">
+                                <table class="w-full text-sm" style="min-width: 1030px;">
                                     <thead class="bg-slate-100 text-[10px] font-extrabold uppercase text-[#001e62]">
                                         <tr>
+                                            <th class="px-3 py-2.5 text-left">No</th>
                                             <th class="px-3 py-2.5 text-left">Detail Produk</th>
                                             <th class="px-3 py-2.5 text-left">SKU</th>
                                             <th class="px-3 py-2.5 text-left">Barcode</th>
@@ -152,6 +139,9 @@
                                     <tbody class="divide-y divide-slate-100">
                                         {{ range $product := .products }}
                                         <tr class="hover:bg-slate-50/70">
+                                            <td class="px-3 py-2 align-top">
+                                                <p class="text-[11px] font-extrabold text-[#566173]">{{ $product.RowNumber }}</p>
+                                            </td>
                                             <td class="px-3 py-2">
                                                 <div class="flex items-center gap-2.5">
                                                     <span class="inline-flex h-9 w-9 flex-none items-center justify-center overflow-hidden rounded-md bg-[#eef3ff] text-[10px] font-extrabold uppercase text-[#001e62]">
@@ -226,7 +216,7 @@
                                         </tr>
                                         {{ else }}
                                         <tr>
-                                            <td colspan="6" class="px-5 py-10 text-center text-sm font-semibold text-[#566173]">
+                                            <td colspan="7" class="px-5 py-10 text-center text-sm font-semibold text-[#566173]">
                                                 {{ if $.Filters.Search }}
                                                     Tidak ada produk yang cocok dengan pencarian "{{ $.Filters.Search }}"
                                                 {{ else }}
@@ -246,7 +236,7 @@
                                     {{ else }}
                                         Menampilkan 0 data
                                     {{ end }}
-                                    {{ if or .Filters.Search (gt .Filters.CategoryID 0) .Filters.Status .Filters.Brand (ne .Filters.Sort "recent") }} dengan filter aktif{{ end }}
+                                    {{ if or .Filters.Search .Filters.Status (ne .Filters.Sort "recent") }} dengan filter aktif{{ end }}
                                 </p>
                                 <div class="flex items-center gap-2">
                                     {{ if .Pagination.HasPrev }}

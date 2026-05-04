@@ -17,16 +17,13 @@ import (
 func ProductIndex(c *gin.Context) {
 	productService := buildProductService()
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
-	categoryID, _ := strconv.Atoi(c.DefaultQuery("category_id", "0"))
 
 	renderProductPage(c, productService, "", models.ProductListFilter{
-		Search:     c.Query("search"),
-		CategoryID: categoryID,
-		Status:     c.Query("status"),
-		Brand:      c.Query("brand"),
-		Sort:       c.DefaultQuery("sort", "recent"),
-		Page:       page,
-		Limit:      10,
+		Search: c.Query("search"),
+		Status: c.Query("status"),
+		Sort:   c.DefaultQuery("sort", "recent"),
+		Page:   page,
+		Limit:  150,
 	})
 }
 
@@ -68,7 +65,7 @@ func ProductStore(c *gin.Context) {
 	productService := buildProductService()
 
 	if err := c.ShouldBind(&form); err != nil {
-		renderProductPage(c, productService, "Form produk tidak lengkap", models.ProductListFilter{Sort: "recent", Page: 1, Limit: 10})
+		renderProductPage(c, productService, "Form produk tidak lengkap", models.ProductListFilter{Sort: "recent", Page: 1, Limit: 150})
 		return
 	}
 
@@ -94,7 +91,7 @@ func ProductStore(c *gin.Context) {
 		LastPrice:           form.LastPrice,
 	})
 	if err != nil {
-		renderProductPage(c, productService, err.Error(), models.ProductListFilter{Sort: "recent", Page: 1, Limit: 10})
+		renderProductPage(c, productService, err.Error(), models.ProductListFilter{Sort: "recent", Page: 1, Limit: 150})
 		return
 	}
 
@@ -129,7 +126,7 @@ func ProductUpdate(c *gin.Context) {
 	productService := buildProductService()
 
 	if err := c.ShouldBind(&form); err != nil {
-		renderProductPage(c, productService, "Form produk tidak lengkap", models.ProductListFilter{Sort: "recent", Page: 1, Limit: 10})
+		renderProductPage(c, productService, "Form produk tidak lengkap", models.ProductListFilter{Sort: "recent", Page: 1, Limit: 150})
 		return
 	}
 
@@ -156,7 +153,7 @@ func ProductUpdate(c *gin.Context) {
 		LastPrice:           form.LastPrice,
 	})
 	if err != nil {
-		renderProductPage(c, productService, err.Error(), models.ProductListFilter{Sort: "recent", Page: 1, Limit: 10})
+		renderProductPage(c, productService, err.Error(), models.ProductListFilter{Sort: "recent", Page: 1, Limit: 150})
 		return
 	}
 
@@ -172,7 +169,7 @@ func ProductDelete(c *gin.Context) {
 
 	productService := buildProductService()
 	if err := productService.DeleteProduct(id); err != nil {
-		renderProductPage(c, productService, err.Error(), models.ProductListFilter{Sort: "recent", Page: 1, Limit: 10})
+		renderProductPage(c, productService, err.Error(), models.ProductListFilter{Sort: "recent", Page: 1, Limit: 150})
 		return
 	}
 
@@ -189,7 +186,7 @@ func renderProductPage(c *gin.Context, productService *services.ProductService, 
 		filter.Page = 1
 	}
 	if filter.Limit <= 0 {
-		filter.Limit = 10
+		filter.Limit = 150
 	}
 
 	products, totalItems, err := productService.GetProducts(filter)
@@ -222,13 +219,10 @@ func renderProductPage(c *gin.Context, productService *services.ProductService, 
 		return
 	}
 
-	brands, err := productService.GetBrands()
-	if err != nil {
-		c.String(http.StatusInternalServerError, err.Error())
-		return
-	}
-
 	pagination := buildProductPagination(filter, totalItems)
+	for i := range products {
+		products[i].RowNumber = pagination.StartItem + i
+	}
 
 	Render(c, "product.html", gin.H{
 		"Title":      "Master Inventaris Produk",
@@ -238,7 +232,6 @@ func renderProductPage(c *gin.Context, productService *services.ProductService, 
 		"Categories": categories,
 		"Units":      units,
 		"Suppliers":  suppliers,
-		"Brands":     brands,
 		"Filters":    filter,
 		"Pagination": pagination,
 		"Error":      message,
@@ -292,7 +285,7 @@ func buildProductPagination(filter models.ProductListFilter, totalItems int) mod
 		pagination.CurrentPage = 1
 	}
 	if pagination.PageSize <= 0 {
-		pagination.PageSize = 10
+		pagination.PageSize = 150
 	}
 	if totalItems == 0 {
 		return pagination
@@ -349,14 +342,8 @@ func buildProductPageURL(filter models.ProductListFilter, page int) string {
 	if filter.Search != "" {
 		values.Set("search", filter.Search)
 	}
-	if filter.CategoryID > 0 {
-		values.Set("category_id", strconv.Itoa(filter.CategoryID))
-	}
 	if filter.Status != "" {
 		values.Set("status", filter.Status)
-	}
-	if filter.Brand != "" {
-		values.Set("brand", filter.Brand)
 	}
 	if filter.Sort != "" && filter.Sort != "recent" {
 		values.Set("sort", filter.Sort)

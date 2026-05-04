@@ -14,7 +14,6 @@ type ProductService struct {
 
 func (s *ProductService) GetProducts(filter models.ProductListFilter) ([]models.Product, int, error) {
 	filter.Search = strings.TrimSpace(filter.Search)
-	filter.Brand = strings.TrimSpace(filter.Brand)
 
 	switch filter.Status {
 	case "active", "inactive", "":
@@ -32,7 +31,7 @@ func (s *ProductService) GetProducts(filter models.ProductListFilter) ([]models.
 		filter.Page = 1
 	}
 	if filter.Limit <= 0 {
-		filter.Limit = 10
+		filter.Limit = 150
 	}
 
 	totalItems, err := s.Repo.CountAll(filter)
@@ -92,10 +91,6 @@ func (s *ProductService) GetUnits() ([]models.Unit, error) {
 
 func (s *ProductService) GetSuppliers() ([]models.ProductSupplierOption, error) {
 	return s.Repo.GetSuppliers()
-}
-
-func (s *ProductService) GetBrands() ([]string, error) {
-	return s.Repo.GetBrands()
 }
 
 func (s *ProductService) CreateProduct(input models.ProductCreateInput) error {

@@ -2,6 +2,7 @@ package models
 
 type Product struct {
 	ID                          int
+	RowNumber                   int
 	ProductCode                 string
 	Barcode                     string
 	BarcodeBox                  string
