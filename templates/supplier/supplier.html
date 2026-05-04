@@ -34,10 +34,6 @@
                             </div>
 
                             <div class="flex flex-wrap items-center gap-3">
-                                <a href="/suppliers" class="inline-flex items-center justify-center gap-2 rounded-md bg-white px-5 py-3 text-sm font-extrabold text-[#001e62] shadow-sm transition hover:bg-[#eef3ff]">
-                                    <i class="bx bx-download text-base"></i>
-                                    Ekspor Data
-                                </a>
                                 <button type="button" class="inline-flex items-center justify-center gap-2 rounded-md bg-[#001e62] px-5 py-3 text-sm font-extrabold text-white shadow-md shadow-[#001e62]/20 transition hover:bg-[#002f95]" data-modal-open="supplierModal">
                                     <i class="bx bxs-user-plus text-base"></i>
                                     Tambah Supplier
@@ -111,13 +107,6 @@
                                         <option value="inactive" {{ if eq .Filters.Status "inactive" }}selected{{ end }}>Nonaktif</option>
                                     </select>
 
-                                    <select name="type" class="rounded-md border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-extrabold text-[#1e2b42] outline-none transition focus:border-brand-500 focus:bg-white">
-                                        <option value="">Kategori: Semua</option>
-                                        {{ range .Types }}
-                                        <option value="{{ . }}" {{ if eq $.Filters.Type . }}selected{{ end }}>{{ . }}</option>
-                                        {{ end }}
-                                    </select>
-
                                     <select name="sort" class="rounded-md border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-extrabold text-[#001e62] outline-none transition focus:border-brand-500 focus:bg-white">
                                         <option value="recent" {{ if eq .Filters.Sort "recent" }}selected{{ end }}>Terbaru</option>
                                         <option value="name" {{ if eq .Filters.Sort "name" }}selected{{ end }}>Nama Supplier</option>
@@ -130,7 +119,7 @@
                                             <i class="bx bx-search-alt text-base"></i>
                                             Terapkan
                                         </button>
-                                        {{ if or .Filters.Search .Filters.Status .Filters.Type (ne .Filters.Sort "recent") }}
+                                        {{ if or .Filters.Search .Filters.Status (ne .Filters.Sort "recent") }}
                                         <a href="/suppliers" class="inline-flex items-center justify-center gap-2 rounded-md bg-slate-50 px-5 py-3 text-sm font-extrabold text-[#566173] transition hover:bg-slate-100">
                                             <i class="bx bx-reset text-base"></i>
                                             Reset
@@ -151,22 +140,21 @@
                                     <table class="w-full text-sm" style="min-width: 980px;">
                                         <thead class="bg-slate-50 text-[10px] font-extrabold uppercase text-[#001e62]">
                                             <tr>
-                                                <th class="px-5 py-4 text-left">Nama Supplier</th>
-                                                <th class="px-5 py-4 text-left">Kontak Utama</th>
-                                                <th class="px-5 py-4 text-left">Nomor Kontak</th>
-                                                <th class="px-5 py-4 text-left">Kategori</th>
-                                                <th class="px-5 py-4 text-left">Jumlah Item</th>
-                                                <th class="px-5 py-4 text-left">Status</th>
-                                                <th class="px-5 py-4 text-left">Pembaruan Terakhir</th>
-                                                <th class="px-5 py-4 text-left">Aksi</th>
+                                                <th class="px-5 py-3 text-left">Nama Supplier</th>
+                                                <th class="px-5 py-3 text-left">Kontak Utama</th>
+                                                <th class="px-5 py-3 text-left">Nomor Kontak</th>
+                                                <th class="px-5 py-3 text-left">Jumlah Item</th>
+                                                <th class="px-5 py-3 text-left">Status</th>
+                                                <th class="px-5 py-3 text-left">Pembaruan Terakhir</th>
+                                                <th class="px-5 py-3 text-left">Aksi</th>
                                             </tr>
                                         </thead>
                                         <tbody class="divide-y divide-slate-100">
                                             {{ range $supplier := .suppliers }}
                                             <tr class="hover:bg-slate-50/70">
-                                                <td class="px-5 py-4">
+                                                <td class="px-5 py-3">
                                                     <div class="flex items-center gap-3">
-                                                        <span class="inline-flex h-9 min-w-9 flex-none items-center justify-center rounded-md bg-[#eef3ff] px-2 text-xs font-extrabold text-[#001e62]">
+                                                        <span class="inline-flex h-8 min-w-8 flex-none items-center justify-center rounded-md bg-[#eef3ff] px-2 text-xs font-extrabold text-[#001e62]">
                                                             {{ if ge (len $supplier.SupplierName) 2 }}
                                                                 {{ printf "%.2s" $supplier.SupplierName }}
                                                             {{ else }}
@@ -179,21 +167,14 @@
                                                         </div>
                                                     </div>
                                                 </td>
-                                                <td class="px-5 py-4 font-semibold text-[#1e2b42]">
+                                                <td class="px-5 py-3 font-semibold text-[#1e2b42]">
                                                     {{ if $supplier.PICName }}{{ $supplier.PICName }}{{ else }}-{{ end }}
                                                 </td>
-                                                <td class="px-5 py-4 font-semibold text-[#566173]">
+                                                <td class="px-5 py-3 font-semibold text-[#566173]">
                                                     {{ if $supplier.Phone }}{{ $supplier.Phone }}{{ else }}-{{ end }}
                                                 </td>
-                                                <td class="px-5 py-4">
-                                                    {{ if $supplier.SupplierType }}
-                                                    <span class="inline-flex rounded-full bg-[#eef3ff] px-3 py-1 text-[10px] font-extrabold uppercase text-[#001e62]">{{ $supplier.SupplierType }}</span>
-                                                    {{ else }}
-                                                    <span class="text-xs font-semibold text-[#8b95a5]">-</span>
-                                                    {{ end }}
-                                                </td>
-                                                <td class="px-5 py-4 font-extrabold text-[#1e2b42]">{{ $supplier.ProductCount }}</td>
-                                                <td class="px-5 py-4">
+                                                <td class="px-5 py-3 font-extrabold text-[#1e2b42]">{{ $supplier.ProductCount }}</td>
+                                                <td class="px-5 py-3">
                                                     {{ if $supplier.IsActive }}
                                                     <span class="inline-flex items-center gap-1.5 rounded-full bg-[#dcfae7] px-3 py-1 text-[10px] font-extrabold uppercase text-[#19a856]">
                                                         <span class="h-2 w-2 rounded-full bg-[#19a856]"></span>
@@ -206,8 +187,8 @@
                                                     </span>
                                                     {{ end }}
                                                 </td>
-                                                <td class="px-5 py-4 font-semibold text-[#566173]">{{ $supplier.UpdatedAtDisplay }}</td>
-                                                <td class="px-5 py-4">
+                                                <td class="px-5 py-3 font-semibold text-[#566173]">{{ $supplier.UpdatedAtDisplay }}</td>
+                                                <td class="px-5 py-3">
                                                     <div class="flex flex-wrap items-center gap-1">
                                                         <a href="/suppliers/{{ $supplier.ID }}" class="inline-flex rounded-md px-3 py-2 text-sm font-extrabold text-[#001e62] transition hover:bg-[#eef3ff]">
                                                             Lihat
@@ -236,7 +217,7 @@
                                             </tr>
                                             {{ else }}
                                             <tr>
-                                                <td colspan="8" class="px-5 py-10 text-center text-sm font-semibold text-[#566173]">
+                                                <td colspan="7" class="px-5 py-10 text-center text-sm font-semibold text-[#566173]">
                                                     {{ if $.Filters.Search }}
                                                         Tidak ada supplier yang cocok dengan pencarian "{{ $.Filters.Search }}"
                                                     {{ else }}
@@ -256,7 +237,7 @@
                                         {{ else }}
                                             Menampilkan 0 supplier
                                         {{ end }}
-                                        {{ if or .Filters.Search .Filters.Status .Filters.Type (ne .Filters.Sort "recent") }} dengan filter aktif{{ end }}
+                                        {{ if or .Filters.Search .Filters.Status (ne .Filters.Sort "recent") }} dengan filter aktif{{ end }}
                                     </p>
                                     <div class="flex items-center gap-2">
                                         {{ if .Pagination.HasPrev }}

@@ -21,7 +21,6 @@ func SupplierIndex(c *gin.Context) {
 	renderSupplierPage(c, supplierService, "", models.SupplierListFilter{
 		Search: c.Query("search"),
 		Status: c.Query("status"),
-		Type:   c.Query("type"),
 		Sort:   c.DefaultQuery("sort", "recent"),
 		Page:   page,
 		Limit:  10,
@@ -172,12 +171,6 @@ func renderSupplierPage(c *gin.Context, supplierService *services.SupplierServic
 		return
 	}
 
-	types, err := supplierService.GetSupplierTypes()
-	if err != nil {
-		c.String(http.StatusInternalServerError, err.Error())
-		return
-	}
-
 	pagination := buildSupplierPagination(filter, totalItems)
 
 	Render(c, "supplier.html", gin.H{
@@ -186,7 +179,6 @@ func renderSupplierPage(c *gin.Context, supplierService *services.SupplierServic
 		"suppliers":  suppliers,
 		"Stats":      stats,
 		"Groups":     groups,
-		"Types":      types,
 		"Filters":    filter,
 		"Pagination": pagination,
 		"Error":      message,
@@ -263,9 +255,6 @@ func buildSupplierPageURL(filter models.SupplierListFilter, page int) string {
 	}
 	if filter.Status != "" {
 		values.Set("status", filter.Status)
-	}
-	if filter.Type != "" {
-		values.Set("type", filter.Type)
 	}
 	if filter.Sort != "" && filter.Sort != "recent" {
 		values.Set("sort", filter.Sort)
