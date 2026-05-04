@@ -53,6 +53,21 @@
                                                     {{ if .Product.PrimarySupplierName }}{{ .Product.PrimarySupplierName }}{{ else }}Gudang A-12{{ end }}
                                                 </span>
                                             </div>
+
+                                            <div class="mt-4 grid gap-2 sm:grid-cols-3">
+                                                <div class="rounded-lg bg-slate-50 px-3 py-3">
+                                                    <p class="text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#8b95a5]">Barcode Unit</p>
+                                                    <p class="mt-1 text-sm font-semibold text-[#153e8a]">{{ if .Product.Barcode }}{{ .Product.Barcode }}{{ else }}-{{ end }}</p>
+                                                </div>
+                                                <div class="rounded-lg bg-slate-50 px-3 py-3">
+                                                    <p class="text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#8b95a5]">Barcode Box</p>
+                                                    <p class="mt-1 text-sm font-semibold text-[#153e8a]">{{ if .Product.BarcodeBox }}{{ .Product.BarcodeBox }}{{ else }}-{{ end }}</p>
+                                                </div>
+                                                <div class="rounded-lg bg-slate-50 px-3 py-3">
+                                                    <p class="text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#8b95a5]">Barcode Carton</p>
+                                                    <p class="mt-1 text-sm font-semibold text-[#153e8a]">{{ if .Product.BarcodeCarton }}{{ .Product.BarcodeCarton }}{{ else }}-{{ end }}</p>
+                                                </div>
+                                            </div>
                                         </div>
 
                                         <div class="shrink-0">

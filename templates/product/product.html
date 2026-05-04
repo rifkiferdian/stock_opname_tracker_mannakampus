@@ -34,10 +34,6 @@
                             </div>
 
                             <div class="flex flex-wrap items-center gap-3">
-                                <a href="/products" class="inline-flex items-center justify-center gap-2 rounded-md bg-white px-5 py-3 text-sm font-extrabold text-[#001e62] shadow-sm transition hover:bg-[#eef3ff]">
-                                    <i class="bx bx-download text-base"></i>
-                                    Ekspor Produk
-                                </a>
                                 <button type="button" class="inline-flex items-center justify-center gap-2 rounded-md bg-[#001e62] px-5 py-3 text-sm font-extrabold text-white shadow-md shadow-[#001e62]/20 transition hover:bg-[#002f95]" data-modal-open="productModal">
                                     <i class="bx bx-plus-circle text-base"></i>
                                     Tambah Produk
@@ -142,25 +138,23 @@
 
                         <section class="overflow-hidden rounded-lg bg-white shadow-sm">
                             <div class="overflow-x-auto">
-                                <table class="w-full text-sm" style="min-width: 1120px;">
+                                <table class="w-full text-sm" style="min-width: 980px;">
                                     <thead class="bg-slate-100 text-[10px] font-extrabold uppercase text-[#001e62]">
                                         <tr>
-                                            <th class="px-5 py-5 text-left">Detail Produk</th>
-                                            <th class="px-5 py-5 text-left">SKU</th>
-                                            <th class="px-5 py-5 text-left">Kategorisasi</th>
-                                            <th class="px-5 py-5 text-left">Harga Satuan</th>
-                                            <th class="px-5 py-5 text-left">Inventaris (T/G)</th>
-                                            <th class="px-5 py-5 text-left">Supplier</th>
-                                            <th class="px-5 py-5 text-left">Status</th>
-                                            <th class="px-5 py-5 text-left">Aksi</th>
+                                            <th class="px-3 py-2.5 text-left">Detail Produk</th>
+                                            <th class="px-3 py-2.5 text-left">SKU</th>
+                                            <th class="px-3 py-2.5 text-left">Barcode</th>
+                                            <th class="px-3 py-2.5 text-left">Supplier</th>
+                                            <th class="px-3 py-2.5 text-left">Status</th>
+                                            <th class="px-3 py-2.5 text-left">Aksi</th>
                                         </tr>
                                     </thead>
                                     <tbody class="divide-y divide-slate-100">
                                         {{ range $product := .products }}
                                         <tr class="hover:bg-slate-50/70">
-                                            <td class="px-5 py-5">
-                                                <div class="flex items-center gap-4">
-                                                    <span class="inline-flex h-14 w-14 flex-none items-center justify-center overflow-hidden rounded-md bg-[#eef3ff] text-xs font-extrabold uppercase text-[#001e62]">
+                                            <td class="px-3 py-2">
+                                                <div class="flex items-center gap-2.5">
+                                                    <span class="inline-flex h-9 w-9 flex-none items-center justify-center overflow-hidden rounded-md bg-[#eef3ff] text-[10px] font-extrabold uppercase text-[#001e62]">
                                                         {{ if ge (len $product.ProductName) 2 }}
                                                             {{ printf "%.2s" $product.ProductName }}
                                                         {{ else }}
@@ -168,90 +162,63 @@
                                                         {{ end }}
                                                     </span>
                                                     <div>
-                                                        <p class="font-extrabold leading-tight text-[#07142f]">{{ $product.ProductName }}</p>
-                                                        <p class="mt-1 text-xs font-semibold text-[#566173]">{{ if $product.CategoryName }}{{ $product.CategoryName }}{{ else }}Tanpa Kategori{{ end }}</p>
+                                                        <p class="text-[13px] font-extrabold leading-tight text-[#07142f]">{{ $product.ProductName }}</p>
+                                                        <p class="text-[10px] font-semibold text-[#566173]">{{ if $product.CategoryName }}{{ $product.CategoryName }}{{ else }}Tanpa Kategori{{ end }}</p>
                                                     </div>
                                                 </div>
                                             </td>
-                                            <td class="px-5 py-5">
-                                                <p class="text-[11px] font-semibold text-[#8b95a5]">{{ $product.ProductCode }}</p>
-                                                <p class="mt-1 text-[11px] font-semibold text-[#566173]">{{ if $product.Barcode }}{{ $product.Barcode }}{{ else }}-{{ end }}</p>
+                                            <td class="px-3 py-2">
+                                                <p class="font-mono text-[12px] font-black uppercase tracking-[0.12em] text-[#001e62]">{{ $product.ProductCode }}</p>
                                             </td>
-                                            <td class="px-5 py-5">
-                                                <p class="font-extrabold text-[#07142f]">{{ if $product.Brand }}{{ $product.Brand }}{{ else }}Tanpa Merek{{ end }}</p>
-                                                <p class="mt-1 text-[11px] font-semibold text-[#566173]">Satuan: {{ if $product.UnitName }}{{ $product.UnitName }}{{ else }}-{{ end }}</p>
+                                            <td class="px-3 py-2">
+                                                <p class="text-[10px] font-semibold text-[#566173]">Unit: {{ if $product.Barcode }}{{ $product.Barcode }}{{ else }}-{{ end }}</p>
+                                                <p class="text-[10px] font-semibold text-[#566173]">Box: {{ if $product.BarcodeBox }}{{ $product.BarcodeBox }}{{ else }}-{{ end }}</p>
+                                                <p class="text-[10px] font-semibold text-[#566173]">Carton: {{ if $product.BarcodeCarton }}{{ $product.BarcodeCarton }}{{ else }}-{{ end }}</p>
                                             </td>
-                                            <td class="px-5 py-5 text-lg font-extrabold text-[#001e62]">
-                                                {{ if gt $product.PrimarySupplierID 0 }}{{ $product.PrimarySupplierPriceDisplay }}{{ else }}-{{ end }}
-                                                <p class="mt-1 text-[11px] font-semibold text-[#566173]">Kemasan {{ $product.PackSizeDisplay }}</p>
-                                                <p class="mt-1 text-[11px] font-semibold text-[#8b95a5]">
-                                                    {{ if and (gt $product.BoxPerCarton 0) (gt $product.PcsPerCarton 0) }}1 carton = {{ $product.BoxPerCarton }} box = {{ $product.PcsPerCarton }} pcs{{ else if gt $product.BoxPerCarton 0 }}1 carton = {{ $product.BoxPerCarton }} box{{ else if gt $product.PcsPerCarton 0 }}1 carton = {{ $product.PcsPerCarton }} pcs{{ else }}1 carton = -{{ end }}
-                                                    &middot;
-                                                    {{ if gt $product.PcsPerBox 0 }}1 box = {{ $product.PcsPerBox }} pcs{{ else }}1 box = -{{ end }}
-                                                </p>
+                                            <td class="px-3 py-2">
+                                                <p class="text-[12px] font-semibold text-[#1e2b42]">{{ if $product.PrimarySupplierName }}{{ $product.PrimarySupplierName }}{{ else }}-{{ end }}</p>
+                                                <p class="text-[10px] font-semibold text-[#566173]">Lead time {{ $product.DefaultLeadTimeDays }} hari</p>
                                             </td>
-                                            <td class="px-5 py-5">
-                                                <div class="flex items-center gap-4">
-                                                    <div>
-                                                        <p class="font-extrabold text-[#07142f]">{{ $product.MaxStockDisplay }}</p>
-                                                        <p class="mt-1 text-[11px] font-semibold text-[#8b95a5]">{{ $product.ReorderPointDisplay }}</p>
-                                                    </div>
-                                                    <div class="h-1.5 w-20 rounded-full bg-slate-200">
-                                                        {{ if not $product.IsActive }}
-                                                        <div class="h-1.5 w-0 rounded-full bg-rose-500"></div>
-                                                        {{ else }}
-                                                        <div class="h-1.5 w-[72%] rounded-full bg-[#19a856]"></div>
-                                                        {{ end }}
-                                                    </div>
-                                                </div>
-                                                <p class="mt-2 text-[11px] font-semibold text-[#566173]">Min {{ $product.MinStockDisplay }} / Maks {{ $product.MaxStockDisplay }}</p>
-                                            </td>
-                                            <td class="px-5 py-5">
-                                                <p class="font-semibold text-[#1e2b42]">{{ if $product.PrimarySupplierName }}{{ $product.PrimarySupplierName }}{{ else }}-{{ end }}</p>
-                                                <p class="mt-1 text-[11px] font-semibold text-[#566173]">Lead time {{ $product.DefaultLeadTimeDays }} hari</p>
-                                            </td>
-                                            <td class="px-5 py-5">
+                                            <td class="px-3 py-2">
                                                 {{ if $product.IsActive }}
-                                                <span class="inline-flex items-center gap-1.5 rounded-lg bg-[#dcfae7] px-3 py-2 text-[10px] font-extrabold uppercase text-[#19a856]">
+                                                <span class="inline-flex items-center gap-1 rounded-md bg-[#dcfae7] px-2 py-1 text-[9px] font-extrabold uppercase text-[#19a856]">
                                                     <span class="h-1.5 w-1.5 rounded-full bg-[#19a856]"></span>
                                                     {{ $product.StatusLabel }}
                                                 </span>
                                                 {{ else }}
-                                                <span class="inline-flex items-center gap-1.5 rounded-lg bg-rose-50 px-3 py-2 text-[10px] font-extrabold uppercase text-rose-600">
+                                                <span class="inline-flex items-center gap-1 rounded-md bg-rose-50 px-2 py-1 text-[9px] font-extrabold uppercase text-rose-600">
                                                     <span class="h-1.5 w-1.5 rounded-full bg-rose-500"></span>
                                                     {{ $product.StatusLabel }}
                                                 </span>
                                                 {{ end }}
                                             </td>
-                                            <td class="px-5 py-5">
-                                                <div class="flex items-center gap-3">
-                                                    <a href="/products/{{ $product.ID }}" class="text-lg text-[#24408f] transition hover:text-[#001e62]">
+                                            <td class="px-3 py-2">
+                                                <div class="flex items-center gap-2">
+                                                    <a href="/products/{{ $product.ID }}" class="text-sm text-[#24408f] transition hover:text-[#001e62]">
                                                         <i class="bx bx-show-alt"></i>
                                                     </a>
                                                     <button
                                                         type="button"
-                                                        class="btn-edit-product text-lg text-[#001e62] transition hover:text-[#002f95]"
+                                                        class="btn-edit-product text-sm text-[#001e62] transition hover:text-[#002f95]"
                                                         data-id="{{ $product.ID }}"
                                                         data-product-code="{{ $product.ProductCode }}"
                                                         data-barcode="{{ $product.Barcode }}"
+                                                        data-barcode-box="{{ $product.BarcodeBox }}"
+                                                        data-barcode-carton="{{ $product.BarcodeCarton }}"
                                                         data-product-name="{{ $product.ProductName }}"
                                                         data-category-id="{{ $product.CategoryID }}"
                                                         data-unit-id="{{ $product.UnitID }}"
-                                                        data-brand="{{ $product.Brand }}"
                                                         data-min-stock="{{ $product.MinStock }}"
                                                         data-max-stock="{{ $product.MaxStock }}"
-                                                        data-reorder-point="{{ $product.ReorderPoint }}"
                                                         data-default-lead-time-days="{{ $product.DefaultLeadTimeDays }}"
-                                                        data-pack-size="{{ $product.PackSize }}"
                                                         data-pcs-per-box="{{ $product.PcsPerBox }}"
                                                         data-box-per-carton="{{ $product.BoxPerCarton }}"
                                                         data-pcs-per-carton="{{ $product.PcsPerCarton }}"
                                                         data-is-active="{{ if $product.IsActive }}1{{ else }}0{{ end }}"
-                                                        data-supplier-id="{{ $product.PrimarySupplierID }}"
-                                                        data-last-price="{{ $product.PrimarySupplierPrice }}">
+                                                        data-supplier-id="{{ $product.PrimarySupplierID }}">
                                                         <i class="bx bx-pencil"></i>
                                                     </button>
-                                                    <button type="button" class="btn-delete-product text-lg text-rose-600 transition hover:text-rose-700" data-url="/products/delete/{{ $product.ID }}" data-product-name="{{ $product.ProductName }}">
+                                                    <button type="button" class="btn-delete-product text-sm text-rose-600 transition hover:text-rose-700" data-url="/products/delete/{{ $product.ID }}" data-product-name="{{ $product.ProductName }}">
                                                         <i class="bx bx-trash"></i>
                                                     </button>
                                                 </div>
@@ -259,7 +226,7 @@
                                         </tr>
                                         {{ else }}
                                         <tr>
-                                            <td colspan="8" class="px-5 py-10 text-center text-sm font-semibold text-[#566173]">
+                                            <td colspan="6" class="px-5 py-10 text-center text-sm font-semibold text-[#566173]">
                                                 {{ if $.Filters.Search }}
                                                     Tidak ada produk yang cocok dengan pencarian "{{ $.Filters.Search }}"
                                                 {{ else }}
@@ -352,7 +319,7 @@
                 <form action="/products" method="post" class="mt-6 max-h-[75vh] space-y-5 overflow-y-auto pr-1">
                     <div class="grid gap-5 md:grid-cols-2">
                         <div>
-                            <label for="product_code" class="text-[10px] font-extrabold uppercase text-[#566173]">Kode Produk</label>
+                            <label for="product_code" class="text-[10px] font-extrabold uppercase text-[#566173]">SKU/PLU</label>
                             <input type="text" id="product_code" name="product_code" required class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold uppercase outline-none transition focus:border-brand-500" placeholder="BRG-0004">
                         </div>
                         <div>
@@ -360,12 +327,16 @@
                             <input type="text" id="barcode" name="barcode" class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500" placeholder="899999000004">
                         </div>
                         <div>
-                            <label for="product_name" class="text-[10px] font-extrabold uppercase text-[#566173]">Nama Produk</label>
-                            <input type="text" id="product_name" name="product_name" required class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500" placeholder="Nama Produk">
+                            <label for="barcode_box" class="text-[10px] font-extrabold uppercase text-[#566173]">Barcode Box</label>
+                            <input type="text" id="barcode_box" name="barcode_box" class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500" placeholder="899999000004-BOX">
                         </div>
                         <div>
-                            <label for="brand" class="text-[10px] font-extrabold uppercase text-[#566173]">Merek</label>
-                            <input type="text" id="brand" name="brand" class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500" placeholder="Merek">
+                            <label for="barcode_carton" class="text-[10px] font-extrabold uppercase text-[#566173]">Barcode Carton</label>
+                            <input type="text" id="barcode_carton" name="barcode_carton" class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500" placeholder="899999000004-CTN">
+                        </div>
+                        <div>
+                            <label for="product_name" class="text-[10px] font-extrabold uppercase text-[#566173]">Nama Produk</label>
+                            <input type="text" id="product_name" name="product_name" required class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500" placeholder="Nama Produk">
                         </div>
                         <div>
                             <label for="category_id" class="text-[10px] font-extrabold uppercase text-[#566173]">Kategori</label>
@@ -395,10 +366,6 @@
                             </select>
                         </div>
                         <div>
-                            <label for="last_price" class="text-[10px] font-extrabold uppercase text-[#566173]">Harga Terakhir</label>
-                            <input type="number" id="last_price" name="last_price" min="0" step="0.01" value="0" class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500">
-                        </div>
-                        <div>
                             <label for="min_stock" class="text-[10px] font-extrabold uppercase text-[#566173]">Stok Minimum</label>
                             <input type="number" id="min_stock" name="min_stock" min="0" step="0.01" value="0" class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500">
                         </div>
@@ -407,16 +374,8 @@
                             <input type="number" id="max_stock" name="max_stock" min="0" step="0.01" value="0" class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500">
                         </div>
                         <div>
-                            <label for="reorder_point" class="text-[10px] font-extrabold uppercase text-[#566173]">Titik Reorder</label>
-                            <input type="number" id="reorder_point" name="reorder_point" min="0" step="0.01" value="0" class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500">
-                        </div>
-                        <div>
                             <label for="default_lead_time_days" class="text-[10px] font-extrabold uppercase text-[#566173]">Lead Time (Hari)</label>
                             <input type="number" id="default_lead_time_days" name="default_lead_time_days" min="0" value="0" class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500">
-                        </div>
-                        <div>
-                            <label for="pack_size" class="text-[10px] font-extrabold uppercase text-[#566173]">Ukuran Kemasan</label>
-                            <input type="number" id="pack_size" name="pack_size" min="0.01" step="0.01" value="1" class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500">
                         </div>
                         <div>
                             <label for="pcs_per_box" class="text-[10px] font-extrabold uppercase text-[#566173]">1 Box = Berapa Pcs</label>
@@ -461,7 +420,7 @@
                     <input type="hidden" id="edit_id" name="id">
                     <div class="grid gap-5 md:grid-cols-2">
                         <div>
-                            <label for="edit_product_code" class="text-[10px] font-extrabold uppercase text-[#566173]">Kode Produk</label>
+                            <label for="edit_product_code" class="text-[10px] font-extrabold uppercase text-[#566173]">SKU/PLU</label>
                             <input type="text" id="edit_product_code" name="product_code" required class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold uppercase outline-none transition focus:border-brand-500">
                         </div>
                         <div>
@@ -469,12 +428,16 @@
                             <input type="text" id="edit_barcode" name="barcode" class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500">
                         </div>
                         <div>
-                            <label for="edit_product_name" class="text-[10px] font-extrabold uppercase text-[#566173]">Nama Produk</label>
-                            <input type="text" id="edit_product_name" name="product_name" required class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500">
+                            <label for="edit_barcode_box" class="text-[10px] font-extrabold uppercase text-[#566173]">Barcode Box</label>
+                            <input type="text" id="edit_barcode_box" name="barcode_box" class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500">
                         </div>
                         <div>
-                            <label for="edit_brand" class="text-[10px] font-extrabold uppercase text-[#566173]">Merek</label>
-                            <input type="text" id="edit_brand" name="brand" class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500">
+                            <label for="edit_barcode_carton" class="text-[10px] font-extrabold uppercase text-[#566173]">Barcode Carton</label>
+                            <input type="text" id="edit_barcode_carton" name="barcode_carton" class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500">
+                        </div>
+                        <div>
+                            <label for="edit_product_name" class="text-[10px] font-extrabold uppercase text-[#566173]">Nama Produk</label>
+                            <input type="text" id="edit_product_name" name="product_name" required class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500">
                         </div>
                         <div>
                             <label for="edit_category_id" class="text-[10px] font-extrabold uppercase text-[#566173]">Kategori</label>
@@ -504,10 +467,6 @@
                             </select>
                         </div>
                         <div>
-                            <label for="edit_last_price" class="text-[10px] font-extrabold uppercase text-[#566173]">Harga Terakhir</label>
-                            <input type="number" id="edit_last_price" name="last_price" min="0" step="0.01" class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500">
-                        </div>
-                        <div>
                             <label for="edit_min_stock" class="text-[10px] font-extrabold uppercase text-[#566173]">Stok Minimum</label>
                             <input type="number" id="edit_min_stock" name="min_stock" min="0" step="0.01" class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500">
                         </div>
@@ -516,16 +475,8 @@
                             <input type="number" id="edit_max_stock" name="max_stock" min="0" step="0.01" class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500">
                         </div>
                         <div>
-                            <label for="edit_reorder_point" class="text-[10px] font-extrabold uppercase text-[#566173]">Titik Reorder</label>
-                            <input type="number" id="edit_reorder_point" name="reorder_point" min="0" step="0.01" class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500">
-                        </div>
-                        <div>
                             <label for="edit_default_lead_time_days" class="text-[10px] font-extrabold uppercase text-[#566173]">Lead Time (Hari)</label>
                             <input type="number" id="edit_default_lead_time_days" name="default_lead_time_days" min="0" class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500">
-                        </div>
-                        <div>
-                            <label for="edit_pack_size" class="text-[10px] font-extrabold uppercase text-[#566173]">Ukuran Kemasan</label>
-                            <input type="number" id="edit_pack_size" name="pack_size" min="0.01" step="0.01" class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500">
                         </div>
                         <div>
                             <label for="edit_pcs_per_box" class="text-[10px] font-extrabold uppercase text-[#566173]">1 Box = Berapa Pcs</label>
@@ -640,21 +591,19 @@
                         editModalEl.querySelector('#edit_id').value = btn.getAttribute('data-id') || '';
                         editModalEl.querySelector('#edit_product_code').value = btn.getAttribute('data-product-code') || '';
                         editModalEl.querySelector('#edit_barcode').value = btn.getAttribute('data-barcode') || '';
+                        editModalEl.querySelector('#edit_barcode_box').value = btn.getAttribute('data-barcode-box') || '';
+                        editModalEl.querySelector('#edit_barcode_carton').value = btn.getAttribute('data-barcode-carton') || '';
                         editModalEl.querySelector('#edit_product_name').value = btn.getAttribute('data-product-name') || '';
                         editModalEl.querySelector('#edit_category_id').value = btn.getAttribute('data-category-id') || '0';
                         editModalEl.querySelector('#edit_unit_id').value = btn.getAttribute('data-unit-id') || '0';
-                        editModalEl.querySelector('#edit_brand').value = btn.getAttribute('data-brand') || '';
                         editModalEl.querySelector('#edit_min_stock').value = btn.getAttribute('data-min-stock') || '0';
                         editModalEl.querySelector('#edit_max_stock').value = btn.getAttribute('data-max-stock') || '0';
-                        editModalEl.querySelector('#edit_reorder_point').value = btn.getAttribute('data-reorder-point') || '0';
                         editModalEl.querySelector('#edit_default_lead_time_days').value = btn.getAttribute('data-default-lead-time-days') || '0';
-                        editModalEl.querySelector('#edit_pack_size').value = btn.getAttribute('data-pack-size') || '1';
                         editModalEl.querySelector('#edit_pcs_per_box').value = btn.getAttribute('data-pcs-per-box') || '0';
                         editModalEl.querySelector('#edit_box_per_carton').value = btn.getAttribute('data-box-per-carton') || '0';
                         editModalEl.querySelector('#edit_pcs_per_carton').value = btn.getAttribute('data-pcs-per-carton') || '0';
                         editModalEl.querySelector('#edit_is_active').value = btn.getAttribute('data-is-active') || '1';
                         editModalEl.querySelector('#edit_supplier_id').value = btn.getAttribute('data-supplier-id') || '0';
-                        editModalEl.querySelector('#edit_last_price').value = btn.getAttribute('data-last-price') || '0';
 
                         openModal('productEditModal');
                     });

@@ -101,6 +101,8 @@ CREATE TABLE `products` (
   `id` int(11) NOT NULL,
   `product_code` varchar(50) NOT NULL,
   `barcode` varchar(100) DEFAULT NULL,
+  `barcode_box` varchar(100) DEFAULT NULL,
+  `barcode_carton` varchar(100) DEFAULT NULL,
   `product_name` varchar(200) NOT NULL,
   `category_id` int(11) DEFAULT NULL,
   `unit_id` int(11) DEFAULT NULL,
@@ -124,10 +126,10 @@ CREATE TABLE `products` (
 -- Dumping data for table `products`
 --
 
-INSERT INTO `products` (`id`, `product_code`, `barcode`, `product_name`, `category_id`, `unit_id`, `brand`, `min_stock`, `max_stock`, `reorder_point`, `default_lead_time_days`, `pack_size`, `pcs_per_box`, `box_per_carton`, `pcs_per_carton`, `is_active`, `created_by`, `updated_by`, `created_at`, `updated_at`) VALUES
-(1, 'BRG-0001', '899999000001', 'Indomie Goreng', 1, 1, 'Indomie', 20.00, 200.00, 30.00, 2, 1.00, 40, 10, 400, 1, 1, NULL, '2026-04-17 06:09:43', '2026-04-17 06:09:43'),
-(2, 'BRG-0002', '899999000002', 'Sabun Mandi ABC', 2, 1, 'ABC', 10.00, 100.00, 15.00, 3, 1.00, 24, 6, 144, 1, 1, NULL, '2026-04-17 06:09:43', '2026-04-17 06:09:43'),
-(3, 'BRG-0003', '899999000003', 'Tisu Wajah', 3, 1, 'Nice', 15.00, 120.00, 20.00, 2, 1.00, 12, 6, 72, 1, 1, NULL, '2026-04-17 06:09:43', '2026-04-17 06:09:43');
+INSERT INTO `products` (`id`, `product_code`, `barcode`, `barcode_box`, `barcode_carton`, `product_name`, `category_id`, `unit_id`, `brand`, `min_stock`, `max_stock`, `reorder_point`, `default_lead_time_days`, `pack_size`, `pcs_per_box`, `box_per_carton`, `pcs_per_carton`, `is_active`, `created_by`, `updated_by`, `created_at`, `updated_at`) VALUES
+(1, 'BRG-0001', '899999000001', '89999900000140', '899999000001400', 'Indomie Goreng', 1, 1, 'Indomie', 20.00, 200.00, 30.00, 2, 1.00, 40, 10, 400, 1, 1, NULL, '2026-04-17 06:09:43', '2026-04-17 06:09:43'),
+(2, 'BRG-0002', '899999000002', '89999900000224', '899999000002144', 'Sabun Mandi ABC', 2, 1, 'ABC', 10.00, 100.00, 15.00, 3, 1.00, 24, 6, 144, 1, 1, NULL, '2026-04-17 06:09:43', '2026-04-17 06:09:43'),
+(3, 'BRG-0003', '899999000003', '89999900000312', '899999000003072', 'Tisu Wajah', 3, 1, 'Nice', 15.00, 120.00, 20.00, 2, 1.00, 12, 6, 72, 1, 1, NULL, '2026-04-17 06:09:43', '2026-04-17 06:09:43');
 
 -- --------------------------------------------------------
 
@@ -606,6 +608,8 @@ ALTER TABLE `products`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `uk_products_code` (`product_code`),
   ADD UNIQUE KEY `uk_products_barcode` (`barcode`),
+  ADD UNIQUE KEY `uk_products_barcode_box` (`barcode_box`),
+  ADD UNIQUE KEY `uk_products_barcode_carton` (`barcode_carton`),
   ADD KEY `idx_products_category` (`category_id`),
   ADD KEY `idx_products_unit` (`unit_id`),
   ADD KEY `idx_products_created_by` (`created_by`),

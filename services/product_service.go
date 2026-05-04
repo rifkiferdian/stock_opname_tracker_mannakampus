@@ -113,6 +113,16 @@ func (s *ProductService) CreateProduct(input models.ProductCreateInput) error {
 		return fmt.Errorf("kode produk %s sudah digunakan", input.ProductCode)
 	}
 
+	for _, barcode := range []string{input.Barcode, input.BarcodeBox, input.BarcodeCarton} {
+		barcodeExists, err := s.Repo.ExistsAnyBarcode(barcode, 0)
+		if err != nil {
+			return err
+		}
+		if barcodeExists {
+			return fmt.Errorf("barcode %s sudah digunakan", barcode)
+		}
+	}
+
 	return s.Repo.Create(input)
 }
 
@@ -142,6 +152,16 @@ func (s *ProductService) UpdateProduct(input models.ProductUpdateInput) error {
 		return fmt.Errorf("kode produk %s sudah digunakan", input.ProductCode)
 	}
 
+	for _, barcode := range []string{input.Barcode, input.BarcodeBox, input.BarcodeCarton} {
+		barcodeExists, err := s.Repo.ExistsAnyBarcode(barcode, input.ID)
+		if err != nil {
+			return err
+		}
+		if barcodeExists {
+			return fmt.Errorf("barcode %s sudah digunakan", barcode)
+		}
+	}
+
 	return s.Repo.Update(input)
 }
 
@@ -158,6 +178,8 @@ func (s *ProductService) DeleteProduct(id int) error {
 func sanitizeProductCreateInput(input *models.ProductCreateInput) {
 	input.ProductCode = strings.ToUpper(strings.TrimSpace(input.ProductCode))
 	input.Barcode = strings.TrimSpace(input.Barcode)
+	input.BarcodeBox = strings.TrimSpace(input.BarcodeBox)
+	input.BarcodeCarton = strings.TrimSpace(input.BarcodeCarton)
 	input.ProductName = strings.TrimSpace(input.ProductName)
 	input.Brand = strings.TrimSpace(input.Brand)
 	if input.MinStock < 0 {
@@ -192,6 +214,8 @@ func sanitizeProductCreateInput(input *models.ProductCreateInput) {
 func sanitizeProductUpdateInput(input *models.ProductUpdateInput) {
 	input.ProductCode = strings.ToUpper(strings.TrimSpace(input.ProductCode))
 	input.Barcode = strings.TrimSpace(input.Barcode)
+	input.BarcodeBox = strings.TrimSpace(input.BarcodeBox)
+	input.BarcodeCarton = strings.TrimSpace(input.BarcodeCarton)
 	input.ProductName = strings.TrimSpace(input.ProductName)
 	input.Brand = strings.TrimSpace(input.Brand)
 	if input.MinStock < 0 {
@@ -230,6 +254,9 @@ func validateProductCreateInput(input models.ProductCreateInput) error {
 	if input.ProductName == "" {
 		return errors.New("nama produk wajib diisi")
 	}
+	if err := validateDistinctProductBarcodes(input.Barcode, input.BarcodeBox, input.BarcodeCarton); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -239,6 +266,28 @@ func validateProductUpdateInput(input models.ProductUpdateInput) error {
 	}
 	if input.ProductName == "" {
 		return errors.New("nama produk wajib diisi")
+	}
+	if err := validateDistinctProductBarcodes(input.Barcode, input.BarcodeBox, input.BarcodeCarton); err != nil {
+		return err
+	}
+	return nil
+}
+
+func validateDistinctProductBarcodes(barcode string, barcodeBox string, barcodeCarton string) error {
+	values := []string{
+		strings.TrimSpace(barcode),
+		strings.TrimSpace(barcodeBox),
+		strings.TrimSpace(barcodeCarton),
+	}
+	seen := make(map[string]struct{}, len(values))
+	for _, value := range values {
+		if value == "" {
+			continue
+		}
+		if _, exists := seen[value]; exists {
+			return fmt.Errorf("barcode %s terduplikasi pada form produk", value)
+		}
+		seen[value] = struct{}{}
 	}
 	return nil
 }

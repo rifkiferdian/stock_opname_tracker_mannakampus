@@ -665,6 +665,8 @@ func (r *StockCheckSessionRepository) GetCheckerInputItems(sessionID int) ([]mod
 			si.product_id,
 			p.product_code,
 			COALESCE(p.barcode, '') AS barcode,
+			COALESCE(p.barcode_box, '') AS barcode_box,
+			COALESCE(p.barcode_carton, '') AS barcode_carton,
 			p.product_name,
 			COALESCE(pc.category_name, 'Tanpa Kategori') AS category_name,
 			COALESCE(un.unit_name, '-') AS unit_name,
@@ -712,6 +714,8 @@ func (r *StockCheckSessionRepository) GetCheckerInputItems(sessionID int) ([]mod
 			&item.ProductID,
 			&item.ProductCode,
 			&item.Barcode,
+			&item.BarcodeBox,
+			&item.BarcodeCarton,
 			&item.ProductName,
 			&item.CategoryName,
 			&item.UnitName,
@@ -765,7 +769,10 @@ func (r *StockCheckSessionRepository) GetCheckerInputItems(sessionID int) ([]mod
 		item.QtyWarehouseBreakdownDisplay = formatStockCheckUnitBreakdown(item.QtyWarehouseCarton, item.QtyWarehouseBox, item.QtyWarehousePcs)
 		item.ConversionDisplay = formatStockCheckConversion(item.PcsPerBox, item.BoxPerCarton, item.PcsPerCarton)
 		item.StatusLabel, _ = stockCheckSessionItemStatusMeta(item.Status)
-		item.HasBarcode = strings.TrimSpace(item.Barcode) != ""
+		item.PreferredBarcode = pickPreferredProductBarcode(item.Barcode, item.BarcodeBox, item.BarcodeCarton)
+		item.BarcodeSummary = buildProductBarcodeSummary(item.Barcode, item.BarcodeBox, item.BarcodeCarton)
+		item.BarcodeSearchText = strings.TrimSpace(strings.Join([]string{item.Barcode, item.BarcodeBox, item.BarcodeCarton}, " "))
+		item.HasBarcode = item.PreferredBarcode != ""
 
 		items = append(items, item)
 	}
@@ -810,9 +817,13 @@ func (r *StockCheckSessionRepository) UpdateCheckerItemQtyByBarcode(sessionID in
 		FROM stock_check_session_items si
 		INNER JOIN products p ON p.id = si.product_id
 		WHERE si.stock_check_session_id = ?
-			AND LOWER(COALESCE(p.barcode, '')) = LOWER(?)
+			AND (
+				LOWER(COALESCE(p.barcode, '')) = LOWER(?)
+				OR LOWER(COALESCE(p.barcode_box, '')) = LOWER(?)
+				OR LOWER(COALESCE(p.barcode_carton, '')) = LOWER(?)
+			)
 		LIMIT 1
-	`, sessionID, strings.TrimSpace(barcode)).Scan(
+	`, sessionID, strings.TrimSpace(barcode), strings.TrimSpace(barcode), strings.TrimSpace(barcode)).Scan(
 		&itemID,
 		&pcsPerBox,
 		&pcsPerCarton,
@@ -1280,6 +1291,33 @@ func formatStockCheckSuggestHeadline(carton int, box int, pcs int) string {
 	default:
 		return fmt.Sprintf("%d pcs", pcs)
 	}
+}
+
+func pickPreferredProductBarcode(barcode string, barcodeBox string, barcodeCarton string) string {
+	for _, value := range []string{barcode, barcodeBox, barcodeCarton} {
+		value = strings.TrimSpace(value)
+		if value != "" {
+			return value
+		}
+	}
+	return ""
+}
+
+func buildProductBarcodeSummary(barcode string, barcodeBox string, barcodeCarton string) string {
+	parts := make([]string, 0, 3)
+	if strings.TrimSpace(barcode) != "" {
+		parts = append(parts, "Unit: "+strings.TrimSpace(barcode))
+	}
+	if strings.TrimSpace(barcodeBox) != "" {
+		parts = append(parts, "Box: "+strings.TrimSpace(barcodeBox))
+	}
+	if strings.TrimSpace(barcodeCarton) != "" {
+		parts = append(parts, "Carton: "+strings.TrimSpace(barcodeCarton))
+	}
+	if len(parts) == 0 {
+		return "-"
+	}
+	return strings.Join(parts, " | ")
 }
 
 func stockCheckSessionItemStatusMeta(status string) (string, string) {

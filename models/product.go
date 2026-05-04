@@ -4,6 +4,8 @@ type Product struct {
 	ID                          int
 	ProductCode                 string
 	Barcode                     string
+	BarcodeBox                  string
+	BarcodeCarton               string
 	ProductName                 string
 	CategoryID                  int
 	CategoryName                string
@@ -122,6 +124,8 @@ type ProductListFilter struct {
 type ProductCreateInput struct {
 	ProductCode         string
 	Barcode             string
+	BarcodeBox          string
+	BarcodeCarton       string
 	ProductName         string
 	CategoryID          int
 	UnitID              int
@@ -143,6 +147,8 @@ type ProductUpdateInput struct {
 	ID                  int
 	ProductCode         string
 	Barcode             string
+	BarcodeBox          string
+	BarcodeCarton       string
 	ProductName         string
 	CategoryID          int
 	UnitID              int

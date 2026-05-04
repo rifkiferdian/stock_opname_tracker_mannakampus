@@ -45,6 +45,8 @@ func ProductStore(c *gin.Context) {
 	type productForm struct {
 		ProductCode         string  `form:"product_code" binding:"required"`
 		Barcode             string  `form:"barcode"`
+		BarcodeBox          string  `form:"barcode_box"`
+		BarcodeCarton       string  `form:"barcode_carton"`
 		ProductName         string  `form:"product_name" binding:"required"`
 		CategoryID          int     `form:"category_id"`
 		UnitID              int     `form:"unit_id"`
@@ -73,6 +75,8 @@ func ProductStore(c *gin.Context) {
 	err := productService.CreateProduct(models.ProductCreateInput{
 		ProductCode:         form.ProductCode,
 		Barcode:             form.Barcode,
+		BarcodeBox:          form.BarcodeBox,
+		BarcodeCarton:       form.BarcodeCarton,
 		ProductName:         form.ProductName,
 		CategoryID:          form.CategoryID,
 		UnitID:              form.UnitID,
@@ -102,6 +106,8 @@ func ProductUpdate(c *gin.Context) {
 		ID                  int     `form:"id" binding:"required"`
 		ProductCode         string  `form:"product_code" binding:"required"`
 		Barcode             string  `form:"barcode"`
+		BarcodeBox          string  `form:"barcode_box"`
+		BarcodeCarton       string  `form:"barcode_carton"`
 		ProductName         string  `form:"product_name" binding:"required"`
 		CategoryID          int     `form:"category_id"`
 		UnitID              int     `form:"unit_id"`
@@ -131,6 +137,8 @@ func ProductUpdate(c *gin.Context) {
 		ID:                  form.ID,
 		ProductCode:         form.ProductCode,
 		Barcode:             form.Barcode,
+		BarcodeBox:          form.BarcodeBox,
+		BarcodeCarton:       form.BarcodeCarton,
 		ProductName:         form.ProductName,
 		CategoryID:          form.CategoryID,
 		UnitID:              form.UnitID,

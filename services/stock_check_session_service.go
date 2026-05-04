@@ -210,7 +210,9 @@ func (s *StockCheckSessionService) GetCheckerScanPage(sessionID int, userID int,
 
 	normalizedBarcode := strings.ToLower(barcode)
 	for _, item := range pageData.Items {
-		if strings.ToLower(strings.TrimSpace(item.Barcode)) == normalizedBarcode {
+		if strings.ToLower(strings.TrimSpace(item.Barcode)) == normalizedBarcode ||
+			strings.ToLower(strings.TrimSpace(item.BarcodeBox)) == normalizedBarcode ||
+			strings.ToLower(strings.TrimSpace(item.BarcodeCarton)) == normalizedBarcode {
 			return models.StockCheckSessionCheckerScanPage{
 				Session: pageData.Session,
 				Item:    item,

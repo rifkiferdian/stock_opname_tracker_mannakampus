@@ -933,7 +933,7 @@ func renderStockCheckCheckerSessionScanPage(c *gin.Context, service *services.St
 		scanForm.Location = location
 	}
 	if strings.TrimSpace(scanForm.Barcode) == "" {
-		scanForm.Barcode = pageData.Item.Barcode
+		scanForm.Barcode = barcode
 	}
 	if location == "warehouse" {
 		if strings.TrimSpace(scanForm.QtyCarton) == "" {
@@ -967,7 +967,7 @@ func renderStockCheckCheckerSessionScanPage(c *gin.Context, service *services.St
 		"Error":       errorMessage,
 		"ScanForm":    scanForm,
 		"BackURL":     backURL,
-		"CurrentURL":  buildStockCheckCheckerSessionScanPageURL(sessionID, location, pageData.Item.Barcode, backURL),
+		"CurrentURL":  buildStockCheckCheckerSessionScanPageURL(sessionID, location, scanForm.Barcode, backURL),
 		"CurrentPath": c.Request.URL.Path,
 	})
 }

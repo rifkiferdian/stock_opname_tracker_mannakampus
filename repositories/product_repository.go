@@ -200,6 +200,8 @@ func (r *ProductRepository) GetByID(id int) (models.ProductDetail, error) {
 			p.id,
 			p.product_code,
 			COALESCE(p.barcode, '') AS barcode,
+			COALESCE(p.barcode_box, '') AS barcode_box,
+			COALESCE(p.barcode_carton, '') AS barcode_carton,
 			p.product_name,
 			COALESCE(p.category_id, 0) AS category_id,
 			COALESCE(pc.category_name, '') AS category_name,
@@ -298,6 +300,8 @@ func (r *ProductRepository) GetByID(id int) (models.ProductDetail, error) {
 		&detail.ID,
 		&detail.ProductCode,
 		&detail.Barcode,
+		&detail.BarcodeBox,
+		&detail.BarcodeCarton,
 		&detail.ProductName,
 		&detail.CategoryID,
 		&detail.CategoryName,
@@ -606,6 +610,42 @@ func (r *ProductRepository) ExistsByCode(code string, ignoreID int) (bool, error
 	return count > 0, err
 }
 
+func (r *ProductRepository) ExistsAnyBarcode(barcode string, ignoreID int) (bool, error) {
+	barcode = strings.TrimSpace(barcode)
+	if barcode == "" {
+		return false, nil
+	}
+
+	var (
+		count int
+		err   error
+	)
+
+	if ignoreID > 0 {
+		err = r.DB.QueryRow(`
+			SELECT COUNT(1)
+			FROM products
+			WHERE id <> ?
+				AND (
+					COALESCE(barcode, '') = ?
+					OR COALESCE(barcode_box, '') = ?
+					OR COALESCE(barcode_carton, '') = ?
+				)
+		`, ignoreID, barcode, barcode, barcode).Scan(&count)
+	} else {
+		err = r.DB.QueryRow(`
+			SELECT COUNT(1)
+			FROM products
+			WHERE
+				COALESCE(barcode, '') = ?
+				OR COALESCE(barcode_box, '') = ?
+				OR COALESCE(barcode_carton, '') = ?
+		`, barcode, barcode, barcode).Scan(&count)
+	}
+
+	return count > 0, err
+}
+
 func (r *ProductRepository) Create(input models.ProductCreateInput) error {
 	tx, err := r.DB.Begin()
 	if err != nil {
@@ -616,6 +656,8 @@ func (r *ProductRepository) Create(input models.ProductCreateInput) error {
 		INSERT INTO products (
 			product_code,
 			barcode,
+			barcode_box,
+			barcode_carton,
 			product_name,
 			category_id,
 			unit_id,
@@ -629,10 +671,12 @@ func (r *ProductRepository) Create(input models.ProductCreateInput) error {
 			box_per_carton,
 			pcs_per_carton,
 			is_active
-		) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+		) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 	`,
 		input.ProductCode,
 		nullableString(input.Barcode),
+		nullableString(input.BarcodeBox),
+		nullableString(input.BarcodeCarton),
 		input.ProductName,
 		nullableInt(input.CategoryID),
 		nullableInt(input.UnitID),
@@ -677,6 +721,8 @@ func (r *ProductRepository) Update(input models.ProductUpdateInput) error {
 		SET
 			product_code = ?,
 			barcode = ?,
+			barcode_box = ?,
+			barcode_carton = ?,
 			product_name = ?,
 			category_id = ?,
 			unit_id = ?,
@@ -694,6 +740,8 @@ func (r *ProductRepository) Update(input models.ProductUpdateInput) error {
 	`,
 		input.ProductCode,
 		nullableString(input.Barcode),
+		nullableString(input.BarcodeBox),
+		nullableString(input.BarcodeCarton),
 		input.ProductName,
 		nullableInt(input.CategoryID),
 		nullableInt(input.UnitID),
@@ -742,6 +790,8 @@ func buildProductListQuery(filter models.ProductListFilter, countOnly bool) (str
 			p.id,
 			p.product_code,
 			COALESCE(p.barcode, '') AS barcode,
+			COALESCE(p.barcode_box, '') AS barcode_box,
+			COALESCE(p.barcode_carton, '') AS barcode_carton,
 			p.product_name,
 			COALESCE(p.category_id, 0) AS category_id,
 			COALESCE(pc.category_name, '') AS category_name,
@@ -792,8 +842,8 @@ func buildProductListQuery(filter models.ProductListFilter, countOnly bool) (str
 
 	if filter.Search != "" {
 		keyword := "%" + strings.ToLower(filter.Search) + "%"
-		conditions = append(conditions, `(LOWER(p.product_code) LIKE ? OR LOWER(COALESCE(p.barcode, '')) LIKE ? OR LOWER(p.product_name) LIKE ? OR LOWER(COALESCE(p.brand, '')) LIKE ?)`)
-		args = append(args, keyword, keyword, keyword, keyword)
+		conditions = append(conditions, `(LOWER(p.product_code) LIKE ? OR LOWER(COALESCE(p.barcode, '')) LIKE ? OR LOWER(COALESCE(p.barcode_box, '')) LIKE ? OR LOWER(COALESCE(p.barcode_carton, '')) LIKE ? OR LOWER(p.product_name) LIKE ? OR LOWER(COALESCE(p.brand, '')) LIKE ?)`)
+		args = append(args, keyword, keyword, keyword, keyword, keyword, keyword)
 	}
 	if filter.CategoryID > 0 {
 		conditions = append(conditions, "p.category_id = ?")
@@ -849,6 +899,8 @@ func scanProduct(scanner interface {
 		&product.ID,
 		&product.ProductCode,
 		&product.Barcode,
+		&product.BarcodeBox,
+		&product.BarcodeCarton,
 		&product.ProductName,
 		&product.CategoryID,
 		&product.CategoryName,

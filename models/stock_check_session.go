@@ -184,6 +184,11 @@ type StockCheckSessionCheckerInputItem struct {
 	ProductID                    int
 	ProductCode                  string
 	Barcode                      string
+	BarcodeBox                   string
+	BarcodeCarton                string
+	PreferredBarcode             string
+	BarcodeSummary               string
+	BarcodeSearchText            string
 	ProductName                  string
 	CategoryName                 string
 	UnitName                     string
