@@ -3,6 +3,7 @@ package controllers
 import (
 	"database/sql"
 	"errors"
+	"fmt"
 	"gobase-app/config"
 	"gobase-app/models"
 	"gobase-app/repositories"
@@ -35,7 +36,128 @@ func SupplierDetail(c *gin.Context) {
 	}
 
 	supplierService := buildSupplierService()
-	renderSupplierDetailPage(c, supplierService, id)
+	renderSupplierDetailPage(c, supplierService, id, c.Query("error"), c.Query("success"), models.SupplierProductCreateInput{})
+}
+
+func SupplierProductStore(c *gin.Context) {
+	supplierID, err := strconv.Atoi(c.Param("id"))
+	if err != nil || supplierID <= 0 {
+		c.String(http.StatusBadRequest, "invalid supplier id")
+		return
+	}
+
+	type supplierProductForm struct {
+		ProductID    int     `form:"product_id" binding:"required"`
+		LastPrice    float64 `form:"last_price"`
+		MOQ          float64 `form:"moq"`
+		PackSize     float64 `form:"pack_size"`
+		LeadTimeDays int     `form:"lead_time_days"`
+		IsPrimary    int     `form:"is_primary"`
+	}
+
+	var form supplierProductForm
+	supplierService := buildSupplierService()
+
+	if err := c.ShouldBind(&form); err != nil {
+		renderSupplierDetailPage(c, supplierService, supplierID, "Form item supplier tidak lengkap", "", models.SupplierProductCreateInput{
+			SupplierID:   supplierID,
+			ProductID:    form.ProductID,
+			LastPrice:    form.LastPrice,
+			MOQ:          form.MOQ,
+			PackSize:     form.PackSize,
+			LeadTimeDays: form.LeadTimeDays,
+			IsPrimary:    form.IsPrimary == 1,
+		})
+		return
+	}
+
+	input := models.SupplierProductCreateInput{
+		SupplierID:   supplierID,
+		ProductID:    form.ProductID,
+		LastPrice:    form.LastPrice,
+		MOQ:          form.MOQ,
+		PackSize:     form.PackSize,
+		LeadTimeDays: form.LeadTimeDays,
+		IsPrimary:    form.IsPrimary == 1,
+	}
+
+	if err := supplierService.CreateSupplierProduct(input); err != nil {
+		renderSupplierDetailPage(c, supplierService, supplierID, err.Error(), "", input)
+		return
+	}
+
+	c.Redirect(http.StatusSeeOther, buildSupplierDetailURL(supplierID, "Item berhasil ditautkan ke supplier"))
+}
+
+func SupplierProductUpdate(c *gin.Context) {
+	supplierID, err := strconv.Atoi(c.Param("id"))
+	if err != nil || supplierID <= 0 {
+		c.String(http.StatusBadRequest, "invalid supplier id")
+		return
+	}
+
+	productID, err := strconv.Atoi(c.Param("product_id"))
+	if err != nil || productID <= 0 {
+		c.String(http.StatusBadRequest, "invalid product id")
+		return
+	}
+
+	type supplierProductEditForm struct {
+		LastPrice    float64 `form:"last_price"`
+		MOQ          float64 `form:"moq"`
+		PackSize     float64 `form:"pack_size"`
+		LeadTimeDays int     `form:"lead_time_days"`
+		IsPrimary    int     `form:"is_primary"`
+	}
+
+	var form supplierProductEditForm
+	supplierService := buildSupplierService()
+
+	if err := c.ShouldBind(&form); err != nil {
+		renderSupplierDetailPage(c, supplierService, supplierID, "Form edit item supplier tidak lengkap", "", models.SupplierProductCreateInput{})
+		return
+	}
+
+	err = supplierService.UpdateSupplierProduct(models.SupplierProductCreateInput{
+		SupplierID:   supplierID,
+		ProductID:    productID,
+		LastPrice:    form.LastPrice,
+		MOQ:          form.MOQ,
+		PackSize:     form.PackSize,
+		LeadTimeDays: form.LeadTimeDays,
+		IsPrimary:    form.IsPrimary == 1,
+	})
+	if err != nil {
+		renderSupplierDetailPage(c, supplierService, supplierID, err.Error(), "", models.SupplierProductCreateInput{})
+		return
+	}
+
+	c.Redirect(http.StatusSeeOther, buildSupplierDetailURL(supplierID, "Item supplier berhasil diperbarui"))
+}
+
+func SupplierProductDelete(c *gin.Context) {
+	supplierID, err := strconv.Atoi(c.Param("id"))
+	if err != nil || supplierID <= 0 {
+		c.String(http.StatusBadRequest, "invalid supplier id")
+		return
+	}
+
+	productID, err := strconv.Atoi(c.Param("product_id"))
+	if err != nil || productID <= 0 {
+		c.String(http.StatusBadRequest, "invalid product id")
+		return
+	}
+
+	supplierService := buildSupplierService()
+	if err := supplierService.DeleteSupplierProduct(models.SupplierProductDeleteInput{
+		SupplierID: supplierID,
+		ProductID:  productID,
+	}); err != nil {
+		renderSupplierDetailPage(c, supplierService, supplierID, err.Error(), "", models.SupplierProductCreateInput{})
+		return
+	}
+
+	c.Redirect(http.StatusSeeOther, buildSupplierDetailURL(supplierID, "Item supplier berhasil dihapus"))
 }
 
 func SupplierStore(c *gin.Context) {
@@ -272,7 +394,7 @@ func buildSupplierPageURL(filter models.SupplierListFilter, page int) string {
 	return "/suppliers?" + encoded
 }
 
-func renderSupplierDetailPage(c *gin.Context, supplierService *services.SupplierService, id int) {
+func renderSupplierDetailPage(c *gin.Context, supplierService *services.SupplierService, id int, errorMessage string, successMessage string, form models.SupplierProductCreateInput) {
 	supplier, err := supplierService.GetSupplierByID(id)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -293,10 +415,30 @@ func renderSupplierDetailPage(c *gin.Context, supplierService *services.Supplier
 		return
 	}
 
+	productOptions, err := supplierService.GetAvailableProductOptions(id)
+	if err != nil {
+		c.String(http.StatusInternalServerError, err.Error())
+		return
+	}
+
 	Render(c, "supplier_detail.html", gin.H{
-		"Title":    supplier.SupplierName,
-		"Page":     "supplierDetail",
-		"Supplier": supplier,
-		"Products": products,
+		"Title":          supplier.SupplierName,
+		"Page":           "supplierDetail",
+		"Supplier":       supplier,
+		"Products":       products,
+		"ProductOptions": productOptions,
+		"Form":           form,
+		"Error":          errorMessage,
+		"Success":        successMessage,
 	})
+}
+
+func buildSupplierDetailURL(id int, successMessage string) string {
+	if successMessage == "" {
+		return fmt.Sprintf("/suppliers/%d", id)
+	}
+
+	values := url.Values{}
+	values.Set("success", successMessage)
+	return fmt.Sprintf("/suppliers/%d?%s", id, values.Encode())
 }

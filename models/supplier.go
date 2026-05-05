@@ -58,6 +58,15 @@ type SupplierProduct struct {
 	UpdatedAtDisplay string
 }
 
+type SupplierProductOption struct {
+	ID           int
+	ProductCode  string
+	Barcode      string
+	ProductName  string
+	CategoryName string
+	UnitName     string
+}
+
 type SupplierStats struct {
 	TotalSuppliers    int
 	ActiveSuppliers   int
@@ -142,6 +151,21 @@ type SupplierUpdateInput struct {
 	PICName         string
 	PaymentTermDays int
 	IsActive        bool
+}
+
+type SupplierProductCreateInput struct {
+	SupplierID   int
+	ProductID    int
+	LastPrice    float64
+	MOQ          float64
+	PackSize     float64
+	LeadTimeDays int
+	IsPrimary    bool
+}
+
+type SupplierProductDeleteInput struct {
+	SupplierID int
+	ProductID  int
 }
 
 type SupplierGroupUpdateInput struct {

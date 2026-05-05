@@ -114,6 +114,18 @@
                             </article>
                         </section>
 
+                        {{ if .Error }}
+                        <div class="rounded-lg border border-rose-200 bg-rose-50 px-5 py-4 text-sm font-semibold text-rose-600">
+                            {{ .Error }}
+                        </div>
+                        {{ end }}
+
+                        {{ if .Success }}
+                        <div class="rounded-lg border border-emerald-200 bg-emerald-50 px-5 py-4 text-sm font-semibold text-emerald-700">
+                            {{ .Success }}
+                        </div>
+                        {{ end }}
+
                         <section class="overflow-hidden rounded-lg bg-white shadow-sm">
                             <div class="flex flex-col gap-4 px-5 py-5 md:flex-row md:items-center md:justify-between">
                                 <div>
@@ -121,46 +133,58 @@
                                     <p class="mt-1 text-xs font-medium text-[#566173]">Kelola katalog dan informasi stok yang terhubung dengan supplier ini.</p>
                                 </div>
 
-                                <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
-                                    <div class="inline-flex items-center gap-2 rounded-md border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-extrabold text-[#566173]">
-                                        <i class="bx bx-package text-base"></i>
-                                        {{ len .Products }} item
+                                <div class="flex flex-col gap-2">
+                                    <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
+                                        <button
+                                            type="button"
+                                            class="inline-flex items-center justify-center gap-2 rounded-md border border-[#001e62] bg-white px-6 py-3 text-sm font-extrabold text-[#001e62] transition hover:bg-slate-50"
+                                            {{ if .ProductOptions }}
+                                            onclick="var modal=document.getElementById('supplierProductModal'); if(modal){ modal.classList.remove('hidden'); modal.classList.add('flex'); document.body.classList.add('overflow-hidden'); } return false;"
+                                            {{ else }}
+                                            onclick="var feedback=document.getElementById('supplier-add-item-feedback'); if(feedback){ feedback.classList.remove('hidden'); } window.alert('Tidak ada item aktif yang bisa ditambahkan ke supplier ini karena semua item aktif sudah tertaut.'); return false;"
+                                            {{ end }}
+                                        >
+                                        <i class="bx bx-plus-circle text-base"></i>
+                                        Tambah Item
+                                        </button>
+                                        
                                     </div>
-                                    <a href="/suppliers" class="inline-flex items-center justify-center gap-2 rounded-md bg-[#001e62] px-6 py-3 text-sm font-extrabold text-white shadow-md shadow-[#001e62]/20 transition hover:bg-[#002f95]">
-                                        <i class="bx bx-arrow-back text-base"></i>
-                                        Kembali
-                                    </a>
+                                    {{ if not .ProductOptions }}
+                                    <p id="supplier-add-item-notice" class="text-xs font-semibold text-amber-700">
+                                        Tidak ada item aktif yang bisa ditambahkan karena semua item aktif sudah tertaut ke supplier ini.
+                                    </p>
+                                    <p id="supplier-add-item-feedback" class="hidden rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-800">
+                                        Tidak ada item aktif yang bisa ditambahkan ke supplier ini karena semua item aktif sudah tertaut.
+                                    </p>
+                                    {{ end }}
                                 </div>
                             </div>
 
                             <div class="overflow-x-auto">
-                                <table class="w-full text-sm" style="min-width: 900px;">
+                                <table class="w-full text-sm" style="min-width: 980px;">
                                     <thead class="bg-slate-50 text-[10px] font-extrabold text-[#001e62]">
                                         <tr>
-                                            <th class="px-5 py-4 text-left">Barcode/SKU</th>
-                                            <th class="px-5 py-4 text-left">Nama Produk</th>
-                                            <th class="px-5 py-4 text-left">Kategori</th>
-                                            <th class="px-5 py-4 text-left">Harga Satuan</th>
-                                            <th class="px-5 py-4 text-left">MOQ</th>
-                                            <th class="px-5 py-4 text-left">Waktu Tunggu</th>
-                                            <th class="px-5 py-4 text-left">Status</th>
+                                            <th class="px-4 py-3 text-left">Barcode/SKU</th>
+                                            <th class="px-4 py-3 text-left">Nama Produk</th>
+                                            <th class="px-4 py-3 text-left">Kategori</th>
+                                            <th class="px-4 py-3 text-left">Waktu Tunggu</th>
+                                            <th class="px-4 py-3 text-left">Status</th>
+                                            <th class="px-4 py-3 text-left">Aksi</th>
                                         </tr>
                                     </thead>
                                     <tbody class="divide-y divide-slate-100">
                                         {{ range .Products }}
                                         <tr class="hover:bg-slate-50/70">
-                                            <td class="px-5 py-5 text-[11px] font-semibold text-[#8b95a5]">{{ if .Barcode }}#{{ .Barcode }}{{ else }}#{{ .ProductCode }}{{ end }}</td>
-                                            <td class="px-5 py-5">
+                                            <td class="px-4 py-3.5 text-[11px] font-semibold text-[#8b95a5]">{{ if .Barcode }}#{{ .Barcode }}{{ else }}#{{ .ProductCode }}{{ end }}</td>
+                                            <td class="px-4 py-3.5">
                                                 <p class="font-extrabold text-[#07142f]">{{ .ProductName }}</p>
                                                 <p class="mt-1 text-[11px] font-semibold text-[#566173]">{{ .ProductCode }}{{ if .IsPrimary }} - Supplier Utama{{ else }} - Prioritas {{ .PriorityNo }}{{ end }}</p>
                                             </td>
-                                            <td class="px-5 py-5">
+                                            <td class="px-4 py-3.5">
                                                 <span class="inline-flex rounded-full bg-slate-100 px-3 py-1 text-[10px] font-extrabold text-[#566173]">{{ if .CategoryName }}{{ .CategoryName }}{{ else }}Tanpa Kategori{{ end }}</span>
                                             </td>
-                                            <td class="px-5 py-5 font-extrabold text-[#07142f]">{{ .LastPriceDisplay }}</td>
-                                            <td class="px-5 py-5 font-semibold text-[#566173]">{{ .MOQDisplay }}</td>
-                                            <td class="px-5 py-5 font-semibold text-[#566173]">{{ .LeadTimeDays }} hari</td>
-                                            <td class="px-5 py-5">
+                                            <td class="px-4 py-3.5 font-semibold text-[#566173]">{{ .LeadTimeDays }} hari</td>
+                                            <td class="px-4 py-3.5">
                                                 {{ if .IsActive }}
                                                 <span class="inline-flex items-center gap-2 text-xs font-extrabold text-[#07142f]">
                                                     <span class="h-2 w-2 rounded-full bg-[#19a856]"></span>
@@ -173,10 +197,36 @@
                                                 </span>
                                                 {{ end }}
                                             </td>
+                                            <td class="px-4 py-3.5">
+                                                <div class="flex items-center gap-1.5">
+                                                    <button
+                                                        type="button"
+                                                        class="btn-edit-supplier-product inline-flex items-center justify-center rounded-md border border-slate-200 bg-white px-2.5 py-1.5 text-[11px] font-extrabold text-[#001e62] transition hover:bg-slate-50"
+                                                        data-product-id="{{ .ProductID }}"
+                                                        data-product-name="{{ .ProductName }}"
+                                                        data-product-code="{{ .ProductCode }}"
+                                                        data-barcode="{{ .Barcode }}"
+                                                        data-last-price="{{ printf "%.2f" .LastPrice }}"
+                                                        data-moq="{{ printf "%.2f" .MOQ }}"
+                                                        data-pack-size="{{ printf "%.2f" .PackSize }}"
+                                                        data-lead-time-days="{{ .LeadTimeDays }}"
+                                                        data-is-primary="{{ if .IsPrimary }}1{{ else }}0{{ end }}"
+                                                    >
+                                                        <i class="bx bx-pencil text-sm"></i>
+                                                        Edit
+                                                    </button>
+                                                    <form method="post" action="/suppliers/{{ $.Supplier.ID }}/products/{{ .ProductID }}/delete" onsubmit="return confirm('Hapus item {{ .ProductName }} dari supplier ini?');">
+                                                        <button type="submit" class="inline-flex items-center justify-center rounded-md border border-rose-200 bg-rose-50 px-2.5 py-1.5 text-[11px] font-extrabold text-rose-600 transition hover:bg-rose-100">
+                                                            <i class="bx bx-trash text-sm"></i>
+                                                            Hapus
+                                                        </button>
+                                                    </form>
+                                                </div>
+                                            </td>
                                         </tr>
                                         {{ else }}
                                         <tr>
-                                            <td colspan="7" class="px-5 py-10 text-center text-sm font-semibold text-[#566173]">Supplier ini belum terhubung ke produk mana pun.</td>
+                                            <td colspan="8" class="px-4 py-8 text-center text-sm font-semibold text-[#566173]">Supplier ini belum terhubung ke produk mana pun.</td>
                                         </tr>
                                         {{ end }}
                                     </tbody>
@@ -186,12 +236,122 @@
                             <div class="flex flex-col gap-3 border-t border-slate-100 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
                                 <p class="text-xs font-semibold text-[#566173]">Menampilkan {{ len .Products }} dari {{ .Supplier.ProductCount }} produk tertaut</p>
                                 <div class="flex items-center gap-2">
+                                    {{ if not .ProductOptions }}
+                                    <span class="inline-flex items-center justify-center rounded-md bg-amber-50 px-4 py-2 text-sm font-extrabold text-amber-700">Semua item aktif sudah tertaut</span>
+                                    {{ end }}
                                     <span class="inline-flex items-center justify-center rounded-md bg-slate-50 px-4 py-2 text-sm font-extrabold text-[#001e62]">{{ .Supplier.SupplierCode }}</span>
                                 </div>
                             </div>
                         </section>
                     </div>
                 </main>
+            </div>
+        </div>
+
+        <div data-modal class="fixed inset-0 z-50 hidden items-center justify-center p-4 sm:p-6" id="supplierProductModal" {{ if .Error }}data-modal-auto-open="true"{{ end }}>
+            <div class="absolute inset-0 bg-slate-900/50" data-modal-close onclick="var modal=document.getElementById('supplierProductModal'); if(modal){ modal.classList.add('hidden'); modal.classList.remove('flex'); } if(!document.querySelector('[data-modal].flex')){ document.body.classList.remove('overflow-hidden'); }"></div>
+            <div class="relative w-full max-w-4xl rounded-lg bg-white p-5 shadow-xl sm:p-6">
+                <div class="flex items-start justify-between gap-4 border-b border-slate-100 pb-4">
+                    <div>
+                        <h2 class="text-lg font-extrabold text-[#001e62]">Tambah Item Supplier</h2>
+                        <p class="mt-1 text-sm font-medium text-[#566173]">Tautkan item aktif ke supplier {{ .Supplier.SupplierName }}.</p>
+                    </div>
+                    <div class="flex shrink-0 items-center gap-2">
+                        
+                        <button type="button" class="inline-flex h-10 w-10 items-center justify-center rounded-lg text-slate-400 transition hover:bg-slate-50 hover:text-slate-600" data-modal-close onclick="var modal=document.getElementById('supplierProductModal'); if(modal){ modal.classList.add('hidden'); modal.classList.remove('flex'); } if(!document.querySelector('[data-modal].flex')){ document.body.classList.remove('overflow-hidden'); }">
+                            <i class="bx bx-x text-2xl"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <form id="supplier-product-form" action="/suppliers/{{ .Supplier.ID }}/products" method="post" class="mt-6">
+                    <div class="space-y-5">
+                        <div>
+                            <label for="product_id" class="text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#566173]">Item</label>
+                            <select id="product_id" name="product_id" required class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-[#07142f] outline-none transition focus:border-brand-500" {{ if not .ProductOptions }}disabled{{ end }}>
+                                <option value="">Pilih Item</option>
+                                {{ range .ProductOptions }}
+                                <option value="{{ .ID }}" {{ if eq $.Form.ProductID .ID }}selected{{ end }}>
+                                    {{ .ProductName }} ({{ .ProductCode }}){{ if .Barcode }} - {{ .Barcode }}{{ end }}
+                                </option>
+                                {{ end }}
+                            </select>
+                            <p class="mt-2 text-xs font-medium text-[#566173]">
+                                {{ if .ProductOptions }}
+                                    Pilih item aktif yang belum tertaut ke supplier ini.
+                                {{ else }}
+                                    Tidak ada item aktif tersisa untuk ditambahkan saat ini.
+                                {{ end }}
+                            </p>
+                        </div>
+
+                        <div class="grid gap-4 md:grid-cols-2">
+                            <div>
+                                <label for="lead_time_days" class="text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#566173]">Lead Time (Hari)</label>
+                                <input type="number" id="lead_time_days" name="lead_time_days" min="0" step="1" value="{{ .Form.LeadTimeDays }}" class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-[#07142f] outline-none transition focus:border-brand-500">
+                            </div>
+                        </div>
+
+                        <label class="flex items-start gap-3 rounded-lg border border-slate-200 bg-slate-50 px-4 py-4">
+                            <input type="checkbox" name="is_primary" value="1" class="mt-1 h-4 w-4 rounded border-slate-300 text-[#001e62] focus:ring-[#001e62]" {{ if .Form.IsPrimary }}checked{{ end }}>
+                            <span>
+                                <span class="block text-sm font-extrabold text-[#07142f]">Jadikan supplier utama untuk item ini</span>
+                                <span class="mt-1 block text-xs font-medium text-[#566173]">Jika dipilih, supplier utama item akan berpindah ke supplier ini.</span>
+                            </span>
+                        </label>
+
+                        <div class="flex flex-col gap-3 border-t border-slate-100 pt-4 sm:flex-row sm:justify-end">
+                            <button type="button" class="inline-flex items-center justify-center rounded-md border border-slate-200 bg-white px-5 py-3 text-sm font-extrabold text-[#1e2b42] transition hover:bg-slate-50 sm:min-w-[120px]" data-modal-close onclick="var modal=document.getElementById('supplierProductModal'); if(modal){ modal.classList.add('hidden'); modal.classList.remove('flex'); } if(!document.querySelector('[data-modal].flex')){ document.body.classList.remove('overflow-hidden'); }">Batal</button>
+                            <button type="submit" class="inline-flex items-center justify-center rounded-md bg-[#001e62] px-5 py-3 text-sm font-extrabold text-white transition hover:bg-[#002f95] disabled:cursor-not-allowed disabled:bg-slate-300 sm:min-w-[170px]" {{ if not .ProductOptions }}disabled{{ end }}>Simpan Item</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div data-modal class="fixed inset-0 z-50 hidden items-center justify-center p-4 sm:p-6" id="supplierProductEditModal">
+            <div class="absolute inset-0 bg-slate-900/50" data-modal-close onclick="var modal=document.getElementById('supplierProductEditModal'); if(modal){ modal.classList.add('hidden'); modal.classList.remove('flex'); } if(!document.querySelector('[data-modal].flex')){ document.body.classList.remove('overflow-hidden'); }"></div>
+            <div class="relative w-full max-w-4xl rounded-lg bg-white p-5 shadow-xl sm:p-6">
+                <div class="flex items-start justify-between gap-4 border-b border-slate-100 pb-4">
+                    <div>
+                        <h2 class="text-lg font-extrabold text-[#001e62]">Edit Item Supplier</h2>
+                        <p class="mt-1 text-sm font-medium text-[#566173]">Perbarui pengaturan item yang sudah tertaut ke supplier ini.</p>
+                    </div>
+                    <button type="button" class="inline-flex h-10 w-10 items-center justify-center rounded-lg text-slate-400 transition hover:bg-slate-50 hover:text-slate-600" data-modal-close onclick="var modal=document.getElementById('supplierProductEditModal'); if(modal){ modal.classList.add('hidden'); modal.classList.remove('flex'); } if(!document.querySelector('[data-modal].flex')){ document.body.classList.remove('overflow-hidden'); }">
+                        <i class="bx bx-x text-2xl"></i>
+                    </button>
+                </div>
+
+                <form id="supplier-product-edit-form" action="" method="post" class="mt-6">
+                    <div class="space-y-5">
+                        <div>
+                            <label for="edit_supplier_product_display" class="text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#566173]">Item</label>
+                            <input type="text" id="edit_supplier_product_display" value="" readonly class="mt-2 w-full rounded-md border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-[#07142f] outline-none">
+                            <p id="edit_supplier_product_meta" class="mt-2 text-xs font-medium text-[#566173]">-</p>
+                        </div>
+
+                        <input type="hidden" id="edit_last_price" name="last_price" value="0">
+                        <input type="hidden" id="edit_moq" name="moq" value="0">
+
+                        <div>
+                            <label for="edit_lead_time_days" class="text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#566173]">Lead Time (Hari)</label>
+                            <input type="number" id="edit_lead_time_days" name="lead_time_days" min="0" step="1" value="0" class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-[#07142f] outline-none transition focus:border-brand-500">
+                        </div>
+
+                        <label class="flex items-start gap-3 rounded-lg border border-slate-200 bg-slate-50 px-4 py-4">
+                            <input type="checkbox" id="edit_is_primary" name="is_primary" value="1" class="mt-1 h-4 w-4 rounded border-slate-300 text-[#001e62] focus:ring-[#001e62]">
+                            <span>
+                                <span class="block text-sm font-extrabold text-[#07142f]">Jadikan supplier utama untuk item ini</span>
+                                <span class="mt-1 block text-xs font-medium text-[#566173]">Jika dipilih, supplier utama item akan berpindah ke supplier ini.</span>
+                            </span>
+                        </label>
+
+                        <div class="flex flex-col gap-3 border-t border-slate-100 pt-4 sm:flex-row sm:justify-end">
+                            <button type="button" class="inline-flex items-center justify-center rounded-md border border-slate-200 bg-white px-5 py-3 text-sm font-extrabold text-[#1e2b42] transition hover:bg-slate-50 sm:min-w-[120px]" data-modal-close onclick="var modal=document.getElementById('supplierProductEditModal'); if(modal){ modal.classList.add('hidden'); modal.classList.remove('flex'); } if(!document.querySelector('[data-modal].flex')){ document.body.classList.remove('overflow-hidden'); }">Batal</button>
+                            <button type="submit" class="inline-flex items-center justify-center rounded-md bg-[#001e62] px-5 py-3 text-sm font-extrabold text-white transition hover:bg-[#002f95] sm:min-w-[170px]">Simpan Perubahan</button>
+                        </div>
+                    </div>
+                </form>
             </div>
         </div>
 
@@ -207,7 +367,9 @@
                     if (!sidebar) return;
                     sidebar.classList.add('-translate-x-full');
                     if (overlay) overlay.classList.add('hidden');
-                    document.body.classList.remove('overflow-hidden');
+                    if (!document.querySelector('[data-modal].flex')) {
+                        document.body.classList.remove('overflow-hidden');
+                    }
                 }
 
                 function openSidebar() {
@@ -218,6 +380,23 @@
                     sidebar.classList.remove('-translate-x-full');
                     if (overlay) overlay.classList.remove('hidden');
                     document.body.classList.add('overflow-hidden');
+                }
+
+                function openModal(modalId) {
+                    var modal = document.getElementById(modalId);
+                    if (!modal) return;
+                    modal.classList.remove('hidden');
+                    modal.classList.add('flex');
+                    document.body.classList.add('overflow-hidden');
+                }
+
+                function closeModal(modal) {
+                    if (!modal) return;
+                    modal.classList.add('hidden');
+                    modal.classList.remove('flex');
+                    if (!document.querySelector('[data-modal].flex')) {
+                        document.body.classList.remove('overflow-hidden');
+                    }
                 }
 
                 toggleButtons.forEach(function (button) {
@@ -234,6 +413,56 @@
                 if (overlay) {
                     overlay.addEventListener('click', closeSidebar);
                 }
+
+                document.querySelectorAll('[data-modal-close]').forEach(function (close) {
+                    close.addEventListener('click', function () {
+                        closeModal(close.closest('[data-modal]'));
+                    });
+                });
+
+                document.addEventListener('keydown', function (event) {
+                    if (event.key !== 'Escape') return;
+                    document.querySelectorAll('[data-modal].flex').forEach(closeModal);
+                });
+
+                document.querySelectorAll('[data-modal-auto-open="true"]').forEach(function (modal) {
+                    if (modal.id) {
+                        openModal(modal.id);
+                    }
+                });
+
+                document.querySelectorAll('.btn-edit-supplier-product').forEach(function (button) {
+                    button.addEventListener('click', function () {
+                        var form = document.getElementById('supplier-product-edit-form');
+                        if (!form) return;
+
+                        var productId = button.getAttribute('data-product-id') || '';
+                        var productName = button.getAttribute('data-product-name') || '-';
+                        var productCode = button.getAttribute('data-product-code') || '-';
+                        var barcode = button.getAttribute('data-barcode') || '';
+
+                        form.action = '/suppliers/{{ .Supplier.ID }}/products/' + productId + '/update';
+
+                        var nameEl = document.getElementById('edit_supplier_product_display');
+                        var metaEl = document.getElementById('edit_supplier_product_meta');
+                        var leadTimeEl = document.getElementById('edit_lead_time_days');
+                        var packSizeEl = document.getElementById('edit_pack_size');
+                        var lastPriceEl = document.getElementById('edit_last_price');
+                        var moqEl = document.getElementById('edit_moq');
+                        var primaryEl = document.getElementById('edit_is_primary');
+
+                        if (nameEl) nameEl.value = productName;
+                        if (metaEl) metaEl.textContent = barcode ? (productCode + ' - ' + barcode) : productCode;
+                        if (leadTimeEl) leadTimeEl.value = button.getAttribute('data-lead-time-days') || '0';
+                        if (packSizeEl) packSizeEl.value = button.getAttribute('data-pack-size') || '1.00';
+                        if (lastPriceEl) lastPriceEl.value = button.getAttribute('data-last-price') || '0';
+                        if (moqEl) moqEl.value = button.getAttribute('data-moq') || '0';
+                        if (primaryEl) primaryEl.checked = (button.getAttribute('data-is-primary') || '0') === '1';
+
+                        openModal('supplierProductEditModal');
+                    });
+                });
+
             });
         </script>
     </body>

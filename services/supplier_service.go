@@ -71,6 +71,13 @@ func (s *SupplierService) GetSuppliedProducts(supplierID int) ([]models.Supplier
 	return s.Repo.GetSuppliedProducts(supplierID)
 }
 
+func (s *SupplierService) GetAvailableProductOptions(supplierID int) ([]models.SupplierProductOption, error) {
+	if supplierID <= 0 {
+		return nil, errors.New("supplier id tidak valid")
+	}
+	return s.Repo.GetAvailableProductOptions(supplierID)
+}
+
 func (s *SupplierService) GetSupplierStats() (models.SupplierStats, error) {
 	return s.Repo.GetStats()
 }
@@ -140,6 +147,75 @@ func (s *SupplierService) DeleteSupplier(id int) error {
 	return nil
 }
 
+func (s *SupplierService) CreateSupplierProduct(input models.SupplierProductCreateInput) error {
+	sanitizeSupplierProductCreateInput(&input)
+
+	if input.SupplierID <= 0 {
+		return errors.New("supplier id tidak valid")
+	}
+	if input.ProductID <= 0 {
+		return errors.New("item wajib dipilih")
+	}
+
+	supplierExists, err := s.Repo.ExistsByID(input.SupplierID)
+	if err != nil {
+		return err
+	}
+	if !supplierExists {
+		return fmt.Errorf("supplier id %d tidak ditemukan", input.SupplierID)
+	}
+
+	productExists, err := s.Repo.ProductExistsByID(input.ProductID)
+	if err != nil {
+		return err
+	}
+	if !productExists {
+		return fmt.Errorf("produk id %d tidak ditemukan", input.ProductID)
+	}
+
+	return s.Repo.UpsertProductSupply(input)
+}
+
+func (s *SupplierService) UpdateSupplierProduct(input models.SupplierProductCreateInput) error {
+	sanitizeSupplierProductCreateInput(&input)
+
+	if input.SupplierID <= 0 {
+		return errors.New("supplier id tidak valid")
+	}
+	if input.ProductID <= 0 {
+		return errors.New("item wajib dipilih")
+	}
+
+	exists, err := s.Repo.ProductSupplyExists(input.SupplierID, input.ProductID)
+	if err != nil {
+		return err
+	}
+	if !exists {
+		return errors.New("tautan item supplier tidak ditemukan")
+	}
+
+	return s.Repo.UpsertProductSupply(input)
+}
+
+func (s *SupplierService) DeleteSupplierProduct(input models.SupplierProductDeleteInput) error {
+	if input.SupplierID <= 0 {
+		return errors.New("supplier id tidak valid")
+	}
+	if input.ProductID <= 0 {
+		return errors.New("item supplier tidak valid")
+	}
+
+	exists, err := s.Repo.ProductSupplyExists(input.SupplierID, input.ProductID)
+	if err != nil {
+		return err
+	}
+	if !exists {
+		return errors.New("tautan item supplier tidak ditemukan")
+	}
+
+	return s.Repo.DeleteProductSupply(input)
+}
+
 func sanitizeSupplierCreateInput(input *models.SupplierCreateInput) {
 	input.SupplierCode = strings.ToUpper(strings.TrimSpace(input.SupplierCode))
 	input.SupplierName = strings.TrimSpace(input.SupplierName)
@@ -163,6 +239,21 @@ func sanitizeSupplierUpdateInput(input *models.SupplierUpdateInput) {
 	input.PICName = strings.TrimSpace(input.PICName)
 	if input.PaymentTermDays < 0 {
 		input.PaymentTermDays = 0
+	}
+}
+
+func sanitizeSupplierProductCreateInput(input *models.SupplierProductCreateInput) {
+	if input.LastPrice < 0 {
+		input.LastPrice = 0
+	}
+	if input.MOQ < 0 {
+		input.MOQ = 0
+	}
+	if input.PackSize <= 0 {
+		input.PackSize = 1
+	}
+	if input.LeadTimeDays < 0 {
+		input.LeadTimeDays = 0
 	}
 }
 

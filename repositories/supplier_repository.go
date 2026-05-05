@@ -281,6 +281,52 @@ func (r *SupplierRepository) GetSuppliedProducts(supplierID int) ([]models.Suppl
 	return products, rows.Err()
 }
 
+func (r *SupplierRepository) GetAvailableProductOptions(supplierID int) ([]models.SupplierProductOption, error) {
+	rows, err := r.DB.Query(`
+		SELECT
+			p.id,
+			p.product_code,
+			COALESCE(p.barcode, '') AS barcode,
+			p.product_name,
+			COALESCE(pc.category_name, '') AS category_name,
+			COALESCE(u.unit_name, '') AS unit_name
+		FROM products p
+		LEFT JOIN product_categories pc ON pc.id = p.category_id
+		LEFT JOIN units u ON u.id = p.unit_id
+		WHERE p.is_active = 1
+			AND NOT EXISTS (
+				SELECT 1
+				FROM product_suppliers ps
+				WHERE ps.product_id = p.id
+					AND ps.supplier_id = ?
+					AND ps.is_active = 1
+			)
+		ORDER BY p.product_name ASC, p.id ASC
+	`, supplierID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var products []models.SupplierProductOption
+	for rows.Next() {
+		var product models.SupplierProductOption
+		if err := rows.Scan(
+			&product.ID,
+			&product.ProductCode,
+			&product.Barcode,
+			&product.ProductName,
+			&product.CategoryName,
+			&product.UnitName,
+		); err != nil {
+			return nil, err
+		}
+		products = append(products, product)
+	}
+
+	return products, rows.Err()
+}
+
 func (r *SupplierRepository) GetStats() (models.SupplierStats, error) {
 	var stats models.SupplierStats
 
@@ -356,6 +402,22 @@ func (r *SupplierRepository) GetTypes() ([]string, error) {
 func (r *SupplierRepository) ExistsByID(id int) (bool, error) {
 	var count int
 	err := r.DB.QueryRow(`SELECT COUNT(1) FROM suppliers WHERE id = ?`, id).Scan(&count)
+	return count > 0, err
+}
+
+func (r *SupplierRepository) ProductExistsByID(id int) (bool, error) {
+	var count int
+	err := r.DB.QueryRow(`SELECT COUNT(1) FROM products WHERE id = ?`, id).Scan(&count)
+	return count > 0, err
+}
+
+func (r *SupplierRepository) ProductSupplyExists(supplierID, productID int) (bool, error) {
+	var count int
+	err := r.DB.QueryRow(`
+		SELECT COUNT(1)
+		FROM product_suppliers
+		WHERE supplier_id = ? AND product_id = ?
+	`, supplierID, productID).Scan(&count)
 	return count > 0, err
 }
 
@@ -438,6 +500,191 @@ func (r *SupplierRepository) Update(input models.SupplierUpdateInput) error {
 
 func (r *SupplierRepository) DeleteByID(id int) error {
 	_, err := r.DB.Exec(`DELETE FROM suppliers WHERE id = ?`, id)
+	return err
+}
+
+func (r *SupplierRepository) UpsertProductSupply(input models.SupplierProductCreateInput) error {
+	tx, err := r.DB.Begin()
+	if err != nil {
+		return err
+	}
+
+	if input.IsPrimary {
+		if _, err := tx.Exec(`
+			UPDATE product_suppliers
+			SET is_primary = 0
+			WHERE product_id = ?
+		`, input.ProductID); err != nil {
+			tx.Rollback()
+			return err
+		}
+	}
+
+	var (
+		existingID       int
+		existingPriority int
+	)
+
+	err = tx.QueryRow(`
+		SELECT id, priority_no
+		FROM product_suppliers
+		WHERE product_id = ? AND supplier_id = ?
+		LIMIT 1
+	`, input.ProductID, input.SupplierID).Scan(&existingID, &existingPriority)
+
+	if err != nil && err != sql.ErrNoRows {
+		tx.Rollback()
+		return err
+	}
+
+	priorityNo := existingPriority
+	if input.IsPrimary {
+		priorityNo = 1
+	}
+	if priorityNo <= 0 {
+		if err := tx.QueryRow(`
+			SELECT COALESCE(MAX(priority_no), 0) + 1
+			FROM product_suppliers
+			WHERE product_id = ?
+		`, input.ProductID).Scan(&priorityNo); err != nil {
+			tx.Rollback()
+			return err
+		}
+		if priorityNo <= 0 {
+			priorityNo = 1
+		}
+	}
+
+	if err == sql.ErrNoRows {
+		_, err = tx.Exec(`
+			INSERT INTO product_suppliers (
+				product_id,
+				supplier_id,
+				is_primary,
+				priority_no,
+				last_price,
+				moq,
+				lead_time_days,
+				pack_size,
+				is_active
+			) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1)
+		`,
+			input.ProductID,
+			input.SupplierID,
+			boolToInt(input.IsPrimary),
+			priorityNo,
+			input.LastPrice,
+			input.MOQ,
+			input.LeadTimeDays,
+			input.PackSize,
+		)
+		if err != nil {
+			tx.Rollback()
+			return err
+		}
+
+		if err := normalizePrimarySupplierForProduct(tx, input.ProductID); err != nil {
+			tx.Rollback()
+			return err
+		}
+
+		return tx.Commit()
+	}
+
+	_, err = tx.Exec(`
+		UPDATE product_suppliers
+		SET
+			is_primary = ?,
+			priority_no = ?,
+			last_price = ?,
+			moq = ?,
+			lead_time_days = ?,
+			pack_size = ?,
+			is_active = 1
+		WHERE id = ?
+	`,
+		boolToInt(input.IsPrimary),
+		priorityNo,
+		input.LastPrice,
+		input.MOQ,
+		input.LeadTimeDays,
+		input.PackSize,
+		existingID,
+	)
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	if err := normalizePrimarySupplierForProduct(tx, input.ProductID); err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	return tx.Commit()
+}
+
+func (r *SupplierRepository) DeleteProductSupply(input models.SupplierProductDeleteInput) error {
+	tx, err := r.DB.Begin()
+	if err != nil {
+		return err
+	}
+
+	_, err = tx.Exec(`
+		DELETE FROM product_suppliers
+		WHERE supplier_id = ? AND product_id = ?
+	`, input.SupplierID, input.ProductID)
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	if err := normalizePrimarySupplierForProduct(tx, input.ProductID); err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	return tx.Commit()
+}
+
+func normalizePrimarySupplierForProduct(tx *sql.Tx, productID int) error {
+	if productID <= 0 {
+		return nil
+	}
+
+	var primaryCount int
+	if err := tx.QueryRow(`
+		SELECT COUNT(1)
+		FROM product_suppliers
+		WHERE product_id = ? AND is_active = 1 AND is_primary = 1
+	`, productID).Scan(&primaryCount); err != nil {
+		return err
+	}
+
+	if primaryCount > 0 {
+		return nil
+	}
+
+	var supplierID int
+	err := tx.QueryRow(`
+		SELECT supplier_id
+		FROM product_suppliers
+		WHERE product_id = ? AND is_active = 1
+		ORDER BY priority_no ASC, id ASC
+		LIMIT 1
+	`, productID).Scan(&supplierID)
+	if err == sql.ErrNoRows {
+		return nil
+	}
+	if err != nil {
+		return err
+	}
+
+	_, err = tx.Exec(`
+		UPDATE product_suppliers
+		SET is_primary = CASE WHEN supplier_id = ? THEN 1 ELSE 0 END
+		WHERE product_id = ?
+	`, supplierID, productID)
 	return err
 }
 
