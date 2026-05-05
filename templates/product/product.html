@@ -124,27 +124,32 @@
 
                         <section class="overflow-hidden rounded-lg bg-white shadow-sm">
                             <div class="overflow-x-auto">
-                                <table class="w-full text-sm" style="min-width: 1030px;">
+                                <table class="w-full text-sm" style="min-width: 1280px;">
                                     <thead class="bg-slate-100 text-[10px] font-extrabold uppercase text-[#001e62]">
                                         <tr>
-                                            <th class="px-3 py-2.5 text-left">No</th>
-                                            <th class="px-3 py-2.5 text-left">Detail Produk</th>
-                                            <th class="px-3 py-2.5 text-left">SKU</th>
-                                            <th class="px-3 py-2.5 text-left">Barcode</th>
-                                            <th class="px-3 py-2.5 text-left">Supplier</th>
-                                            <th class="px-3 py-2.5 text-left">Status</th>
-                                            <th class="px-3 py-2.5 text-left">Aksi</th>
+                                            <th class="px-2.5 py-2 text-left">No</th>
+                                            <th class="px-2.5 py-2 text-left">SKU</th>
+                                            <th class="px-2.5 py-2 text-left">Detail Produk</th>
+                                            <th class="px-2.5 py-2 text-left">Barcode Unit</th>
+                                            <th class="px-2.5 py-2 text-left">Barcode Box</th>
+                                            <th class="px-2.5 py-2 text-left">Barcode Carton</th>
+                                            <th class="px-2.5 py-2 text-left">Supplier</th>
+                                            <th class="px-2.5 py-2 text-left">Status</th>
+                                            <th class="px-2.5 py-2 text-left">Aksi</th>
                                         </tr>
                                     </thead>
                                     <tbody class="divide-y divide-slate-100">
                                         {{ range $product := .products }}
                                         <tr class="hover:bg-slate-50/70">
-                                            <td class="px-3 py-2 align-top">
+                                            <td class="px-2.5 py-1.5 align-top">
                                                 <p class="text-[11px] font-extrabold text-[#566173]">{{ $product.RowNumber }}</p>
                                             </td>
-                                            <td class="px-3 py-2">
-                                                <div class="flex items-center gap-2.5">
-                                                    <span class="inline-flex h-9 w-9 flex-none items-center justify-center overflow-hidden rounded-md bg-[#eef3ff] text-[10px] font-extrabold uppercase text-[#001e62]">
+                                            <td class="px-2.5 py-1.5">
+                                                <p class="font-mono text-[12px] font-black uppercase tracking-[0.12em] text-[#001e62]">{{ $product.ProductCode }}</p>
+                                            </td>
+                                            <td class="px-2.5 py-1.5">
+                                                <div class="flex items-center gap-2">
+                                                    <span class="inline-flex h-8 w-8 flex-none items-center justify-center overflow-hidden rounded-md bg-[#eef3ff] text-[10px] font-extrabold uppercase text-[#001e62]">
                                                         {{ if ge (len $product.ProductName) 2 }}
                                                             {{ printf "%.2s" $product.ProductName }}
                                                         {{ else }}
@@ -153,43 +158,44 @@
                                                     </span>
                                                     <div>
                                                         <p class="text-[13px] font-extrabold leading-tight text-[#07142f]">{{ $product.ProductName }}</p>
-                                                        <p class="text-[10px] font-semibold text-[#566173]">{{ if $product.CategoryName }}{{ $product.CategoryName }}{{ else }}Tanpa Kategori{{ end }}</p>
+                                                        <p class="text-[10px] font-semibold leading-tight text-[#566173]">{{ if $product.CategoryName }}{{ $product.CategoryName }}{{ else }}Tanpa Kategori{{ end }}</p>
                                                     </div>
                                                 </div>
                                             </td>
-                                            <td class="px-3 py-2">
-                                                <p class="font-mono text-[12px] font-black uppercase tracking-[0.12em] text-[#001e62]">{{ $product.ProductCode }}</p>
+                                            <td class="px-2.5 py-1.5">
+                                                <p class="text-[10px] font-semibold text-[#566173]">{{ if $product.Barcode }}{{ $product.Barcode }}{{ else }}-{{ end }}</p>
                                             </td>
-                                            <td class="px-3 py-2">
-                                                <p class="text-[10px] font-semibold text-[#566173]">Unit: {{ if $product.Barcode }}{{ $product.Barcode }}{{ else }}-{{ end }}</p>
-                                                <p class="text-[10px] font-semibold text-[#566173]">Box: {{ if $product.BarcodeBox }}{{ $product.BarcodeBox }}{{ else }}-{{ end }}</p>
-                                                <p class="text-[10px] font-semibold text-[#566173]">Carton: {{ if $product.BarcodeCarton }}{{ $product.BarcodeCarton }}{{ else }}-{{ end }}</p>
+                                            <td class="px-2.5 py-1.5">
+                                                <p class="text-[10px] font-semibold text-[#566173]">{{ if $product.BarcodeBox }}{{ $product.BarcodeBox }}{{ else }}-{{ end }}</p>
                                             </td>
-                                            <td class="px-3 py-2">
+                                            <td class="px-2.5 py-1.5">
+                                                <p class="text-[10px] font-semibold text-[#566173]">{{ if $product.BarcodeCarton }}{{ $product.BarcodeCarton }}{{ else }}-{{ end }}</p>
+                                            </td>
+                                            <td class="px-2.5 py-1.5">
                                                 <p class="text-[12px] font-semibold text-[#1e2b42]">{{ if $product.PrimarySupplierName }}{{ $product.PrimarySupplierName }}{{ else }}-{{ end }}</p>
                                                 <p class="text-[10px] font-semibold text-[#566173]">Lead time {{ $product.DefaultLeadTimeDays }} hari</p>
                                             </td>
-                                            <td class="px-3 py-2">
+                                            <td class="px-2.5 py-1.5">
                                                 {{ if $product.IsActive }}
-                                                <span class="inline-flex items-center gap-1 rounded-md bg-[#dcfae7] px-2 py-1 text-[9px] font-extrabold uppercase text-[#19a856]">
+                                                <span class="inline-flex items-center gap-1 rounded-md bg-[#dcfae7] px-2 py-0.5 text-[9px] font-extrabold uppercase text-[#19a856]">
                                                     <span class="h-1.5 w-1.5 rounded-full bg-[#19a856]"></span>
                                                     {{ $product.StatusLabel }}
                                                 </span>
                                                 {{ else }}
-                                                <span class="inline-flex items-center gap-1 rounded-md bg-rose-50 px-2 py-1 text-[9px] font-extrabold uppercase text-rose-600">
+                                                <span class="inline-flex items-center gap-1 rounded-md bg-rose-50 px-2 py-0.5 text-[9px] font-extrabold uppercase text-rose-600">
                                                     <span class="h-1.5 w-1.5 rounded-full bg-rose-500"></span>
                                                     {{ $product.StatusLabel }}
                                                 </span>
                                                 {{ end }}
                                             </td>
-                                            <td class="px-3 py-2">
-                                                <div class="flex items-center gap-2">
-                                                    <a href="/products/{{ $product.ID }}" class="text-sm text-[#24408f] transition hover:text-[#001e62]">
+                                            <td class="px-2.5 py-1.5">
+                                                <div class="flex items-center gap-1.5">
+                                                    <a href="/products/{{ $product.ID }}" class="text-base text-[#24408f] transition hover:text-[#001e62]">
                                                         <i class="bx bx-show-alt"></i>
                                                     </a>
                                                     <button
                                                         type="button"
-                                                        class="btn-edit-product text-sm text-[#001e62] transition hover:text-[#002f95]"
+                                                        class="btn-edit-product text-base text-[#001e62] transition hover:text-[#002f95]"
                                                         data-id="{{ $product.ID }}"
                                                         data-product-code="{{ $product.ProductCode }}"
                                                         data-barcode="{{ $product.Barcode }}"
@@ -208,7 +214,7 @@
                                                         data-supplier-id="{{ $product.PrimarySupplierID }}">
                                                         <i class="bx bx-pencil"></i>
                                                     </button>
-                                                    <button type="button" class="btn-delete-product text-sm text-rose-600 transition hover:text-rose-700" data-url="/products/delete/{{ $product.ID }}" data-product-name="{{ $product.ProductName }}">
+                                                    <button type="button" class="btn-delete-product text-base text-rose-600 transition hover:text-rose-700" data-url="/products/delete/{{ $product.ID }}" data-product-name="{{ $product.ProductName }}">
                                                         <i class="bx bx-trash"></i>
                                                     </button>
                                                 </div>
@@ -216,7 +222,7 @@
                                         </tr>
                                         {{ else }}
                                         <tr>
-                                            <td colspan="7" class="px-5 py-10 text-center text-sm font-semibold text-[#566173]">
+                                            <td colspan="9" class="px-5 py-10 text-center text-sm font-semibold text-[#566173]">
                                                 {{ if $.Filters.Search }}
                                                     Tidak ada produk yang cocok dengan pencarian "{{ $.Filters.Search }}"
                                                 {{ else }}
