@@ -3,12 +3,10 @@ package controllers
 import (
 	"net/http"
 	"strconv"
-	"strings"
 	"time"
 
 	"gobase-app/models"
 
-	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 )
 
@@ -46,13 +44,11 @@ func CheckerDashboardIndex(c *gin.Context) {
 		return
 	}
 
-	allowedStoreSet := extractCurrentUserStoreIDSet(c)
+	allowedStoreSet := buildStoreAccessSet(stores)
 	filteredSessions := make([]models.StockCheckSession, 0, len(sessionsToday))
 	for _, session := range sessionsToday {
-		if len(allowedStoreSet) > 0 {
-			if _, ok := allowedStoreSet[session.StoreID]; !ok {
-				continue
-			}
+		if !isStoreAccessible(allowedStoreSet, session.StoreID) {
+			continue
 		}
 		filteredSessions = append(filteredSessions, session)
 	}
@@ -91,10 +87,8 @@ func CheckerDashboardIndex(c *gin.Context) {
 	recentSOSuppliers := make([]models.Supplier, 0, 5)
 	seenSupplier := map[int]struct{}{}
 	for _, session := range recentSOSessions {
-		if len(allowedStoreSet) > 0 {
-			if _, ok := allowedStoreSet[session.StoreID]; !ok {
-				continue
-			}
+		if !isStoreAccessible(allowedStoreSet, session.StoreID) {
+			continue
 		}
 		if session.SupplierID <= 0 {
 			continue
@@ -135,39 +129,4 @@ func CheckerDashboardIndex(c *gin.Context) {
 		"Sessions":           visibleSessions,
 		"NextSessionURL":     nextSessionURL,
 	})
-}
-
-func extractCurrentUserStoreIDSet(c *gin.Context) map[int]struct{} {
-	session := sessions.Default(c)
-	storeRaw := ""
-
-	if user := session.Get("user"); user != nil {
-		switch val := user.(type) {
-		case models.SessionUser:
-			storeRaw = val.StoreID
-		case map[string]interface{}:
-			if store, ok := val["store_id"].(string); ok {
-				storeRaw = store
-			} else if store, ok := val["StoreID"].(string); ok {
-				storeRaw = store
-			}
-		case gin.H:
-			if store, ok := val["store_id"].(string); ok {
-				storeRaw = store
-			} else if store, ok := val["StoreID"].(string); ok {
-				storeRaw = store
-			}
-		}
-	}
-
-	result := map[int]struct{}{}
-	for _, token := range strings.Split(storeRaw, ",") {
-		id, err := strconv.Atoi(strings.TrimSpace(token))
-		if err != nil || id <= 0 {
-			continue
-		}
-		result[id] = struct{}{}
-	}
-
-	return result
 }

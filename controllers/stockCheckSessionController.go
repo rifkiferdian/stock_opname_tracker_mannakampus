@@ -783,16 +783,51 @@ func renderStockCheckCheckerDetailPage(c *gin.Context, supplierService *services
 		filter.Limit = 10
 	}
 
-	sessions, totalItems, err := sessionService.GetSessions(filter)
+	stores, err := sessionService.GetStoreOptionsByUserID(currentUserID)
+	if err != nil {
+		c.String(http.StatusInternalServerError, err.Error())
+		return
+	}
+	allowedStoreSet := buildStoreAccessSet(stores)
+
+	fetchFilter := filter
+	fetchFilter.Page = 1
+	fetchFilter.Limit = 500
+	sessionsRaw, _, err := sessionService.GetSessions(fetchFilter)
 	if err != nil {
 		c.String(http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	stores, err := sessionService.GetStoreOptionsByUserID(currentUserID)
-	if err != nil {
-		c.String(http.StatusInternalServerError, err.Error())
-		return
+	accessibleSessions := make([]models.StockCheckSession, 0, len(sessionsRaw))
+	for _, session := range sessionsRaw {
+		if !isStoreAccessible(allowedStoreSet, session.StoreID) {
+			continue
+		}
+		accessibleSessions = append(accessibleSessions, session)
+	}
+
+	totalItems := len(accessibleSessions)
+	totalPages := 0
+	if totalItems > 0 {
+		totalPages = (totalItems + filter.Limit - 1) / filter.Limit
+		if filter.Page > totalPages {
+			filter.Page = totalPages
+		}
+	}
+
+	startIndex := (filter.Page - 1) * filter.Limit
+	if startIndex < 0 {
+		startIndex = 0
+	}
+	endIndex := startIndex + filter.Limit
+	if endIndex > totalItems {
+		endIndex = totalItems
+	}
+
+	sessions := make([]models.StockCheckSession, 0)
+	if startIndex < endIndex {
+		sessions = accessibleSessions[startIndex:endIndex]
 	}
 
 	if formMode != "create" {

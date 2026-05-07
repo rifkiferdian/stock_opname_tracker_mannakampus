@@ -1,0 +1,621 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+        <title>
+            {{ if .Title }}
+                {{ .Title }}
+            {{ else }}
+                Rekap SO Checker
+            {{ end }}
+        </title>
+
+        <link rel="stylesheet" href="/assets/fonts/google/manrope-space-grotesk.css">
+        <link rel="stylesheet" href="/assets/css/tailwind.css">
+        <link href="/assets/vendor/boxicons/css/boxicons.min.css" rel="stylesheet" />
+
+        <style>
+            body {
+                background:
+                    radial-gradient(circle at 12% -10%, rgba(21, 62, 138, 0.12), transparent 38%),
+                    linear-gradient(180deg, #f8fbff 0%, #ecf3fb 100%);
+                color: #10244a;
+                font-family: "Manrope", sans-serif;
+            }
+
+            .page-stack {
+                display: grid;
+                gap: 0.9rem;
+            }
+
+            .panel {
+                border: 1px solid #e4ebf7;
+                border-radius: 1rem;
+                background: #ffffff;
+                box-shadow: 0 18px 36px -34px rgba(15, 31, 71, 0.44);
+            }
+
+            .panel-pad {
+                padding: 0.85rem;
+            }
+
+            .hero {
+                border-color: #264892;
+                background: linear-gradient(135deg, #173f92 0%, #0d3378 100%);
+                color: #ffffff;
+                padding: 0.95rem;
+            }
+
+            .hero-grid {
+                display: grid;
+                gap: 0.75rem;
+            }
+
+            .hero-note {
+                border-radius: 0.8rem;
+                border: 1px solid rgba(255, 255, 255, 0.24);
+                background: rgba(255, 255, 255, 0.1);
+                padding: 0.7rem 0.75rem;
+            }
+
+            .eyebrow {
+                font-size: 0.62rem;
+                line-height: 1.2;
+                font-weight: 800;
+                letter-spacing: 0.16em;
+                text-transform: uppercase;
+            }
+
+            .section-title {
+                margin-top: 0.2rem;
+                font-size: 1rem;
+                line-height: 1.25;
+                font-weight: 800;
+                color: #153e8a;
+            }
+
+            .field-grid {
+                display: grid;
+                gap: 0.55rem;
+            }
+
+            .field-label {
+                display: block;
+                margin-bottom: 0.3rem;
+                font-size: 0.62rem;
+                line-height: 1.2;
+                font-weight: 800;
+                letter-spacing: 0.14em;
+                text-transform: uppercase;
+                color: #8ca0be;
+            }
+
+            .field-input {
+                width: 100%;
+                border-radius: 0.75rem;
+                border: 1px solid #dce4f2;
+                background: #f8fbff;
+                padding: 0.62rem 0.72rem;
+                font-size: 0.82rem;
+                line-height: 1.2;
+                font-weight: 700;
+                color: #334155;
+                outline: none;
+            }
+
+            .field-input:focus {
+                border-color: #173f92;
+                background: #ffffff;
+            }
+
+            .kpi-grid {
+                display: grid;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 0.6rem;
+            }
+
+            .kpi-card {
+                border: 1px solid #e3eaf7;
+                border-radius: 0.9rem;
+                background: #f8fbff;
+                padding: 0.75rem;
+                min-height: 6rem;
+                display: flex;
+                flex-direction: column;
+            }
+
+            .kpi-value {
+                margin-top: 0.35rem;
+                font-size: 1.85rem;
+                line-height: 1;
+                font-weight: 800;
+            }
+
+            .kpi-note {
+                margin-top: auto;
+                padding-top: 0.45rem;
+                font-size: 0.72rem;
+                line-height: 1.3;
+                font-weight: 700;
+                color: #64748b;
+            }
+
+            .status-grid {
+                display: grid;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 0.5rem;
+            }
+
+            .status-card {
+                border: 1px solid #e3eaf7;
+                border-radius: 0.85rem;
+                background: #f9fbff;
+                padding: 0.55rem 0.62rem;
+                min-height: 4.35rem;
+                display: flex;
+                align-items: flex-end;
+                justify-content: space-between;
+                gap: 0.62rem;
+            }
+
+            .status-label {
+                font-size: 0.62rem;
+                line-height: 1.25;
+                font-weight: 800;
+                letter-spacing: 0.1em;
+                text-transform: uppercase;
+            }
+
+            .status-value {
+                font-size: 1.7rem;
+                line-height: 1;
+                font-weight: 800;
+            }
+
+            .content-grid {
+                display: grid;
+                gap: 0.9rem;
+            }
+
+            .list-stack {
+                display: grid;
+                gap: 0.55rem;
+                margin-top: 0.7rem;
+            }
+
+            .item-card {
+                border: 1px solid #e2e8f5;
+                border-radius: 0.85rem;
+                background: #ffffff;
+                padding: 0.68rem;
+                min-width: 0;
+            }
+
+            .session-head {
+                display: flex;
+                align-items: flex-start;
+                justify-content: space-between;
+                gap: 0.55rem;
+            }
+
+            .session-title {
+                font-size: 0.84rem;
+                line-height: 1.25;
+                font-weight: 800;
+                color: #1f2937;
+                overflow-wrap: anywhere;
+            }
+
+            .session-sub {
+                margin-top: 0.18rem;
+                font-size: 0.72rem;
+                line-height: 1.32;
+                font-weight: 700;
+                color: #64748b;
+                overflow-wrap: anywhere;
+            }
+
+            .session-supplier {
+                margin-top: 0.15rem;
+                font-size: 0.72rem;
+                line-height: 1.32;
+                font-weight: 700;
+                color: #475569;
+                overflow-wrap: anywhere;
+            }
+
+            .status-badge {
+                flex-shrink: 0;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                border-radius: 999px;
+                padding: 0.23rem 0.5rem;
+                font-size: 0.58rem;
+                line-height: 1.15;
+                font-weight: 800;
+                letter-spacing: 0.08em;
+                text-transform: uppercase;
+            }
+
+            .action-btn {
+                margin-top: 0.55rem;
+                display: inline-flex;
+                min-height: 2.05rem;
+                align-items: center;
+                justify-content: center;
+                gap: 0.3rem;
+                border-radius: 0.62rem;
+                background: #eef3ff;
+                padding: 0.35rem 0.65rem;
+                font-size: 0.62rem;
+                line-height: 1.15;
+                font-weight: 800;
+                letter-spacing: 0.1em;
+                text-transform: uppercase;
+                color: #173f92;
+            }
+
+            .supplier-name {
+                font-size: 0.84rem;
+                line-height: 1.28;
+                font-weight: 800;
+                color: #1f2937;
+                overflow-wrap: anywhere;
+            }
+
+            .supplier-code {
+                margin-top: 0.15rem;
+                font-size: 0.6rem;
+                line-height: 1.2;
+                font-weight: 800;
+                letter-spacing: 0.14em;
+                text-transform: uppercase;
+                color: #94a3b8;
+                overflow-wrap: anywhere;
+            }
+
+            .supplier-meta {
+                margin-top: 0.45rem;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 0.45rem;
+                font-size: 0.7rem;
+                line-height: 1.25;
+                font-weight: 700;
+                color: #64748b;
+            }
+
+            .store-grid {
+                margin-top: 0.5rem;
+                display: grid;
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+                gap: 0.32rem;
+            }
+
+            .store-chip {
+                border-radius: 0.56rem;
+                padding: 0.36rem 0.2rem;
+                text-align: center;
+            }
+
+            .store-chip span {
+                display: block;
+                font-size: 0.54rem;
+                line-height: 1.15;
+                font-weight: 800;
+                letter-spacing: 0.06em;
+                text-transform: uppercase;
+            }
+
+            .store-chip strong {
+                display: block;
+                margin-top: 0.1rem;
+                font-size: 0.7rem;
+                line-height: 1.1;
+                font-weight: 800;
+            }
+
+            .empty-box {
+                margin-top: 0.7rem;
+                border: 1px dashed #cbd5e1;
+                border-radius: 0.75rem;
+                background: #f8fafc;
+                padding: 0.7rem;
+                font-size: 0.78rem;
+                line-height: 1.3;
+                font-weight: 700;
+                color: #64748b;
+            }
+
+            @media (min-width: 768px) {
+                .hero-grid {
+                    grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+                    align-items: end;
+                }
+
+                .field-grid {
+                    grid-template-columns: repeat(4, minmax(0, 1fr)) auto;
+                    align-items: end;
+                }
+
+                .kpi-grid {
+                    grid-template-columns: repeat(4, minmax(0, 1fr));
+                }
+
+                .status-grid {
+                    grid-template-columns: repeat(3, minmax(0, 1fr));
+                }
+            }
+
+            @media (min-width: 1024px) {
+                .content-grid {
+                    grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+                    align-items: start;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <div class="flex min-h-screen">
+            {{ template "sidebar" . }}
+
+            <div class="flex min-h-screen min-w-0 flex-1 flex-col">
+                {{ template "header" . }}
+
+                <main class="min-w-0 flex-1 px-3 py-4 sm:px-6 sm:py-5 lg:px-8">
+                    <div class="mx-auto flex w-full max-w-7xl flex-col page-stack">
+                        <section class="panel hero">
+                            <div class="hero-grid">
+                                <div class="min-w-0">
+                                    <p class="eyebrow text-blue-100">Checker SO Recap</p>
+                                    <h1 class="mt-2 text-xl font-extrabold leading-tight text-white sm:text-2xl">
+                                        Rekap Stock Opname Checker
+                                    </h1>
+                                    <p class="mt-2 text-sm font-semibold text-blue-100">{{ .TodayLabel }}</p>
+                                </div>
+                                <div class="hero-note">
+                                    <p class="eyebrow text-blue-100">Periode Rekap</p>
+                                    <p class="mt-1 text-sm font-extrabold text-white">{{ .DateFrom }} sampai {{ .DateTo }}</p>
+                                    <p class="mt-1 text-xs font-semibold leading-relaxed text-blue-100">
+                                        Ringkasan ini hanya menampilkan data sesi SO untuk store yang terdaftar pada akun checker Anda.
+                                    </p>
+                                </div>
+                            </div>
+                        </section>
+
+                        <section class="panel panel-pad">
+                            <p class="eyebrow text-slate-400">Filter Data</p>
+                            <h2 class="section-title">Sesuaikan periode dan cakupan rekap</h2>
+
+                            <form action="/stock-checker/recap" method="get" class="mt-3 field-grid">
+                                <label class="block">
+                                    <span class="field-label">Dari Tanggal</span>
+                                    <input type="date" name="date_from" value="{{ .DateFrom }}" class="field-input">
+                                </label>
+                                <label class="block">
+                                    <span class="field-label">Sampai Tanggal</span>
+                                    <input type="date" name="date_to" value="{{ .DateTo }}" class="field-input">
+                                </label>
+                                <label class="block">
+                                    <span class="field-label">Store</span>
+                                    <select name="store_id" class="field-input">
+                                        <option value="0">Semua Store Saya</option>
+                                        {{ range .Stores }}
+                                            <option value="{{ .StoreID }}" {{ if eq $.SelectedStoreID .StoreID }}selected{{ end }}>{{ .StoreName }}</option>
+                                        {{ end }}
+                                    </select>
+                                </label>
+                                <label class="block">
+                                    <span class="field-label">Status</span>
+                                    <select name="status" class="field-input">
+                                        <option value="" {{ if eq .SelectedStatus "" }}selected{{ end }}>Semua Status</option>
+                                        <option value="draft" {{ if eq .SelectedStatus "draft" }}selected{{ end }}>Draft</option>
+                                        <option value="in_progress" {{ if eq .SelectedStatus "in_progress" }}selected{{ end }}>In Progress</option>
+                                        <option value="submitted" {{ if eq .SelectedStatus "submitted" }}selected{{ end }}>Submitted</option>
+                                        <option value="reviewed" {{ if eq .SelectedStatus "reviewed" }}selected{{ end }}>Reviewed</option>
+                                        <option value="closed" {{ if eq .SelectedStatus "closed" }}selected{{ end }}>Closed</option>
+                                        <option value="cancelled" {{ if eq .SelectedStatus "cancelled" }}selected{{ end }}>Cancelled</option>
+                                    </select>
+                                </label>
+                                <button type="submit" class="inline-flex min-h-[40px] items-center justify-center gap-2 rounded-xl bg-[#173f92] px-4 py-2.5 text-sm font-extrabold text-white transition hover:bg-[#1f4da9]">
+                                    <i class="bx bx-filter-alt"></i>
+                                    Terapkan
+                                </button>
+                            </form>
+                        </section>
+
+                        <section class="kpi-grid">
+                            <article class="kpi-card">
+                                <p class="eyebrow text-slate-400">Total Session</p>
+                                <p class="kpi-value text-[#173f92]">{{ .TotalSessions }}</p>
+                                <p class="kpi-note">Jumlah sesi pada rentang filter.</p>
+                            </article>
+                            <article class="kpi-card">
+                                <p class="eyebrow text-slate-400">Session Hari Ini</p>
+                                <p class="kpi-value text-[#173f92]">{{ .TodaySessions }}</p>
+                                <p class="kpi-note">Aktivitas sesi tanggal hari ini.</p>
+                            </article>
+                            <article class="kpi-card">
+                                <p class="eyebrow text-slate-400">Sesi Aktif</p>
+                                <p class="kpi-value text-amber-600">{{ .OpenSessions }}</p>
+                                <p class="kpi-note">Draft, progress, submitted, reviewed.</p>
+                            </article>
+                            <article class="kpi-card">
+                                <p class="eyebrow text-slate-400">Sesi Closed</p>
+                                <p class="kpi-value text-emerald-600">{{ .ClosedSessions }}</p>
+                                <p class="kpi-note">Sesi yang selesai diproses.</p>
+                            </article>
+                        </section>
+
+                        <section class="panel panel-pad">
+                            <p class="eyebrow text-slate-400">Status Breakdown</p>
+                            <h2 class="section-title">Distribusi status sesi</h2>
+                            <div class="status-grid mt-3">
+                                {{ range .StatusSummary }}
+                                    <article class="status-card">
+                                        <p class="status-label
+                                            {{ if eq .Tone "amber" }}text-amber-600
+                                            {{ else if eq .Tone "blue" }}text-blue-600
+                                            {{ else if eq .Tone "violet" }}text-violet-600
+                                            {{ else if eq .Tone "emerald" }}text-emerald-600
+                                            {{ else if eq .Tone "rose" }}text-rose-600
+                                            {{ else }}text-slate-500{{ end }}">
+                                            {{ .Label }}
+                                        </p>
+                                        <p class="status-value
+                                            {{ if eq .Tone "amber" }}text-amber-700
+                                            {{ else if eq .Tone "blue" }}text-blue-700
+                                            {{ else if eq .Tone "violet" }}text-violet-700
+                                            {{ else if eq .Tone "emerald" }}text-emerald-700
+                                            {{ else if eq .Tone "rose" }}text-rose-700
+                                            {{ else }}text-slate-700{{ end }}">
+                                            {{ .Value }}
+                                        </p>
+                                    </article>
+                                {{ end }}
+                            </div>
+                        </section>
+
+                        <section class="content-grid">
+                            <article class="panel panel-pad">
+                                <p class="eyebrow text-slate-400">Recent Session</p>
+                                <h2 class="section-title">Sesi SO terbaru</h2>
+
+                                {{ if .RecentSessions }}
+                                    <div class="list-stack">
+                                        {{ range .RecentSessions }}
+                                            <article class="item-card">
+                                                <div class="session-head">
+                                                    <div class="min-w-0">
+                                                        <p class="session-title">{{ .SessionNumber }}</p>
+                                                        <p class="session-sub">{{ .SessionDateDisplay }} - {{ .StoreName }}</p>
+                                                        <p class="session-supplier">{{ .SupplierName }}</p>
+                                                    </div>
+                                                    <span class="status-badge {{ .StatusBadgeClass }}">{{ .StatusLabel }}</span>
+                                                </div>
+                                                <a href="{{ .InputURL }}" class="action-btn">
+                                                    Buka Input
+                                                    <i class="bx bx-right-arrow-alt text-sm"></i>
+                                                </a>
+                                            </article>
+                                        {{ end }}
+                                    </div>
+                                {{ else }}
+                                    <div class="empty-box">
+                                        Tidak ada sesi pada filter yang dipilih.
+                                    </div>
+                                {{ end }}
+                            </article>
+
+                            <div class="grid gap-3">
+                                <article class="panel panel-pad">
+                                    <p class="eyebrow text-slate-400">Top Supplier</p>
+                                    <h2 class="section-title">Supplier paling sering di-SO</h2>
+
+                                    {{ if .SupplierSummaries }}
+                                        <div class="list-stack">
+                                            {{ range .SupplierSummaries }}
+                                                <a href="/stock-checker/{{ .SupplierID }}" class="item-card block">
+                                                    <p class="supplier-name">{{ .SupplierName }}</p>
+                                                    <p class="supplier-code">{{ .SupplierCode }}</p>
+                                                    <div class="supplier-meta">
+                                                        <span>{{ .TotalSessions }} session</span>
+                                                        <span>{{ if .LatestSessionDateDisplay }}{{ .LatestSessionDateDisplay }}{{ else }}-{{ end }}</span>
+                                                    </div>
+                                                </a>
+                                            {{ end }}
+                                        </div>
+                                    {{ else }}
+                                        <div class="empty-box">
+                                            Belum ada supplier untuk periode ini.
+                                        </div>
+                                    {{ end }}
+                                </article>
+
+                                <article class="panel panel-pad">
+                                    <p class="eyebrow text-slate-400">Store Overview</p>
+                                    <h2 class="section-title">Rekap per store</h2>
+
+                                    {{ if .StoreSummaries }}
+                                        <div class="list-stack">
+                                            {{ range .StoreSummaries }}
+                                                <article class="item-card">
+                                                    <p class="supplier-name">{{ .StoreName }}</p>
+                                                    <p class="session-sub">{{ .TotalSessions }} session</p>
+                                                    <div class="store-grid">
+                                                        <div class="store-chip bg-amber-50 text-amber-700">
+                                                            <span>Active</span>
+                                                            <strong>{{ .DraftCount }}</strong>
+                                                        </div>
+                                                        <div class="store-chip bg-blue-50 text-blue-700">
+                                                            <span>Review</span>
+                                                            <strong>{{ .SubmittedCount }}</strong>
+                                                        </div>
+                                                        <div class="store-chip bg-emerald-50 text-emerald-700">
+                                                            <span>Closed</span>
+                                                            <strong>{{ .ClosedCount }}</strong>
+                                                        </div>
+                                                    </div>
+                                                </article>
+                                            {{ end }}
+                                        </div>
+                                    {{ else }}
+                                        <div class="empty-box">
+                                            Store tidak ditemukan untuk user ini.
+                                        </div>
+                                    {{ end }}
+                                </article>
+                            </div>
+                        </section>
+                    </div>
+                </main>
+            </div>
+        </div>
+
+        <div id="sidebar-overlay" class="fixed inset-0 z-40 hidden bg-slate-900/50 lg:hidden"></div>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                var sidebar = document.getElementById('app-sidebar');
+                var overlay = document.getElementById('sidebar-overlay');
+                var toggleButtons = document.querySelectorAll('[data-sidebar-toggle]');
+
+                function closeSidebar() {
+                    if (!sidebar) return;
+                    sidebar.classList.add('-translate-x-full');
+                    if (overlay) overlay.classList.add('hidden');
+                    document.body.classList.remove('overflow-hidden');
+                }
+
+                function openSidebar() {
+                    if (!sidebar) return;
+                    if (typeof window.closeHeaderInteractivePanels === 'function') {
+                        window.closeHeaderInteractivePanels();
+                    }
+                    sidebar.classList.remove('-translate-x-full');
+                    if (overlay) overlay.classList.remove('hidden');
+                    document.body.classList.add('overflow-hidden');
+                }
+
+                toggleButtons.forEach(function (button) {
+                    button.addEventListener('click', function () {
+                        if (!sidebar) return;
+                        if (sidebar.classList.contains('-translate-x-full')) {
+                            openSidebar();
+                        } else {
+                            closeSidebar();
+                        }
+                    });
+                });
+
+                if (overlay) {
+                    overlay.addEventListener('click', closeSidebar);
+                }
+            });
+        </script>
+    </body>
+</html>

@@ -294,6 +294,26 @@ func (r *StockCheckSessionRepository) UserHasStoreAccess(userID int, storeID int
 	return count > 0, err
 }
 
+func (r *StockCheckSessionRepository) UserHasRole(userID int, roleName string) (bool, error) {
+	roleName = strings.TrimSpace(roleName)
+	if userID <= 0 || roleName == "" {
+		return false, nil
+	}
+
+	var count int
+	err := r.DB.QueryRow(`
+		SELECT COUNT(1)
+		FROM model_has_roles mhr
+		INNER JOIN roles r ON r.id = mhr.role_id
+		WHERE mhr.model_id = ? AND LOWER(r.name) = LOWER(?)
+	`, userID, roleName).Scan(&count)
+	if err != nil {
+		return false, err
+	}
+
+	return count > 0, nil
+}
+
 func (r *StockCheckSessionRepository) GetSupplierOptions() ([]models.Supplier, error) {
 	rows, err := r.DB.Query(`
 		SELECT id, supplier_name

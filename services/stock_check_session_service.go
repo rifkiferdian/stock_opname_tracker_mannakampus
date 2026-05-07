@@ -178,7 +178,7 @@ func (s *StockCheckSessionService) GetCheckerInputPage(sessionID int, userID int
 		return models.StockCheckSessionCheckerInputPage{}, err
 	}
 
-	hasAccess, err := s.Repo.UserHasStoreAccess(userID, session.StoreID)
+	hasAccess, err := s.userCanAccessCheckerStore(userID, session.StoreID)
 	if err != nil {
 		return models.StockCheckSessionCheckerInputPage{}, err
 	}
@@ -235,7 +235,7 @@ func (s *StockCheckSessionService) CreateSession(input models.StockCheckSessionC
 	}
 
 	if input.CreatedBy > 0 {
-		hasAccess, err := s.Repo.UserHasStoreAccess(input.CreatedBy, input.StoreID)
+		hasAccess, err := s.userCanAccessCheckerStore(input.CreatedBy, input.StoreID)
 		if err != nil {
 			return 0, err
 		}
@@ -400,7 +400,7 @@ func (s *StockCheckSessionService) RecordCheckerScan(input models.StockCheckSess
 		return 0, err
 	}
 
-	hasAccess, err := s.Repo.UserHasStoreAccess(input.UpdatedBy, session.StoreID)
+	hasAccess, err := s.userCanAccessCheckerStore(input.UpdatedBy, session.StoreID)
 	if err != nil {
 		return 0, err
 	}
@@ -452,7 +452,7 @@ func (s *StockCheckSessionService) UpdateCheckerSuggest(input models.StockCheckS
 		return err
 	}
 
-	hasAccess, err := s.Repo.UserHasStoreAccess(input.UpdatedBy, session.StoreID)
+	hasAccess, err := s.userCanAccessCheckerStore(input.UpdatedBy, session.StoreID)
 	if err != nil {
 		return err
 	}
@@ -668,4 +668,24 @@ func formatStockCheckSessionDecimal(value float64) string {
 
 func formatStockCheckSessionCurrency(value float64) string {
 	return fmt.Sprintf("Rp %s", formatStockCheckSessionDecimal(value))
+}
+
+func (s *StockCheckSessionService) userCanAccessCheckerStore(userID int, storeID int) (bool, error) {
+	hasStoreAccess, err := s.Repo.UserHasStoreAccess(userID, storeID)
+	if err != nil {
+		return false, err
+	}
+	if hasStoreAccess {
+		return true, nil
+	}
+
+	isChecker, err := s.Repo.UserHasRole(userID, "checker")
+	if err != nil {
+		return false, err
+	}
+	if isChecker {
+		return true, nil
+	}
+
+	return false, nil
 }
