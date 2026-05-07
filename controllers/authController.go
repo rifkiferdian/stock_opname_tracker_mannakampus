@@ -19,7 +19,7 @@ func LoginPage(c *gin.Context) {
 	session := sessions.Default(c)
 	user := session.Get("user")
 	if user != nil {
-		c.Redirect(302, "/dashboard")
+		c.Redirect(http.StatusFound, resolveDashboardPathByRole(extractRoleStringFromSession(session)))
 		return
 	}
 	c.HTML(http.StatusOK, "login.html", gin.H{
@@ -112,7 +112,7 @@ func LoginPost(c *gin.Context) {
 		return
 	}
 
-	c.Redirect(302, "/dashboard")
+	c.Redirect(http.StatusFound, resolveDashboardPathByRole(dbRole.String))
 }
 
 func Logout(c *gin.Context) {

@@ -20,6 +20,7 @@ func RegisterWebRoutes(r *gin.Engine) {
 	auth.Use(middleware.AuthRequired(), middleware.PermissionContext())
 	{
 		auth.GET("/dashboard", controllers.DashboardIndex)
+		auth.GET("/checker/dashboard", controllers.CheckerDashboardIndex)
 		auth.GET("/reports/stock-opname", controllers.StockOpnameReportIndex)
 		auth.GET("/reports/stock-opname/:id", controllers.StockOpnameReportDetail)
 		auth.POST("/reports/stock-opname/:id/apply-all-submitted", controllers.StockOpnameReportApplyAllSubmitted)

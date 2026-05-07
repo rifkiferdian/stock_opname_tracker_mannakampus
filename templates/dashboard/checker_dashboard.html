@@ -1,0 +1,487 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+        <title>
+            {{ if .Title }}
+                {{ .Title }}
+            {{ else }}
+                Dashboard Checker
+            {{ end }}
+        </title>
+
+        <link rel="stylesheet" href="/assets/fonts/google/manrope-space-grotesk.css">
+        <link rel="stylesheet" href="/assets/css/tailwind.css">
+        <link href="/assets/vendor/boxicons/css/boxicons.min.css" rel="stylesheet" />
+
+        <style>
+            body {
+                background:
+                    radial-gradient(circle at 12% 0%, rgba(21, 62, 138, 0.12), transparent 38%),
+                    linear-gradient(180deg, #f7fbff 0%, #edf3fb 100%);
+                color: #0f1f47;
+                font-family: "Manrope", sans-serif;
+            }
+
+            .checker-page {
+                padding: 0.9rem;
+            }
+
+            .checker-shell {
+                margin: 0 auto;
+                max-width: 66rem;
+                display: grid;
+                gap: 0.85rem;
+            }
+
+            .surface {
+                border: 1px solid #e5ecf7;
+                border-radius: 1.2rem;
+                background: rgba(255, 255, 255, 0.95);
+                box-shadow: 0 22px 36px -34px rgba(15, 31, 71, 0.45);
+            }
+
+            .hero {
+                padding: 1rem;
+                background: linear-gradient(135deg, #153e8a 0%, #0c2f75 100%);
+                color: #fff;
+            }
+
+            .hero-title {
+                font-size: 1.25rem;
+                line-height: 1.2;
+                font-weight: 800;
+                margin-top: 0.4rem;
+            }
+
+            .hero-meta {
+                margin-top: 0.8rem;
+                border-radius: 0.9rem;
+                background: rgba(255, 255, 255, 0.14);
+                border: 1px solid rgba(255, 255, 255, 0.2);
+                padding: 0.7rem 0.8rem;
+            }
+
+            .eyebrow {
+                font-size: 0.62rem;
+                font-weight: 800;
+                letter-spacing: 0.16em;
+                text-transform: uppercase;
+            }
+
+            .metric-grid {
+                display: grid;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 0.6rem;
+            }
+
+            .metric-card {
+                border-radius: 1rem;
+                border: 1px solid #e3ebf8;
+                background: #f8fbff;
+                padding: 0.75rem;
+                min-height: 5.15rem;
+                display: flex;
+                flex-direction: column;
+                justify-content: space-between;
+            }
+
+            .metric-value {
+                font-size: 1.75rem;
+                line-height: 1;
+                font-weight: 800;
+                margin-top: 0.5rem;
+            }
+
+            .section {
+                padding: 0.85rem;
+            }
+
+            .section-head {
+                display: flex;
+                align-items: flex-start;
+                justify-content: space-between;
+                gap: 0.8rem;
+            }
+
+            .section-title {
+                margin-top: 0.22rem;
+                font-size: 1rem;
+                font-weight: 800;
+                line-height: 1.25;
+                color: #10244f;
+            }
+
+            .quick-grid {
+                margin-top: 0.75rem;
+                display: grid;
+                gap: 0.55rem;
+            }
+
+            .quick-btn {
+                min-height: 2.85rem;
+                border-radius: 0.85rem;
+                padding: 0.7rem 0.85rem;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                gap: 0.42rem;
+                font-size: 0.8rem;
+                font-weight: 800;
+                letter-spacing: 0.05em;
+                text-transform: uppercase;
+                text-align: center;
+                line-height: 1.15;
+            }
+
+            .content-grid {
+                display: grid;
+                gap: 0.85rem;
+            }
+
+            .session-list,
+            .supplier-list {
+                margin-top: 0.75rem;
+                display: grid;
+                gap: 0.55rem;
+            }
+
+            .session-card {
+                border: 1px solid #e2e8f5;
+                border-radius: 0.95rem;
+                background: #fff;
+                padding: 0.7rem 0.75rem;
+                display: grid;
+                gap: 0.6rem;
+            }
+
+            .session-top {
+                display: flex;
+                align-items: flex-start;
+                justify-content: space-between;
+                gap: 0.65rem;
+            }
+
+            .session-name {
+                font-size: 0.84rem;
+                line-height: 1.25;
+                font-weight: 800;
+                color: #1e293b;
+                overflow-wrap: anywhere;
+            }
+
+            .session-meta {
+                margin-top: 0.2rem;
+                font-size: 0.74rem;
+                line-height: 1.25;
+                font-weight: 700;
+                color: #64748b;
+                overflow-wrap: anywhere;
+            }
+
+            .session-supplier {
+                margin-top: 0.15rem;
+                font-size: 0.74rem;
+                line-height: 1.25;
+                font-weight: 800;
+                color: #334155;
+                overflow-wrap: anywhere;
+            }
+
+            .session-action {
+                width: fit-content;
+                min-height: 2.1rem;
+                border-radius: 0.7rem;
+                padding: 0.4rem 0.75rem;
+                display: inline-flex;
+                align-items: center;
+                gap: 0.35rem;
+                font-size: 0.66rem;
+                font-weight: 800;
+                letter-spacing: 0.11em;
+                text-transform: uppercase;
+                color: #153e8a;
+                background: #eef3ff;
+            }
+
+            .status-badge {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                border-radius: 999px;
+                padding: 0.26rem 0.52rem;
+                font-size: 0.57rem;
+                line-height: 1.1;
+                font-weight: 800;
+                letter-spacing: 0.1em;
+                text-transform: uppercase;
+                white-space: nowrap;
+            }
+
+            .supplier-row {
+                border: 1px solid #e2e8f5;
+                border-radius: 0.85rem;
+                background: #fff;
+                padding: 0.62rem 0.72rem;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 0.6rem;
+            }
+
+            .supplier-name {
+                font-size: 0.84rem;
+                line-height: 1.25;
+                font-weight: 800;
+                color: #1f2937;
+                overflow-wrap: anywhere;
+            }
+
+            .supplier-code {
+                margin-top: 0.14rem;
+                font-size: 0.62rem;
+                font-weight: 800;
+                letter-spacing: 0.14em;
+                text-transform: uppercase;
+                color: #94a3b8;
+                overflow-wrap: anywhere;
+            }
+
+            .summary-value {
+                margin-top: 0.35rem;
+                font-size: 2rem;
+                line-height: 1;
+                font-weight: 800;
+                color: #153e8a;
+            }
+
+            @media (min-width: 640px) {
+                .checker-page {
+                    padding: 1.1rem;
+                }
+
+                .hero {
+                    padding: 1.15rem 1.2rem;
+                }
+
+                .hero-title {
+                    font-size: 1.42rem;
+                }
+
+                .quick-grid {
+                    grid-template-columns: repeat(3, minmax(0, 1fr));
+                }
+            }
+
+            @media (min-width: 1024px) {
+                .checker-page {
+                    padding: 1.2rem;
+                }
+
+                .content-grid {
+                    grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+                    align-items: start;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <div class="flex min-h-screen">
+            {{ template "sidebar" . }}
+
+            <div class="flex min-h-screen min-w-0 flex-1 flex-col">
+                {{ template "header" . }}
+
+                <main class="checker-page min-w-0 flex-1">
+                    <div class="checker-shell">
+                        <section class="surface hero">
+                            <p class="eyebrow text-blue-100">Checker Workspace</p>
+                            <h1 class="hero-title">Dashboard Checker</h1>
+                            <p class="mt-2 text-sm font-semibold text-blue-100">{{ .TodayLabel }}</p>
+
+                            <div class="hero-meta">
+                                <p class="eyebrow text-blue-100">Login Sebagai</p>
+                                <p class="mt-1 text-sm font-extrabold leading-tight text-white">{{ .CurrentUser }} - {{ .CurrentRole }}</p>
+                            </div>
+                        </section>
+
+                        <section class="metric-grid">
+                            <article class="metric-card">
+                                <p class="eyebrow text-slate-400">Store Tersedia</p>
+                                <p class="metric-value text-[#153e8a]">{{ .AssignedStoreCount }}</p>
+                            </article>
+                            <article class="metric-card">
+                                <p class="eyebrow text-slate-400">Sesi Hari Ini</p>
+                                <p class="metric-value text-[#153e8a]">{{ .TodaySessionCount }}</p>
+                            </article>
+                            <article class="metric-card">
+                                <p class="eyebrow text-slate-400">Draft / Progress</p>
+                                <p class="metric-value text-amber-600">{{ .InProgressCount }}</p>
+                            </article>
+                            <article class="metric-card">
+                                <p class="eyebrow text-slate-400">Submitted / Reviewed</p>
+                                <p class="metric-value text-emerald-600">{{ .SubmittedCount }}</p>
+                            </article>
+                        </section>
+
+                        <section class="surface section">
+                            <div class="section-head">
+                                <div>
+                                    <p class="eyebrow text-slate-400">Quick Action</p>
+                                    <h2 class="section-title">Aksi cepat checker</h2>
+                                </div>
+                            </div>
+
+                            <div class="quick-grid">
+                                <a href="{{ .NextSessionURL }}" class="quick-btn bg-[#153e8a] text-white">
+                                    <i class="bx bx-scan text-base"></i>
+                                    Lanjut Input
+                                </a>
+                                <a href="/stock-checker" class="quick-btn bg-[#f26419] text-white">
+                                    <i class="bx bx-list-ul text-base"></i>
+                                    Pilih Supplier
+                                </a>
+                                <a href="/stock-check-sessions" class="quick-btn border border-slate-200 bg-white text-slate-700">
+                                    <i class="bx bx-folder-open text-base"></i>
+                                    Semua Session
+                                </a>
+                            </div>
+                        </section>
+
+                        <section class="content-grid">
+                            <article class="surface section">
+                                <div class="section-head">
+                                    <div>
+                                        <p class="eyebrow text-slate-400">Today Session</p>
+                                        <h2 class="section-title">Session hari ini</h2>
+                                    </div>
+                                    <span class="text-xs font-bold text-slate-500">{{ .TodaySessionCount }} session</span>
+                                </div>
+
+                                {{ if .Sessions }}
+                                    <div class="session-list">
+                                        {{ range .Sessions }}
+                                            <article class="session-card">
+                                                <div class="session-top">
+                                                    <div class="min-w-0">
+                                                        <p class="session-name">{{ .SessionNumber }}</p>
+                                                        <p class="session-meta">{{ .SessionDateDisplay }} - {{ .StoreName }}</p>
+                                                        <p class="session-supplier">{{ .SupplierName }}</p>
+                                                    </div>
+                                                    {{ if eq .Status "draft" }}
+                                                        <span class="status-badge bg-slate-100 text-slate-600">Draft</span>
+                                                    {{ else if eq .Status "in_progress" }}
+                                                        <span class="status-badge bg-amber-50 text-amber-700">Progress</span>
+                                                    {{ else if eq .Status "submitted" }}
+                                                        <span class="status-badge bg-blue-50 text-blue-700">Submitted</span>
+                                                    {{ else if eq .Status "reviewed" }}
+                                                        <span class="status-badge bg-violet-50 text-violet-700">Reviewed</span>
+                                                    {{ else if eq .Status "closed" }}
+                                                        <span class="status-badge bg-emerald-50 text-emerald-700">Closed</span>
+                                                    {{ else }}
+                                                        <span class="status-badge bg-slate-100 text-slate-600">{{ .StatusLabel }}</span>
+                                                    {{ end }}
+                                                </div>
+                                                <a href="/stock-checker/sessions/{{ .ID }}/input?location=store" class="session-action">
+                                                    Buka Session
+                                                    <i class="bx bx-right-arrow-alt text-sm"></i>
+                                                </a>
+                                            </article>
+                                        {{ end }}
+                                    </div>
+                                {{ else }}
+                                    <div class="mt-3 rounded-xl border border-dashed border-slate-300 bg-slate-50 px-3 py-4">
+                                        <p class="text-sm font-semibold text-slate-600">Belum ada session hari ini di store Anda.</p>
+                                    </div>
+                                {{ end }}
+                            </article>
+
+                            <div class="grid gap-3">
+                                <article class="surface section">
+                                    <div class="section-head">
+                                        <div>
+                                            <p class="eyebrow text-slate-400">Active Supplier</p>
+                                            <h2 class="section-title">Supplier aktif</h2>
+                                        </div>
+                                        <a href="/stock-checker" class="text-[11px] font-extrabold uppercase tracking-[0.12em] text-[#153e8a]">Lihat Semua</a>
+                                    </div>
+
+                                    {{ if .Suppliers }}
+                                        <div class="supplier-list">
+                                            {{ range .Suppliers }}
+                                                <a href="/stock-checker/{{ .ID }}" class="supplier-row">
+                                                    <div class="min-w-0">
+                                                        <p class="supplier-name">{{ .SupplierName }}</p>
+                                                        <p class="supplier-code">{{ .SupplierCode }}</p>
+                                                    </div>
+                                                    <i class="bx bx-chevron-right text-lg text-slate-400"></i>
+                                                </a>
+                                            {{ end }}
+                                        </div>
+                                    {{ else }}
+                                        <div class="mt-3 rounded-xl border border-dashed border-slate-300 bg-slate-50 px-3 py-4">
+                                            <p class="text-sm font-semibold text-slate-600">Belum ada supplier aktif yang bisa ditampilkan.</p>
+                                        </div>
+                                    {{ end }}
+                                </article>
+
+                                <article class="surface section">
+                                    <p class="eyebrow text-slate-400">Closed Today</p>
+                                    <h2 class="section-title">Ringkasan session closed</h2>
+                                    <p class="summary-value">{{ .ClosedCount }}</p>
+                                    <p class="mt-2 text-sm font-semibold leading-snug text-slate-500">
+                                        Session dengan status closed pada tanggal ini.
+                                    </p>
+                                </article>
+                            </div>
+                        </section>
+                    </div>
+                </main>
+            </div>
+        </div>
+
+        <div id="sidebar-overlay" class="fixed inset-0 z-40 hidden bg-slate-900/50 lg:hidden"></div>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                var sidebar = document.getElementById('app-sidebar');
+                var overlay = document.getElementById('sidebar-overlay');
+                var toggleButtons = document.querySelectorAll('[data-sidebar-toggle]');
+
+                function closeSidebar() {
+                    if (!sidebar) return;
+                    sidebar.classList.add('-translate-x-full');
+                    if (overlay) overlay.classList.add('hidden');
+                    document.body.classList.remove('overflow-hidden');
+                }
+
+                function openSidebar() {
+                    if (!sidebar) return;
+                    if (typeof window.closeHeaderInteractivePanels === 'function') {
+                        window.closeHeaderInteractivePanels();
+                    }
+                    sidebar.classList.remove('-translate-x-full');
+                    if (overlay) overlay.classList.remove('hidden');
+                    document.body.classList.add('overflow-hidden');
+                }
+
+                toggleButtons.forEach(function (button) {
+                    button.addEventListener('click', function () {
+                        if (!sidebar) return;
+                        if (sidebar.classList.contains('-translate-x-full')) {
+                            openSidebar();
+                        } else {
+                            closeSidebar();
+                        }
+                    });
+                });
+
+                if (overlay) {
+                    overlay.addEventListener('click', closeSidebar);
+                }
+            });
+        </script>
+    </body>
+</html>
