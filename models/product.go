@@ -57,15 +57,20 @@ type ProductStats struct {
 
 type ProductDetail struct {
 	Product
-	CurrentStock         float64
-	CurrentStockDisplay  string
-	OnOrderQty           float64
-	OnOrderQtyDisplay    string
-	AvailabilityPercent  int
-	SupplierNetworkCount int
-	StockHistoryCount    int
-	LatestSessionDate    string
-	LatestSessionDisplay string
+	CurrentStock                 float64
+	CurrentStockDisplay          string
+	CurrentStockBreakdownDisplay string
+	CurrentStockBreakdownParts   []string
+	OnOrderQty                   float64
+	OnOrderQtyDisplay            string
+	OnOrderCartonDisplay         string
+	OnOrderBreakdownDisplay      string
+	OnOrderBreakdownParts        []string
+	AvailabilityPercent          int
+	SupplierNetworkCount         int
+	StockHistoryCount            int
+	LatestSessionDate            string
+	LatestSessionDisplay         string
 }
 
 type ProductSupplierNetwork struct {
@@ -96,10 +101,18 @@ type ProductStockHistory struct {
 	SessionDateDisplay    string
 	StoreName             string
 	CheckerName           string
+	QtyStoreCarton        int
+	QtyStoreBox           int
+	QtyStorePcs           int
 	QtyStore              float64
 	QtyStoreDisplay       string
+	QtyStoreBreakdown     string
+	QtyWarehouseCarton    int
+	QtyWarehouseBox       int
+	QtyWarehousePcs       int
 	QtyWarehouse          float64
 	QtyWarehouseDisplay   string
+	QtyWarehouseBreakdown string
 	Discrepancy           float64
 	DiscrepancyDisplay    string
 	SuggestBuyQty         float64

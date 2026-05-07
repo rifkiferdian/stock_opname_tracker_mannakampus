@@ -206,6 +206,7 @@
                                                         data-unit-id="{{ $product.UnitID }}"
                                                         data-min-stock="{{ $product.MinStock }}"
                                                         data-max-stock="{{ $product.MaxStock }}"
+                                                        data-reorder-point="{{ $product.ReorderPoint }}"
                                                         data-default-lead-time-days="{{ $product.DefaultLeadTimeDays }}"
                                                         data-pcs-per-box="{{ $product.PcsPerBox }}"
                                                         data-box-per-carton="{{ $product.BoxPerCarton }}"
@@ -370,6 +371,10 @@
                             <input type="number" id="max_stock" name="max_stock" min="0" step="0.01" value="0" class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500">
                         </div>
                         <div>
+                            <label for="reorder_point" class="text-[10px] font-extrabold uppercase text-[#566173]">Batas Aman</label>
+                            <input type="number" id="reorder_point" name="reorder_point" min="0" step="0.01" value="0" class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500">
+                        </div>
+                        <div>
                             <label for="default_lead_time_days" class="text-[10px] font-extrabold uppercase text-[#566173]">Lead Time (Hari)</label>
                             <input type="number" id="default_lead_time_days" name="default_lead_time_days" min="0" value="0" class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500">
                         </div>
@@ -469,6 +474,10 @@
                         <div>
                             <label for="edit_max_stock" class="text-[10px] font-extrabold uppercase text-[#566173]">Stok Maksimum</label>
                             <input type="number" id="edit_max_stock" name="max_stock" min="0" step="0.01" class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500">
+                        </div>
+                        <div>
+                            <label for="edit_reorder_point" class="text-[10px] font-extrabold uppercase text-[#566173]">Batas Aman</label>
+                            <input type="number" id="edit_reorder_point" name="reorder_point" min="0" step="0.01" class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500">
                         </div>
                         <div>
                             <label for="edit_default_lead_time_days" class="text-[10px] font-extrabold uppercase text-[#566173]">Lead Time (Hari)</label>
@@ -594,6 +603,7 @@
                         editModalEl.querySelector('#edit_unit_id').value = btn.getAttribute('data-unit-id') || '0';
                         editModalEl.querySelector('#edit_min_stock').value = btn.getAttribute('data-min-stock') || '0';
                         editModalEl.querySelector('#edit_max_stock').value = btn.getAttribute('data-max-stock') || '0';
+                        editModalEl.querySelector('#edit_reorder_point').value = btn.getAttribute('data-reorder-point') || '0';
                         editModalEl.querySelector('#edit_default_lead_time_days').value = btn.getAttribute('data-default-lead-time-days') || '0';
                         editModalEl.querySelector('#edit_pcs_per_box').value = btn.getAttribute('data-pcs-per-box') || '0';
                         editModalEl.querySelector('#edit_box_per_carton').value = btn.getAttribute('data-box-per-carton') || '0';

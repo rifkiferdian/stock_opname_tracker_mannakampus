@@ -31,6 +31,10 @@
                                 <i class="bx bx-arrow-back text-base"></i>
                                 Kembali ke Daftar
                             </a>
+                            <button type="button" class="inline-flex items-center justify-center gap-2 rounded-md bg-[#001e62] px-4 py-2.5 text-sm font-extrabold text-white shadow-md shadow-[#001e62]/20 transition hover:bg-[#002f95]" data-modal-open="productEditModal">
+                                <i class="bx bx-pencil text-base"></i>
+                                Edit Produk
+                            </button>
                         </div>
 
                         <section class="grid gap-5 lg:grid-cols-[minmax(0,2.1fr)_minmax(17rem,1fr)]">
@@ -38,7 +42,7 @@
                                 <div class="min-w-0">
                                     <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                                         <div class="min-w-0">
-                                            <p class="text-[11px] font-extrabold uppercase tracking-[0.18em] text-[#4f5b70]">SKU: {{ .Product.ProductCode }}</p>
+                                            <p class="text-[13px] font-extrabold uppercase tracking-[0.14em] text-[#4f5b70]">SKU: {{ .Product.ProductCode }}</p>
                                             <h1 class="mt-2 text-[2.15rem] font-extrabold leading-tight text-[#0b3586]">{{ .Product.ProductName }}</h1>
 
                                             <div class="mt-4 flex flex-wrap items-center gap-2">
@@ -49,23 +53,35 @@
                                                 </span>
                                                 {{ end }}
                                                 <span class="inline-flex items-center gap-1.5 rounded-md bg-slate-100 px-3 py-2 text-sm font-semibold text-[#5a6781]">
+                                                    <i class="bx bx-ruler text-base"></i>
+                                                    {{ if .Product.UnitName }}{{ .Product.UnitName }}{{ else }}-{{ end }}
+                                                </span>
+                                                <span class="inline-flex items-center gap-1.5 rounded-md bg-slate-100 px-3 py-2 text-sm font-semibold text-[#5a6781]">
                                                     <i class="bx bx-buildings text-base"></i>
                                                     {{ if .Product.PrimarySupplierName }}{{ .Product.PrimarySupplierName }}{{ else }}Gudang A-12{{ end }}
                                                 </span>
                                             </div>
 
-                                            <div class="mt-4 grid gap-2 sm:grid-cols-3">
-                                                <div class="rounded-lg bg-slate-50 px-3 py-3">
-                                                    <p class="text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#8b95a5]">Barcode Unit</p>
-                                                    <p class="mt-1 text-sm font-semibold text-[#153e8a]">{{ if .Product.Barcode }}{{ .Product.Barcode }}{{ else }}-{{ end }}</p>
+                                            <div class="mt-4 flex gap-2 overflow-x-auto pb-1">
+                                                <div class="min-w-[12.5rem] flex-1 rounded-lg bg-slate-50 px-3 py-3">
+                                                    <p class="whitespace-nowrap text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#8b95a5]">Barcode Unit</p>
+                                                    <p class="mt-1 whitespace-nowrap text-sm font-semibold text-[#153e8a]">{{ if .Product.Barcode }}{{ .Product.Barcode }}{{ else }}-{{ end }}</p>
                                                 </div>
-                                                <div class="rounded-lg bg-slate-50 px-3 py-3">
-                                                    <p class="text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#8b95a5]">Barcode Box</p>
-                                                    <p class="mt-1 text-sm font-semibold text-[#153e8a]">{{ if .Product.BarcodeBox }}{{ .Product.BarcodeBox }}{{ else }}-{{ end }}</p>
+                                                <div class="min-w-[12.5rem] flex-1 rounded-lg bg-slate-50 px-3 py-3">
+                                                    <p class="whitespace-nowrap text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#8b95a5]">Barcode Box</p>
+                                                    <p class="mt-1 whitespace-nowrap text-sm font-semibold text-[#153e8a]">{{ if .Product.BarcodeBox }}{{ .Product.BarcodeBox }}{{ else }}-{{ end }}</p>
                                                 </div>
-                                                <div class="rounded-lg bg-slate-50 px-3 py-3">
-                                                    <p class="text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#8b95a5]">Barcode Carton</p>
-                                                    <p class="mt-1 text-sm font-semibold text-[#153e8a]">{{ if .Product.BarcodeCarton }}{{ .Product.BarcodeCarton }}{{ else }}-{{ end }}</p>
+                                                <div class="min-w-[12.5rem] flex-1 rounded-lg bg-slate-50 px-3 py-3">
+                                                    <p class="whitespace-nowrap text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#8b95a5]">Barcode Carton</p>
+                                                    <p class="mt-1 whitespace-nowrap text-sm font-semibold text-[#153e8a]">{{ if .Product.BarcodeCarton }}{{ .Product.BarcodeCarton }}{{ else }}-{{ end }}</p>
+                                                </div>
+                                                <div class="min-w-[14rem] flex-1 rounded-lg bg-slate-50 px-3 py-3">
+                                                    <p class="whitespace-nowrap text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#8b95a5]">Konversi Satuan</p>
+                                                    <div class="mt-2 space-y-1 text-[10px] font-semibold text-[#153e8a]">
+                                                    <p>1 Carton = {{ .Product.BoxPerCarton }} Box</p>
+                                                    <p>1 Box = {{ .Product.PcsPerBox }} Pcs</p>
+                                                    <p>1 Carton = {{ .Product.PcsPerCarton }} Pcs</p>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
@@ -81,17 +97,21 @@
 
                                     <div class="mt-8 flex items-start justify-between gap-8">
                                         <div class="min-w-0 flex-1">
-                                            <p class="text-[11px] font-extrabold uppercase text-[#07142f]">Stok Saat Ini</p>
-                                            <div class="mt-2 flex items-end gap-2">
-                                                <p class="text-4xl font-extrabold leading-none text-[#07142f]">{{ .Product.CurrentStockDisplay }}</p>
-                                                <span class="pb-1 text-base font-medium text-[#8b95a5]">{{ .Product.UnitName }}</span>
+                                            <p class="text-[11px] font-extrabold uppercase text-[#07142f]">Stock Opname Terakhir</p>
+                                            <div class="mt-2">
+                                                <div class="space-y-1 text-lg font-extrabold leading-tight text-[#07142f] sm:text-xl">
+                                                    {{ range .Product.CurrentStockBreakdownParts }}
+                                                    <p>{{ . }}</p>
+                                                    {{ end }}
+                                                </div>
+                                                <p class="mt-1 text-xs font-semibold text-[#8b95a5]">Total {{ .Product.CurrentStockDisplay }} pcs</p>
                                             </div>
                                         </div>
                                         <div class="min-w-0 flex-1">
                                             <p class="text-[11px] font-extrabold uppercase text-[#07142f]">Dalam Pesanan</p>
-                                            <div class="mt-2 flex items-end gap-2">
-                                                <p class="text-4xl font-extrabold leading-none text-[#07142f]">{{ .Product.OnOrderQtyDisplay }}</p>
-                                                <span class="pb-1 text-base font-medium text-[#8b95a5]">{{ .Product.UnitName }}</span>
+                                            <div class="mt-2">
+                                                <p class="text-2xl font-extrabold leading-tight text-[#07142f] sm:text-3xl">{{ .Product.OnOrderQtyDisplay }}</p>
+                                                <p class="mt-1 text-xs font-semibold text-[#8b95a5]">approved_buy_qty (SO terakhir)</p>
                                             </div>
                                         </div>
                                         <div class="min-w-0 flex-1">
@@ -99,6 +119,11 @@
                                             <div class="mt-2 flex items-end gap-2">
                                                 <p class="text-4xl font-extrabold leading-none text-[#f28b53]">{{ .Product.ReorderPointDisplay }}</p>
                                                 <span class="pb-1 text-base font-medium text-[#8b95a5]">{{ .Product.UnitName }}</span>
+                                            </div>
+                                            <p class="mt-4 text-[11px] font-extrabold uppercase text-[#07142f]">Stok Maksimum</p>
+                                            <div class="mt-1 flex items-end gap-2">
+                                                <p class="text-2xl font-extrabold leading-none text-[#07142f]">{{ .Product.MaxStockDisplay }}</p>
+                                                <span class="pb-0.5 text-sm font-medium text-[#8b95a5]">{{ .Product.UnitName }}</span>
                                             </div>
                                         </div>
                                     </div>
@@ -141,6 +166,18 @@
                             </div>
                         </section>
 
+                        {{ if .Error }}
+                        <div class="rounded-lg border border-rose-200 bg-rose-50 px-5 py-4 text-sm font-semibold text-rose-600">
+                            {{ .Error }}
+                        </div>
+                        {{ end }}
+
+                        {{ if .Success }}
+                        <div class="rounded-lg border border-emerald-200 bg-emerald-50 px-5 py-4 text-sm font-semibold text-emerald-700">
+                            {{ .Success }}
+                        </div>
+                        {{ end }}
+
                         <section class="overflow-hidden rounded-lg bg-white shadow-sm">
                             <div class="flex flex-col gap-4 px-5 py-5 md:flex-row md:items-center md:justify-between">
                                 <div>
@@ -148,9 +185,15 @@
                                     <p class="mt-1 text-xs font-medium text-[#566173]">Relasi vendor, harga satuan, dan pengaturan replenishment untuk produk ini.</p>
                                 </div>
 
-                                <div class="inline-flex items-center gap-2 rounded-md border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-extrabold text-[#566173]">
-                                    <i class="bx bx-buildings text-base"></i>
-                                    {{ len .Suppliers }} supplier terdaftar
+                                <div class="flex flex-wrap items-center gap-2">
+                                    <button type="button" class="inline-flex items-center justify-center gap-2 rounded-md bg-[#001e62] px-4 py-3 text-sm font-extrabold text-white shadow-sm transition hover:bg-[#002f95]" data-modal-open="productSupplierCreateModal">
+                                        <i class="bx bx-plus-circle text-base"></i>
+                                        Tambah
+                                    </button>
+                                    <div class="inline-flex items-center gap-2 rounded-md border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-extrabold text-[#566173]">
+                                        <i class="bx bx-buildings text-base"></i>
+                                        {{ len .Suppliers }} supplier terdaftar
+                                    </div>
                                 </div>
                             </div>
 
@@ -160,10 +203,9 @@
                                         <tr>
                                             <th class="px-5 py-4 text-left">Nama Supplier</th>
                                             <th class="px-5 py-4 text-left">Waktu Tunggu</th>
-                                            <th class="px-5 py-4 text-left">Harga Satuan</th>
-                                            <th class="px-5 py-4 text-left">Pesanan Minimum</th>
                                             <th class="px-5 py-4 text-left">Prioritas</th>
                                             <th class="px-5 py-4 text-left">Status</th>
+                                            <th class="px-5 py-4 text-left">Aksi</th>
                                         </tr>
                                     </thead>
                                     <tbody class="divide-y divide-slate-100">
@@ -185,8 +227,6 @@
                                                 </div>
                                             </td>
                                             <td class="px-5 py-4 font-semibold text-[#1e2b42]">{{ .LeadTimeDays }} hari</td>
-                                            <td class="px-5 py-4 font-extrabold text-[#07142f]">{{ .LastPriceDisplay }}</td>
-                                            <td class="px-5 py-4 font-semibold text-[#566173]">{{ .MOQDisplay }} {{ $.Product.UnitName }}</td>
                                             <td class="px-5 py-4">
                                                 {{ if .IsPrimary }}
                                                 <span class="inline-flex items-center gap-1 rounded-full bg-[#eef3ff] px-3 py-1 text-[10px] font-extrabold text-[#24408f]">
@@ -213,10 +253,34 @@
                                                 </span>
                                                 {{ end }}
                                             </td>
+                                            <td class="px-5 py-4">
+                                                <div class="flex items-center gap-2">
+                                                    <button
+                                                        type="button"
+                                                        class="btn-edit-network-supplier inline-flex items-center justify-center rounded-md border border-slate-200 bg-white px-2.5 py-1.5 text-[11px] font-extrabold text-[#001e62] transition hover:bg-slate-50"
+                                                        data-supplier-id="{{ .SupplierID }}"
+                                                        data-supplier-name="{{ .SupplierName }}"
+                                                        data-last-price="{{ printf "%.2f" .LastPrice }}"
+                                                        data-moq="{{ printf "%.2f" .MOQ }}"
+                                                        data-pack-size="{{ printf "%.2f" .PackSize }}"
+                                                        data-lead-time-days="{{ .LeadTimeDays }}"
+                                                        data-is-primary="{{ if .IsPrimary }}1{{ else }}0{{ end }}"
+                                                    >
+                                                        <i class="bx bx-pencil text-sm"></i>
+                                                        Edit
+                                                    </button>
+                                                    <form method="post" action="/products/{{ $.Product.ID }}/suppliers/{{ .SupplierID }}/delete" onsubmit="return confirm('Hapus relasi supplier {{ .SupplierName }} dari produk ini?');">
+                                                        <button type="submit" class="inline-flex items-center justify-center rounded-md border border-rose-200 bg-rose-50 px-2.5 py-1.5 text-[11px] font-extrabold text-rose-600 transition hover:bg-rose-100">
+                                                            <i class="bx bx-trash text-sm"></i>
+                                                            Hapus
+                                                        </button>
+                                                    </form>
+                                                </div>
+                                            </td>
                                         </tr>
                                         {{ else }}
                                         <tr>
-                                            <td colspan="6" class="px-5 py-10 text-center text-sm font-semibold text-[#566173]">Produk ini belum memiliki jaringan supplier.</td>
+                                            <td colspan="5" class="px-5 py-10 text-center text-sm font-semibold text-[#566173]">Produk ini belum memiliki jaringan supplier.</td>
                                         </tr>
                                         {{ end }}
                                     </tbody>
@@ -233,7 +297,7 @@
 
                                 <div class="inline-flex items-center gap-2 rounded-md border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-extrabold text-[#566173]">
                                     <i class="bx bx-clipboard text-base"></i>
-                                    {{ len .Histories }} data terbaru
+                                    {{ .HistoryPagination.TotalItems }} data
                                 </div>
                             </div>
 
@@ -246,8 +310,7 @@
                                             <th class="border-b border-[#163b88] px-5 py-4 text-left">Pengecek</th>
                                             <th class="border-b border-[#163b88] px-5 py-4 text-left">Qty Toko</th>
                                             <th class="border-b border-[#163b88] px-5 py-4 text-left">Qty Gudang</th>
-                                            <th class="border-b border-[#163b88] px-5 py-4 text-left">Selisih</th>
-                                            <th class="border-b border-[#163b88] px-5 py-4 text-left">Rekomendasi PO</th>
+                                            <th class="border-b border-[#163b88] px-5 py-4 text-left">Suggest PO Checker</th>
                                             <th class="border-b border-[#163b88] px-5 py-4 text-left">PO Disetujui</th>
                                             <th class="border-b border-[#163b88] px-5 py-4 text-left">Status</th>
                                         </tr>
@@ -261,19 +324,10 @@
                                             </td>
                                             <td class="px-5 py-4 font-semibold text-[#1e2b42]">{{ .StoreName }}</td>
                                             <td class="px-5 py-4 font-semibold text-[#566173]">{{ .CheckerName }}</td>
-                                            <td class="px-5 py-4 font-extrabold text-[#07142f]">{{ .QtyStoreDisplay }}</td>
-                                            <td class="px-5 py-4 font-extrabold text-[#07142f]">{{ .QtyWarehouseDisplay }}</td>
+                                            <td class="px-5 py-4 text-[11px] font-semibold text-[#07142f]">{{ .QtyStoreBreakdown }}</td>
+                                            <td class="px-5 py-4 text-[11px] font-semibold text-[#07142f]">{{ .QtyWarehouseBreakdown }}</td>
                                             <td class="px-5 py-4">
-                                                <span class="inline-flex rounded-md bg-slate-100 px-3 py-1 text-[10px] font-extrabold text-[#001e62]">{{ .DiscrepancyDisplay }} {{ $.Product.UnitName }}</span>
-                                            </td>
-                                            <td class="px-5 py-4">
-                                                <p class="font-semibold text-[#1e2b42]">
-                                                    {{ if .CheckerNotes }}
-                                                        {{ .CheckerNotes }}
-                                                    {{ else }}
-                                                        Saran {{ .SuggestBuyQtyDisplay }} {{ $.Product.UnitName }}
-                                                    {{ end }}
-                                                </p>
+                                                <span class="inline-flex rounded-md bg-slate-100 px-3 py-1 text-[10px] font-extrabold text-[#001e62]">{{ .SuggestBuyQtyDisplay }} {{ $.Product.UnitName }}</span>
                                             </td>
                                             <td class="px-5 py-4 font-extrabold text-[#001e62]">{{ .ApprovedBuyQtyDisplay }} {{ $.Product.UnitName }}</td>
                                             <td class="px-5 py-4">
@@ -282,11 +336,44 @@
                                         </tr>
                                         {{ else }}
                                         <tr>
-                                            <td colspan="9" class="px-5 py-10 text-center text-sm font-semibold text-[#566173]">Belum ada riwayat stock opname untuk produk ini.</td>
+                                            <td colspan="8" class="px-5 py-10 text-center text-sm font-semibold text-[#566173]">Belum ada riwayat stock opname untuk produk ini.</td>
                                         </tr>
                                         {{ end }}
                                     </tbody>
                                 </table>
+                            </div>
+
+                            <div class="flex flex-col gap-3 border-t border-slate-100 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+                                <p class="text-xs font-semibold text-[#1e2b42]">
+                                    {{ if gt .HistoryPagination.TotalItems 0 }}
+                                        Menampilkan {{ .HistoryPagination.StartItem }} sampai {{ .HistoryPagination.EndItem }} dari {{ .HistoryPagination.TotalItems }} data
+                                    {{ else }}
+                                        Menampilkan 0 data
+                                    {{ end }}
+                                </p>
+                                <div class="flex items-center gap-2">
+                                    {{ if .HistoryPagination.HasPrev }}
+                                    <a href="{{ .HistoryPagination.PrevURL }}" class="inline-flex h-9 items-center justify-center rounded-md bg-white px-4 text-sm font-semibold text-[#1e2b42] shadow-sm transition hover:bg-[#eef3ff]">Sebelumnya</a>
+                                    {{ else }}
+                                    <span class="inline-flex h-9 items-center justify-center rounded-md bg-slate-100 px-4 text-sm font-semibold text-slate-400">Sebelumnya</span>
+                                    {{ end }}
+
+                                    <div class="hidden items-center gap-1 sm:flex">
+                                        {{ range .HistoryPagination.Pages }}
+                                        {{ if .Active }}
+                                        <span class="inline-flex h-9 min-w-9 items-center justify-center rounded-md bg-[#001e62] px-3 text-sm font-extrabold text-white">{{ .Number }}</span>
+                                        {{ else }}
+                                        <a href="{{ .URL }}" class="inline-flex h-9 min-w-9 items-center justify-center rounded-md bg-white px-3 text-sm font-extrabold text-[#1e2b42] shadow-sm transition hover:bg-[#eef3ff]">{{ .Number }}</a>
+                                        {{ end }}
+                                        {{ end }}
+                                    </div>
+
+                                    {{ if .HistoryPagination.HasNext }}
+                                    <a href="{{ .HistoryPagination.NextURL }}" class="inline-flex h-9 items-center justify-center rounded-md bg-white px-4 text-sm font-semibold text-[#1e2b42] shadow-sm transition hover:bg-[#eef3ff]">Berikutnya</a>
+                                    {{ else }}
+                                    <span class="inline-flex h-9 items-center justify-center rounded-md bg-slate-100 px-4 text-sm font-semibold text-slate-400">Berikutnya</span>
+                                    {{ end }}
+                                </div>
                             </div>
                         </section>
                     </div>
@@ -298,6 +385,198 @@
 
         <div id="sidebar-overlay" class="fixed inset-0 z-40 hidden bg-slate-900/50 lg:hidden"></div>
 
+        <div data-modal class="fixed inset-0 z-50 hidden items-start justify-center overflow-y-auto p-4 sm:items-center sm:p-6" id="productEditModal">
+            <div class="absolute inset-0 bg-slate-900/50" data-modal-close></div>
+            <div class="relative w-full max-w-xl rounded-lg bg-white p-5 shadow-xl sm:p-6">
+                <div class="flex items-center justify-between border-b border-slate-100 pb-4">
+                    <h2 class="text-lg font-extrabold text-[#001e62]">Edit Produk</h2>
+                    <button type="button" class="text-slate-400 transition hover:text-slate-600" data-modal-close>
+                        <i class="bx bx-x text-2xl"></i>
+                    </button>
+                </div>
+
+                <form action="/products/update" method="post" class="mt-6 max-h-[75vh] space-y-5 overflow-y-auto pr-1">
+                    <input type="hidden" name="id" value="{{ .Product.ID }}">
+                    <input type="hidden" name="redirect_to" value="/products/{{ .Product.ID }}">
+                    <input type="hidden" name="brand" value="{{ .Product.Brand }}">
+                    <input type="hidden" name="pack_size" value="{{ .Product.PackSize }}">
+                    <input type="hidden" name="last_price" value="{{ .Product.PrimarySupplierPrice }}">
+                    <div class="grid gap-5 md:grid-cols-2">
+                        <div>
+                            <label for="edit_product_code" class="text-[10px] font-extrabold uppercase text-[#566173]">SKU/PLU</label>
+                            <input type="text" id="edit_product_code" name="product_code" value="{{ .Product.ProductCode }}" required class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold uppercase outline-none transition focus:border-brand-500">
+                        </div>
+                        <div>
+                            <label for="edit_barcode" class="text-[10px] font-extrabold uppercase text-[#566173]">Barcode</label>
+                            <input type="text" id="edit_barcode" name="barcode" value="{{ .Product.Barcode }}" class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500">
+                        </div>
+                        <div>
+                            <label for="edit_barcode_box" class="text-[10px] font-extrabold uppercase text-[#566173]">Barcode Box</label>
+                            <input type="text" id="edit_barcode_box" name="barcode_box" value="{{ .Product.BarcodeBox }}" class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500">
+                        </div>
+                        <div>
+                            <label for="edit_barcode_carton" class="text-[10px] font-extrabold uppercase text-[#566173]">Barcode Carton</label>
+                            <input type="text" id="edit_barcode_carton" name="barcode_carton" value="{{ .Product.BarcodeCarton }}" class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500">
+                        </div>
+                        <div>
+                            <label for="edit_product_name" class="text-[10px] font-extrabold uppercase text-[#566173]">Nama Produk</label>
+                            <input type="text" id="edit_product_name" name="product_name" value="{{ .Product.ProductName }}" required class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500">
+                        </div>
+                        <div>
+                            <label for="edit_category_id" class="text-[10px] font-extrabold uppercase text-[#566173]">Kategori</label>
+                            <select id="edit_category_id" name="category_id" class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500">
+                                <option value="0">Pilih Kategori</option>
+                                {{ range .Categories }}
+                                <option value="{{ .ID }}" {{ if eq .ID $.Product.CategoryID }}selected{{ end }}>{{ .CategoryName }}</option>
+                                {{ end }}
+                            </select>
+                        </div>
+                        <div>
+                            <label for="edit_unit_id" class="text-[10px] font-extrabold uppercase text-[#566173]">Satuan</label>
+                            <select id="edit_unit_id" name="unit_id" class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500">
+                                <option value="0">Pilih Satuan</option>
+                                {{ range .Units }}
+                                <option value="{{ .ID }}" {{ if eq .ID $.Product.UnitID }}selected{{ end }}>{{ .UnitName }}</option>
+                                {{ end }}
+                            </select>
+                        </div>
+                        <div>
+                            <label for="edit_supplier_id" class="text-[10px] font-extrabold uppercase text-[#566173]">Supplier Utama</label>
+                            <select id="edit_supplier_id" name="supplier_id" class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500">
+                                <option value="0">Pilih Supplier</option>
+                                {{ range .SupplierOptions }}
+                                <option value="{{ .ID }}" {{ if eq .ID $.Product.PrimarySupplierID }}selected{{ end }}>{{ .SupplierName }}</option>
+                                {{ end }}
+                            </select>
+                        </div>
+                        <div>
+                            <label for="edit_min_stock" class="text-[10px] font-extrabold uppercase text-[#566173]">Stok Minimum</label>
+                            <input type="number" id="edit_min_stock" name="min_stock" min="0" step="0.01" value="{{ .Product.MinStock }}" class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500">
+                        </div>
+                        <div>
+                            <label for="edit_max_stock" class="text-[10px] font-extrabold uppercase text-[#566173]">Stok Maksimum</label>
+                            <input type="number" id="edit_max_stock" name="max_stock" min="0" step="0.01" value="{{ .Product.MaxStock }}" class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500">
+                        </div>
+                        <div>
+                            <label for="edit_reorder_point" class="text-[10px] font-extrabold uppercase text-[#566173]">Batas Aman</label>
+                            <input type="number" id="edit_reorder_point" name="reorder_point" min="0" step="0.01" value="{{ .Product.ReorderPoint }}" class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500">
+                        </div>
+                        <div>
+                            <label for="edit_default_lead_time_days" class="text-[10px] font-extrabold uppercase text-[#566173]">Lead Time (Hari)</label>
+                            <input type="number" id="edit_default_lead_time_days" name="default_lead_time_days" min="0" value="{{ .Product.DefaultLeadTimeDays }}" class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500">
+                        </div>
+                        <div>
+                            <label for="edit_pcs_per_box" class="text-[10px] font-extrabold uppercase text-[#566173]">1 Box = Berapa Pcs</label>
+                            <input type="number" id="edit_pcs_per_box" name="pcs_per_box" min="0" step="1" value="{{ .Product.PcsPerBox }}" class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500">
+                        </div>
+                        <div>
+                            <label for="edit_box_per_carton" class="text-[10px] font-extrabold uppercase text-[#566173]">1 Carton = Berapa Box</label>
+                            <input type="number" id="edit_box_per_carton" name="box_per_carton" min="0" step="1" value="{{ .Product.BoxPerCarton }}" class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500">
+                        </div>
+                        <div>
+                            <label for="edit_pcs_per_carton" class="text-[10px] font-extrabold uppercase text-[#566173]">1 Carton = Berapa Pcs</label>
+                            <input type="number" id="edit_pcs_per_carton" name="pcs_per_carton" min="0" step="1" value="{{ .Product.PcsPerCarton }}" class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500">
+                        </div>
+                        <div>
+                            <label for="edit_is_active" class="text-[10px] font-extrabold uppercase text-[#566173]">Status</label>
+                            <select id="edit_is_active" name="is_active" class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500">
+                                <option value="1" {{ if .Product.IsActive }}selected{{ end }}>Aktif</option>
+                                <option value="0" {{ if not .Product.IsActive }}selected{{ end }}>Nonaktif</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col gap-3 border-t border-slate-100 pt-4 sm:flex-row sm:justify-end">
+                        <button type="button" class="rounded-md border border-slate-200 bg-white px-5 py-3 text-sm font-extrabold text-[#1e2b42] transition hover:bg-slate-50" data-modal-close>Batal</button>
+                        <button type="submit" class="rounded-md bg-[#001e62] px-5 py-3 text-sm font-extrabold text-white transition hover:bg-[#002f95]">Simpan Perubahan</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div data-modal class="fixed inset-0 z-50 hidden items-start justify-center overflow-y-auto p-4 sm:items-center sm:p-6" id="productSupplierCreateModal">
+            <div class="absolute inset-0 bg-slate-900/50" data-modal-close></div>
+            <div class="relative w-full max-w-xl rounded-lg bg-white p-5 shadow-xl sm:p-6">
+                <div class="flex items-center justify-between border-b border-slate-100 pb-4">
+                    <h2 class="text-lg font-extrabold text-[#001e62]">Tambah Jaringan Supplier</h2>
+                    <button type="button" class="text-slate-400 transition hover:text-slate-600" data-modal-close>
+                        <i class="bx bx-x text-2xl"></i>
+                    </button>
+                </div>
+
+                <form action="/products/{{ .Product.ID }}/suppliers" method="post" class="mt-6 space-y-5">
+                    <input type="hidden" name="last_price" value="0">
+                    <input type="hidden" name="moq" value="0">
+                    <input type="hidden" name="pack_size" value="{{ .Product.PackSize }}">
+                    <div>
+                        <label for="create_network_supplier_id" class="text-[10px] font-extrabold uppercase text-[#566173]">Supplier</label>
+                        <select id="create_network_supplier_id" name="supplier_id" required class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500">
+                            <option value="">Pilih Supplier</option>
+                            {{ range .SupplierOptions }}
+                            <option value="{{ .ID }}">{{ .SupplierName }}</option>
+                            {{ end }}
+                        </select>
+                    </div>
+                    <div>
+                        <div>
+                            <label for="create_network_lead_time_days" class="text-[10px] font-extrabold uppercase text-[#566173]">Lead Time (Hari)</label>
+                            <input type="number" id="create_network_lead_time_days" name="lead_time_days" min="0" step="1" value="{{ .Product.DefaultLeadTimeDays }}" class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500">
+                        </div>
+                    </div>
+                    <label class="flex items-start gap-3 rounded-lg border border-slate-200 bg-slate-50 px-4 py-4">
+                        <input type="checkbox" id="create_network_is_primary" name="is_primary" value="1" class="mt-1 h-4 w-4 rounded border-slate-300 text-[#001e62] focus:ring-[#001e62]">
+                        <span>
+                            <span class="block text-sm font-extrabold text-[#07142f]">Jadikan supplier utama</span>
+                            <span class="mt-1 block text-xs font-medium text-[#566173]">Prioritas supplier produk akan diperbarui otomatis.</span>
+                        </span>
+                    </label>
+
+                    <div class="flex flex-col gap-3 border-t border-slate-100 pt-4 sm:flex-row sm:justify-end">
+                        <button type="button" class="rounded-md border border-slate-200 bg-white px-5 py-3 text-sm font-extrabold text-[#1e2b42] transition hover:bg-slate-50" data-modal-close>Batal</button>
+                        <button type="submit" class="rounded-md bg-[#001e62] px-5 py-3 text-sm font-extrabold text-white transition hover:bg-[#002f95]">Simpan</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div data-modal class="fixed inset-0 z-50 hidden items-start justify-center overflow-y-auto p-4 sm:items-center sm:p-6" id="productSupplierEditModal">
+            <div class="absolute inset-0 bg-slate-900/50" data-modal-close></div>
+            <div class="relative w-full max-w-xl rounded-lg bg-white p-5 shadow-xl sm:p-6">
+                <div class="flex items-center justify-between border-b border-slate-100 pb-4">
+                    <div>
+                        <h2 class="text-lg font-extrabold text-[#001e62]">Edit Jaringan Supplier</h2>
+                        <p id="edit_network_supplier_name" class="mt-1 text-sm font-semibold text-[#566173]">-</p>
+                    </div>
+                    <button type="button" class="text-slate-400 transition hover:text-slate-600" data-modal-close>
+                        <i class="bx bx-x text-2xl"></i>
+                    </button>
+                </div>
+
+                <form id="product-supplier-edit-form" action="" method="post" class="mt-6 space-y-5">
+                    <input type="hidden" id="edit_network_last_price" name="last_price" value="0">
+                    <input type="hidden" id="edit_network_moq" name="moq" value="0">
+                    <input type="hidden" id="edit_network_pack_size" name="pack_size" value="1">
+                    <div>
+                        <label for="edit_network_lead_time_days" class="text-[10px] font-extrabold uppercase text-[#566173]">Lead Time (Hari)</label>
+                        <input type="number" id="edit_network_lead_time_days" name="lead_time_days" min="0" step="1" value="0" class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500">
+                    </div>
+
+                    <label class="flex items-start gap-3 rounded-lg border border-slate-200 bg-slate-50 px-4 py-4">
+                        <input type="checkbox" id="edit_network_is_primary" name="is_primary" value="1" class="mt-1 h-4 w-4 rounded border-slate-300 text-[#001e62] focus:ring-[#001e62]">
+                        <span>
+                            <span class="block text-sm font-extrabold text-[#07142f]">Jadikan supplier utama</span>
+                            <span class="mt-1 block text-xs font-medium text-[#566173]">Prioritas supplier produk akan diperbarui otomatis.</span>
+                        </span>
+                    </label>
+
+                    <div class="flex flex-col gap-3 border-t border-slate-100 pt-4 sm:flex-row sm:justify-end">
+                        <button type="button" class="rounded-md border border-slate-200 bg-white px-5 py-3 text-sm font-extrabold text-[#1e2b42] transition hover:bg-slate-50" data-modal-close>Batal</button>
+                        <button type="submit" class="rounded-md bg-[#001e62] px-5 py-3 text-sm font-extrabold text-white transition hover:bg-[#002f95]">Simpan Perubahan</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
         <script>
             document.addEventListener('DOMContentLoaded', function () {
                 var sidebar = document.getElementById('app-sidebar');
@@ -308,7 +587,9 @@
                     if (!sidebar) return;
                     sidebar.classList.add('-translate-x-full');
                     if (overlay) overlay.classList.add('hidden');
-                    document.body.classList.remove('overflow-hidden');
+                    if (!document.querySelector('[data-modal].flex')) {
+                        document.body.classList.remove('overflow-hidden');
+                    }
                 }
 
                 function openSidebar() {
@@ -319,6 +600,23 @@
                     sidebar.classList.remove('-translate-x-full');
                     if (overlay) overlay.classList.remove('hidden');
                     document.body.classList.add('overflow-hidden');
+                }
+
+                function openModal(modalId) {
+                    var modal = document.getElementById(modalId);
+                    if (!modal) return;
+                    modal.classList.remove('hidden');
+                    modal.classList.add('flex');
+                    document.body.classList.add('overflow-hidden');
+                }
+
+                function closeModal(modal) {
+                    if (!modal) return;
+                    modal.classList.add('hidden');
+                    modal.classList.remove('flex');
+                    if (!document.querySelector('[data-modal].flex')) {
+                        document.body.classList.remove('overflow-hidden');
+                    }
                 }
 
                 toggleButtons.forEach(function (button) {
@@ -335,6 +633,51 @@
                 if (overlay) {
                     overlay.addEventListener('click', closeSidebar);
                 }
+
+                document.querySelectorAll('[data-modal-open]').forEach(function (trigger) {
+                    trigger.addEventListener('click', function () {
+                        var target = trigger.getAttribute('data-modal-open');
+                        if (target) openModal(target);
+                    });
+                });
+
+                document.querySelectorAll('[data-modal-close]').forEach(function (close) {
+                    close.addEventListener('click', function () {
+                        closeModal(close.closest('[data-modal]'));
+                    });
+                });
+
+                document.addEventListener('keydown', function (event) {
+                    if (event.key !== 'Escape') return;
+                    document.querySelectorAll('[data-modal].flex').forEach(closeModal);
+                });
+
+                document.querySelectorAll('.btn-edit-network-supplier').forEach(function (button) {
+                    button.addEventListener('click', function () {
+                        var form = document.getElementById('product-supplier-edit-form');
+                        if (!form) return;
+
+                        var supplierId = button.getAttribute('data-supplier-id') || '';
+                        var supplierName = button.getAttribute('data-supplier-name') || '-';
+                        form.action = '/products/{{ .Product.ID }}/suppliers/' + supplierId + '/update';
+
+                        var nameEl = document.getElementById('edit_network_supplier_name');
+                        var lastPriceEl = document.getElementById('edit_network_last_price');
+                        var moqEl = document.getElementById('edit_network_moq');
+                        var packSizeEl = document.getElementById('edit_network_pack_size');
+                        var leadTimeEl = document.getElementById('edit_network_lead_time_days');
+                        var primaryEl = document.getElementById('edit_network_is_primary');
+
+                        if (nameEl) nameEl.textContent = supplierName;
+                        if (lastPriceEl) lastPriceEl.value = button.getAttribute('data-last-price') || '0';
+                        if (moqEl) moqEl.value = button.getAttribute('data-moq') || '0';
+                        if (packSizeEl) packSizeEl.value = button.getAttribute('data-pack-size') || '1';
+                        if (leadTimeEl) leadTimeEl.value = button.getAttribute('data-lead-time-days') || '0';
+                        if (primaryEl) primaryEl.checked = (button.getAttribute('data-is-primary') || '0') === '1';
+
+                        openModal('productSupplierEditModal');
+                    });
+                });
             });
         </script>
     </body>

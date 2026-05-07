@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"gobase-app/models"
+	"math"
 	"strings"
 )
 
@@ -226,7 +227,31 @@ func (r *ProductRepository) GetByID(id int) (models.ProductDetail, error) {
 				LIMIT 1
 			), 0) AS current_stock,
 			COALESCE((
-				SELECT COALESCE(si.approved_buy_qty, si.suggest_buy_qty, 0)
+				SELECT COALESCE(si.qty_store_carton, 0) + COALESCE(si.qty_warehouse_carton, 0)
+				FROM stock_check_session_items si
+				INNER JOIN stock_check_sessions scs ON scs.id = si.stock_check_session_id
+				WHERE si.product_id = p.id
+				ORDER BY scs.session_date DESC, si.id DESC
+				LIMIT 1
+			), 0) AS current_stock_carton,
+			COALESCE((
+				SELECT COALESCE(si.qty_store_box, 0) + COALESCE(si.qty_warehouse_box, 0)
+				FROM stock_check_session_items si
+				INNER JOIN stock_check_sessions scs ON scs.id = si.stock_check_session_id
+				WHERE si.product_id = p.id
+				ORDER BY scs.session_date DESC, si.id DESC
+				LIMIT 1
+			), 0) AS current_stock_box,
+			COALESCE((
+				SELECT COALESCE(si.qty_store_pcs, 0) + COALESCE(si.qty_warehouse_pcs, 0)
+				FROM stock_check_session_items si
+				INNER JOIN stock_check_sessions scs ON scs.id = si.stock_check_session_id
+				WHERE si.product_id = p.id
+				ORDER BY scs.session_date DESC, si.id DESC
+				LIMIT 1
+			), 0) AS current_stock_pcs,
+			COALESCE((
+				SELECT COALESCE(si.approved_buy_qty, 0)
 				FROM stock_check_session_items si
 				INNER JOIN stock_check_sessions scs ON scs.id = si.stock_check_session_id
 				WHERE si.product_id = p.id
@@ -258,18 +283,21 @@ func (r *ProductRepository) GetByID(id int) (models.ProductDetail, error) {
 	`, id)
 
 	var (
-		detail              models.ProductDetail
-		minStock            sql.NullFloat64
-		maxStock            sql.NullFloat64
-		reorderPoint        sql.NullFloat64
-		packSize            sql.NullFloat64
-		primarySupplier     sql.NullFloat64
-		currentStock        sql.NullFloat64
-		onOrderQty          sql.NullFloat64
-		isActive            int
-		createdAt           sql.NullTime
-		updatedAt           sql.NullTime
-		latestSessionDate   sql.NullTime
+		detail             models.ProductDetail
+		minStock           sql.NullFloat64
+		maxStock           sql.NullFloat64
+		reorderPoint       sql.NullFloat64
+		packSize           sql.NullFloat64
+		primarySupplier    sql.NullFloat64
+		currentStock       sql.NullFloat64
+		currentStockCarton sql.NullInt64
+		currentStockBox    sql.NullInt64
+		currentStockPcs    sql.NullInt64
+		onOrderQty         sql.NullFloat64
+		isActive           int
+		createdAt          sql.NullTime
+		updatedAt          sql.NullTime
+		latestSessionDate  sql.NullTime
 	)
 
 	err := row.Scan(
@@ -299,6 +327,9 @@ func (r *ProductRepository) GetByID(id int) (models.ProductDetail, error) {
 		&createdAt,
 		&updatedAt,
 		&currentStock,
+		&currentStockCarton,
+		&currentStockBox,
+		&currentStockPcs,
 		&onOrderQty,
 		&detail.SupplierNetworkCount,
 		&detail.StockHistoryCount,
@@ -329,6 +360,9 @@ func (r *ProductRepository) GetByID(id int) (models.ProductDetail, error) {
 	if onOrderQty.Valid {
 		detail.OnOrderQty = onOrderQty.Float64
 	}
+	currentCarton := int(currentStockCarton.Int64)
+	currentBox := int(currentStockBox.Int64)
+	currentPcs := int(currentStockPcs.Int64)
 
 	detail.MinStockDisplay = formatProductDecimal(detail.MinStock)
 	detail.MaxStockDisplay = formatProductDecimal(detail.MaxStock)
@@ -336,7 +370,16 @@ func (r *ProductRepository) GetByID(id int) (models.ProductDetail, error) {
 	detail.PackSizeDisplay = formatProductDecimal(detail.PackSize)
 	detail.PrimarySupplierPriceDisplay = fmt.Sprintf("Rp %s", formatProductDecimal(detail.PrimarySupplierPrice))
 	detail.CurrentStockDisplay = formatProductDecimal(detail.CurrentStock)
+	detail.CurrentStockBreakdownDisplay = formatProductUnitBreakdown(currentCarton, currentBox, currentPcs)
+	detail.CurrentStockBreakdownParts = formatProductUnitBreakdownParts(currentCarton, currentBox, currentPcs)
+	if currentCarton == 0 && currentBox == 0 && currentPcs == 0 && detail.CurrentStock > 0 {
+		detail.CurrentStockBreakdownDisplay = formatProductQtyBreakdown(detail.CurrentStock, detail.PcsPerBox, detail.PcsPerCarton)
+		detail.CurrentStockBreakdownParts = formatProductQtyBreakdownParts(detail.CurrentStock, detail.PcsPerBox, detail.PcsPerCarton)
+	}
 	detail.OnOrderQtyDisplay = formatProductDecimal(detail.OnOrderQty)
+	detail.OnOrderBreakdownParts = formatProductQtyBreakdownDisplayParts(detail.OnOrderQty, detail.PcsPerBox, detail.PcsPerCarton)
+	detail.OnOrderBreakdownDisplay = strings.Join(detail.OnOrderBreakdownParts, " ")
+	detail.OnOrderCartonDisplay = detail.OnOrderQtyDisplay
 	detail.IsActive = isActive == 1
 	if detail.IsActive {
 		detail.StatusLabel = "Aktif"
@@ -464,7 +507,7 @@ func (r *ProductRepository) GetSupplierNetwork(productID int) ([]models.ProductS
 	return suppliers, rows.Err()
 }
 
-func (r *ProductRepository) GetStockHistory(productID int) ([]models.ProductStockHistory, error) {
+func (r *ProductRepository) GetStockHistory(productID int, limit int, offset int) ([]models.ProductStockHistory, error) {
 	rows, err := r.DB.Query(`
 		SELECT
 			si.id,
@@ -473,7 +516,13 @@ func (r *ProductRepository) GetStockHistory(productID int) ([]models.ProductStoc
 			scs.session_date,
 			st.store_name,
 			COALESCE(u.name, '') AS checker_name,
+			COALESCE(si.qty_store_carton, 0) AS qty_store_carton,
+			COALESCE(si.qty_store_box, 0) AS qty_store_box,
+			COALESCE(si.qty_store_pcs, 0) AS qty_store_pcs,
 			si.qty_store,
+			COALESCE(si.qty_warehouse_carton, 0) AS qty_warehouse_carton,
+			COALESCE(si.qty_warehouse_box, 0) AS qty_warehouse_box,
+			COALESCE(si.qty_warehouse_pcs, 0) AS qty_warehouse_pcs,
 			si.qty_warehouse,
 			((si.qty_store + si.qty_warehouse) - (si.system_qty_store + si.system_qty_warehouse)) AS discrepancy,
 			si.suggest_buy_qty,
@@ -486,8 +535,8 @@ func (r *ProductRepository) GetStockHistory(productID int) ([]models.ProductStoc
 		LEFT JOIN users u ON u.id = si.created_by
 		WHERE si.product_id = ?
 		ORDER BY scs.session_date DESC, si.id DESC
-		LIMIT 10
-	`, productID)
+		LIMIT ? OFFSET ?
+	`, productID, limit, offset)
 	if err != nil {
 		return nil, err
 	}
@@ -512,7 +561,13 @@ func (r *ProductRepository) GetStockHistory(productID int) ([]models.ProductStoc
 			&sessionDate,
 			&item.StoreName,
 			&item.CheckerName,
+			&item.QtyStoreCarton,
+			&item.QtyStoreBox,
+			&item.QtyStorePcs,
 			&qtyStore,
+			&item.QtyWarehouseCarton,
+			&item.QtyWarehouseBox,
+			&item.QtyWarehousePcs,
 			&qtyWarehouse,
 			&discrepancy,
 			&suggestBuyQty,
@@ -541,6 +596,8 @@ func (r *ProductRepository) GetStockHistory(productID int) ([]models.ProductStoc
 
 		item.QtyStoreDisplay = formatProductDecimal(item.QtyStore)
 		item.QtyWarehouseDisplay = formatProductDecimal(item.QtyWarehouse)
+		item.QtyStoreBreakdown = formatProductUnitBreakdown(item.QtyStoreCarton, item.QtyStoreBox, item.QtyStorePcs)
+		item.QtyWarehouseBreakdown = formatProductUnitBreakdown(item.QtyWarehouseCarton, item.QtyWarehouseBox, item.QtyWarehousePcs)
 		item.DiscrepancyDisplay = formatSignedProductDecimal(item.Discrepancy)
 		item.SuggestBuyQtyDisplay = formatProductDecimal(item.SuggestBuyQty)
 		item.ApprovedBuyQtyDisplay = formatProductDecimal(item.ApprovedBuyQty)
@@ -563,6 +620,16 @@ func (r *ProductRepository) GetStockHistory(productID int) ([]models.ProductStoc
 	}
 
 	return histories, rows.Err()
+}
+
+func (r *ProductRepository) CountStockHistory(productID int) (int, error) {
+	var total int
+	err := r.DB.QueryRow(`
+		SELECT COUNT(*)
+		FROM stock_check_session_items si
+		WHERE si.product_id = ?
+	`, productID).Scan(&total)
+	return total, err
 }
 
 func (r *ProductRepository) ExistsByID(id int) (bool, error) {
@@ -1005,6 +1072,100 @@ func formatSignedProductDecimal(value float64) string {
 		return "+" + formatProductDecimal(value)
 	}
 	return formatProductDecimal(value)
+}
+
+func formatProductQtyBreakdown(value float64, pcsPerBox int, pcsPerCarton int) string {
+	return strings.Join(formatProductQtyBreakdownParts(value, pcsPerBox, pcsPerCarton), " ")
+}
+
+func formatProductQtyBreakdownDisplayParts(value float64, pcsPerBox int, pcsPerCarton int) []string {
+	totalPcs := int(math.Round(value))
+	if totalPcs <= 0 {
+		return []string{"0 pcs"}
+	}
+
+	carton := 0
+	box := 0
+	pcs := totalPcs
+
+	if pcsPerCarton > 0 {
+		carton = pcs / pcsPerCarton
+		pcs = pcs % pcsPerCarton
+	}
+	if pcsPerBox > 0 {
+		box = pcs / pcsPerBox
+		pcs = pcs % pcsPerBox
+	}
+
+	return formatProductUnitBreakdownNonZeroParts(carton, box, pcs)
+}
+
+func formatProductQtyBreakdownParts(value float64, pcsPerBox int, pcsPerCarton int) []string {
+	totalPcs := int(math.Round(value))
+	if totalPcs <= 0 {
+		return formatProductUnitBreakdownParts(0, 0, 0)
+	}
+
+	carton := 0
+	box := 0
+	pcs := totalPcs
+
+	if pcsPerCarton > 0 {
+		carton = pcs / pcsPerCarton
+		pcs = pcs % pcsPerCarton
+	}
+	if pcsPerBox > 0 {
+		box = pcs / pcsPerBox
+		pcs = pcs % pcsPerBox
+	}
+
+	return formatProductUnitBreakdownParts(carton, box, pcs)
+}
+
+func formatProductUnitBreakdown(carton int, box int, pcs int) string {
+	return strings.Join(formatProductUnitBreakdownParts(carton, box, pcs), " ")
+}
+
+func formatProductUnitBreakdownParts(carton int, box int, pcs int) []string {
+	return []string{
+		fmt.Sprintf("%d carton", carton),
+		fmt.Sprintf("%d box", box),
+		fmt.Sprintf("%d pcs", pcs),
+	}
+}
+
+func formatProductUnitBreakdownNonZeroParts(carton int, box int, pcs int) []string {
+	parts := make([]string, 0, 3)
+	if carton > 0 {
+		parts = append(parts, fmt.Sprintf("%d carton", carton))
+	}
+	if box > 0 {
+		parts = append(parts, fmt.Sprintf("%d box", box))
+	}
+	if pcs > 0 {
+		parts = append(parts, fmt.Sprintf("%d pcs", pcs))
+	}
+	if len(parts) == 0 {
+		return []string{"0 pcs"}
+	}
+	return parts
+}
+
+func formatProductOrderCartonDisplay(value float64, pcsPerCarton int, boxPerCarton int, pcsPerBox int) string {
+	if value <= 0 {
+		return "0 carton"
+	}
+
+	resolvedPcsPerCarton := pcsPerCarton
+	if resolvedPcsPerCarton <= 0 && boxPerCarton > 0 && pcsPerBox > 0 {
+		resolvedPcsPerCarton = boxPerCarton * pcsPerBox
+	}
+	if resolvedPcsPerCarton <= 0 {
+		return fmt.Sprintf("%s pcs", formatProductDecimal(value))
+	}
+
+	carton := int(math.Ceil(value / float64(resolvedPcsPerCarton)))
+	return fmt.Sprintf("%d carton", carton)
 }
 
 func formatProductStatusLabel(status string) string {

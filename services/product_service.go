@@ -70,11 +70,36 @@ func (s *ProductService) GetProductSupplierNetwork(productID int) ([]models.Prod
 	return s.Repo.GetSupplierNetwork(productID)
 }
 
-func (s *ProductService) GetProductStockHistory(productID int) ([]models.ProductStockHistory, error) {
+func (s *ProductService) GetProductStockHistory(productID int, page int, limit int) ([]models.ProductStockHistory, int, error) {
 	if productID <= 0 {
-		return nil, errors.New("product id tidak valid")
+		return nil, 0, errors.New("product id tidak valid")
 	}
-	return s.Repo.GetStockHistory(productID)
+	if page <= 0 {
+		page = 1
+	}
+	if limit <= 0 {
+		limit = 50
+	}
+
+	totalItems, err := s.Repo.CountStockHistory(productID)
+	if err != nil {
+		return nil, 0, err
+	}
+	if totalItems == 0 {
+		return []models.ProductStockHistory{}, 0, nil
+	}
+
+	totalPages := (totalItems + limit - 1) / limit
+	if page > totalPages {
+		page = totalPages
+	}
+
+	histories, err := s.Repo.GetStockHistory(productID, limit, (page-1)*limit)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	return histories, totalItems, nil
 }
 
 func (s *ProductService) GetProductStats() (models.ProductStats, error) {
