@@ -335,17 +335,9 @@
                             </div>
 
                             <div class="quick-grid">
-                                <a href="{{ .NextSessionURL }}" class="quick-btn bg-[#153e8a] text-white">
-                                    <i class="bx bx-scan text-base"></i>
-                                    Lanjut Input
-                                </a>
                                 <a href="/stock-checker" class="quick-btn bg-[#f26419] text-white">
                                     <i class="bx bx-list-ul text-base"></i>
                                     Pilih Supplier
-                                </a>
-                                <a href="/stock-check-sessions" class="quick-btn border border-slate-200 bg-white text-slate-700">
-                                    <i class="bx bx-folder-open text-base"></i>
-                                    Semua Session
                                 </a>
                             </div>
                         </section>
@@ -402,8 +394,8 @@
                                 <article class="surface section">
                                     <div class="section-head">
                                         <div>
-                                            <p class="eyebrow text-slate-400">Active Supplier</p>
-                                            <h2 class="section-title">Supplier aktif</h2>
+                                            <p class="eyebrow text-slate-400">Recent SO Supplier</p>
+                                            <h2 class="section-title">Supplier SO terakhir</h2>
                                         </div>
                                         <a href="/stock-checker" class="text-[11px] font-extrabold uppercase tracking-[0.12em] text-[#153e8a]">Lihat Semua</a>
                                     </div>
@@ -422,7 +414,7 @@
                                         </div>
                                     {{ else }}
                                         <div class="mt-3 rounded-xl border border-dashed border-slate-300 bg-slate-50 px-3 py-4">
-                                            <p class="text-sm font-semibold text-slate-600">Belum ada supplier aktif yang bisa ditampilkan.</p>
+                                            <p class="text-sm font-semibold text-slate-600">Belum ada supplier dari sesi SO terakhir.</p>
                                         </div>
                                     {{ end }}
                                 </article>

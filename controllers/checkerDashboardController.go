@@ -25,23 +25,11 @@ func CheckerDashboardIndex(c *gin.Context) {
 	}
 
 	sessionService := buildStockCheckSessionService()
-	supplierService := buildSupplierService()
 
 	today := time.Now()
 	todayDate := today.Format("2006-01-02")
 
 	stores, err := sessionService.GetStoreOptionsByUserID(currentUserID)
-	if err != nil {
-		c.String(http.StatusInternalServerError, err.Error())
-		return
-	}
-
-	suppliers, _, err := supplierService.GetSuppliers(models.SupplierListFilter{
-		Status: "active",
-		Sort:   "recent",
-		Page:   1,
-		Limit:  6,
-	})
 	if err != nil {
 		c.String(http.StatusInternalServerError, err.Error())
 		return
@@ -69,6 +57,15 @@ func CheckerDashboardIndex(c *gin.Context) {
 		filteredSessions = append(filteredSessions, session)
 	}
 
+	recentSOSessions, _, err := sessionService.GetSessions(models.StockCheckSessionListFilter{
+		Page:  1,
+		Limit: 250,
+	})
+	if err != nil {
+		c.String(http.StatusInternalServerError, err.Error())
+		return
+	}
+
 	var (
 		inProgressCount int
 		submittedCount  int
@@ -91,6 +88,33 @@ func CheckerDashboardIndex(c *gin.Context) {
 		}
 	}
 
+	recentSOSuppliers := make([]models.Supplier, 0, 5)
+	seenSupplier := map[int]struct{}{}
+	for _, session := range recentSOSessions {
+		if len(allowedStoreSet) > 0 {
+			if _, ok := allowedStoreSet[session.StoreID]; !ok {
+				continue
+			}
+		}
+		if session.SupplierID <= 0 {
+			continue
+		}
+		if _, exists := seenSupplier[session.SupplierID]; exists {
+			continue
+		}
+
+		recentSOSuppliers = append(recentSOSuppliers, models.Supplier{
+			ID:           session.SupplierID,
+			SupplierCode: session.SupplierCode,
+			SupplierName: session.SupplierName,
+		})
+		seenSupplier[session.SupplierID] = struct{}{}
+
+		if len(recentSOSuppliers) >= 5 {
+			break
+		}
+	}
+
 	visibleSessions := filteredSessions
 	if len(visibleSessions) > 6 {
 		visibleSessions = visibleSessions[:6]
@@ -107,7 +131,7 @@ func CheckerDashboardIndex(c *gin.Context) {
 		"InProgressCount":    inProgressCount,
 		"SubmittedCount":     submittedCount,
 		"ClosedCount":        closedCount,
-		"Suppliers":          suppliers,
+		"Suppliers":          recentSOSuppliers,
 		"Sessions":           visibleSessions,
 		"NextSessionURL":     nextSessionURL,
 	})
