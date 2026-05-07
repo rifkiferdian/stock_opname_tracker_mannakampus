@@ -31,7 +31,7 @@ func (s *ProductService) GetProducts(filter models.ProductListFilter) ([]models.
 		filter.Page = 1
 	}
 	if filter.Limit <= 0 {
-		filter.Limit = 150
+		filter.Limit = 500
 	}
 
 	totalItems, err := s.Repo.CountAll(filter)
