@@ -94,7 +94,7 @@ func (s *StockOpnameReportService) GetDetailPage(supplierID int, filter models.S
 		CurrentDateLabel:       "-",
 		HistoryDateLabels:      []string{},
 		SummaryCards:           buildStockOpnameReportSummaryCards(stockOpnameReportSummaryMetrics{}, time.Time{}),
-		TrendBars:              buildStockOpnameReportTrendBars(time.Now(), map[string]int{}),
+		TrendBars:              buildStockOpnameReportTrendBars(time.Now(), map[string]float64{}),
 		AuditFindings:          []models.StockOpnameReportAuditFinding{},
 		ReportRows:             []models.StockOpnameReportRow{},
 		LatestSessionCount:     0,
@@ -499,14 +499,14 @@ func buildStockOpnameReportSummaryCards(metrics stockOpnameReportSummaryMetrics,
 	}
 }
 
-func buildStockOpnameReportTrendBars(anchorDate time.Time, counts map[string]int) []models.StockOpnameReportTrendBar {
+func buildStockOpnameReportTrendBars(anchorDate time.Time, counts map[string]float64) []models.StockOpnameReportTrendBar {
 	if anchorDate.IsZero() {
 		anchorDate = time.Now()
 	}
 
 	start := time.Date(anchorDate.Year(), anchorDate.Month(), 1, 0, 0, 0, 0, anchorDate.Location()).AddDate(0, -11, 0)
-	series := make([]int, 0, 12)
-	maxValue := 0
+	series := make([]float64, 0, 12)
+	maxValue := 0.0
 	for offset := 0; offset < 12; offset++ {
 		currentMonth := start.AddDate(0, offset, 0)
 		monthKey := currentMonth.Format("2006-01")
@@ -517,18 +517,18 @@ func buildStockOpnameReportTrendBars(anchorDate time.Time, counts map[string]int
 		}
 	}
 	if maxValue == 0 {
-		maxValue = 1
+		maxValue = 1.0
 	}
 
 	bars := make([]models.StockOpnameReportTrendBar, 0, 12)
 	for offset, value := range series {
 		currentMonth := start.AddDate(0, offset, 0)
-		height := 18 + int(math.Round((float64(value)/float64(maxValue))*72))
+		height := 18 + int(math.Round((value/maxValue)*72))
 		bars = append(bars, models.StockOpnameReportTrendBar{
 			Label:     currentMonth.Format("Jan 2006"),
 			Height:    fmt.Sprintf("%d%%", height),
 			IsCurrent: offset == len(series)-1,
-			Value:     fmt.Sprintf("%d", value),
+			Value:     reportFormatWholeNumber(value),
 		})
 	}
 

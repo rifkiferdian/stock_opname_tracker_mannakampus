@@ -991,14 +991,14 @@
                                                         data-checker-notes="{{ .CurrentCheckerNote }}"
                                                         data-suggest-buy-qty="{{ .CurrentSuggestQty }}"
                                                     >
-                                                        PO : {{ .CurrentPOCarton }}c
+                                                        PO : {{ .CurrentPO }}
                                                     </button>
                                                     {{ else if .ActionURL }}
                                                     <a href="{{ .ActionURL }}" class="history-pill history-pill-action">
-                                                        PO : {{ .CurrentPOCarton }}c
+                                                        PO : {{ .CurrentPO }}
                                                     </a>
                                                     {{ else }}
-                                                    <span class="history-pill">PO : {{ .CurrentPOCarton }}c</span>
+                                                    <span class="history-pill">PO : {{ .CurrentPO }}</span>
                                                     {{ end }}
                                                 </center>
                                             </td>
@@ -1112,7 +1112,7 @@
                         <section class="bottom-grid">
                             <article class="panel-card trend-card">
                                 <h2 class="section-title">Approval per Bulan</h2>
-                                <p class="section-copy">Jumlah item yang sudah approved atau sudah dibuatkan PO selama 12 bulan terakhir.</p>
+                                <p class="section-copy">Total qty PO dari item berstatus approved/PO created selama 12 bulan terakhir.</p>
 
                                 <div class="trend-chart">
                                     {{ range .Report.TrendBars }}

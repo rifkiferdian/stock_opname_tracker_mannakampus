@@ -31,9 +31,10 @@ type checkerRecapSupplierSummary struct {
 	SupplierID               int
 	SupplierCode             string
 	SupplierName             string
-	TotalSessions            int
 	LatestSessionDate        string
 	LatestSessionDateDisplay string
+	DaysWithoutSO            int
+	DaysWithoutSONote        string
 }
 
 type checkerRecapSessionItem struct {
@@ -42,6 +43,7 @@ type checkerRecapSessionItem struct {
 	SessionDateDisplay string
 	StoreName          string
 	SupplierName       string
+	CreatedByName      string
 	Status             string
 	StatusLabel        string
 	StatusBadgeClass   string
@@ -49,7 +51,9 @@ type checkerRecapSessionItem struct {
 }
 
 func StockCheckCheckerRecapIndex(c *gin.Context) {
-	if !currentUserHasRole(c, "checker") {
+	isChecker := currentUserHasRole(c, "checker")
+	isSuperAdmin := currentUserHasRole(c, "super-admin")
+	if !isChecker && !isSuperAdmin {
 		c.Redirect(http.StatusFound, "/dashboard")
 		return
 	}
@@ -61,19 +65,25 @@ func StockCheckCheckerRecapIndex(c *gin.Context) {
 	}
 
 	sessionService := buildStockCheckSessionService()
-	stores, err := sessionService.GetStoreOptionsByUserID(currentUserID)
+	var (
+		stores []models.Store
+		err    error
+	)
+	if isSuperAdmin {
+		stores, err = sessionService.GetStoreOptions()
+	} else {
+		stores, err = sessionService.GetStoreOptionsByUserID(currentUserID)
+	}
 	if err != nil {
 		c.String(http.StatusInternalServerError, err.Error())
 		return
 	}
 
 	now := time.Now()
-	defaultDateFrom := now.AddDate(0, 0, -14)
-	defaultDateTo := now
 
-	dateFrom := parseQueryDateWithFallback(c.Query("date_from"), defaultDateFrom)
-	dateTo := parseQueryDateWithFallback(c.Query("date_to"), defaultDateTo)
-	if dateFrom.After(dateTo) {
+	dateFrom := sanitizeQueryDate(c.Query("date_from"))
+	dateTo := sanitizeQueryDate(c.Query("date_to"))
+	if dateFrom != "" && dateTo != "" && dateFrom > dateTo {
 		dateFrom, dateTo = dateTo, dateFrom
 	}
 
@@ -88,12 +98,22 @@ func StockCheckCheckerRecapIndex(c *gin.Context) {
 
 	selectedStatus := sanitizeStockCheckSessionStatusFilter(c.Query("status"))
 	sessions, _, err := sessionService.GetSessions(models.StockCheckSessionListFilter{
-		DateFrom: dateFrom.Format("2006-01-02"),
-		DateTo:   dateTo.Format("2006-01-02"),
+		DateFrom: dateFrom,
+		DateTo:   dateTo,
 		StoreID:  selectedStoreID,
 		Status:   selectedStatus,
 		Page:     1,
 		Limit:    1000,
+	})
+	if err != nil {
+		c.String(http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	sessionsForSupplierList, _, err := sessionService.GetSessions(models.StockCheckSessionListFilter{
+		StoreID: selectedStoreID,
+		Page:    1,
+		Limit:   10000,
 	})
 	if err != nil {
 		c.String(http.StatusInternalServerError, err.Error())
@@ -152,6 +172,16 @@ func StockCheckCheckerRecapIndex(c *gin.Context) {
 		if session.SupplierID <= 0 {
 			continue
 		}
+	}
+
+	for _, session := range sessionsForSupplierList {
+		if !isStoreAccessible(allowedStoreSet, session.StoreID) {
+			continue
+		}
+		if session.SupplierID <= 0 {
+			continue
+		}
+
 		supplierSummary, exists := supplierSummaryMap[session.SupplierID]
 		if !exists {
 			supplierSummary = &checkerRecapSupplierSummary{
@@ -161,7 +191,7 @@ func StockCheckCheckerRecapIndex(c *gin.Context) {
 			}
 			supplierSummaryMap[session.SupplierID] = supplierSummary
 		}
-		supplierSummary.TotalSessions++
+
 		if session.SessionDate > supplierSummary.LatestSessionDate {
 			supplierSummary.LatestSessionDate = session.SessionDate
 			supplierSummary.LatestSessionDateDisplay = session.SessionDateDisplay
@@ -182,17 +212,22 @@ func StockCheckCheckerRecapIndex(c *gin.Context) {
 
 	supplierSummaries := make([]checkerRecapSupplierSummary, 0, len(supplierSummaryMap))
 	for _, summary := range supplierSummaryMap {
+		if summary.LatestSessionDate != "" {
+			daysWithoutSO := calculateDaysWithoutSO(summary.LatestSessionDate, now)
+			summary.DaysWithoutSO = daysWithoutSO
+			summary.DaysWithoutSONote = buildDaysWithoutSONote(daysWithoutSO)
+		} else {
+			summary.DaysWithoutSO = 0
+			summary.DaysWithoutSONote = "-"
+		}
 		supplierSummaries = append(supplierSummaries, *summary)
 	}
 	sort.Slice(supplierSummaries, func(i, j int) bool {
-		if supplierSummaries[i].TotalSessions == supplierSummaries[j].TotalSessions {
-			return supplierSummaries[i].LatestSessionDate > supplierSummaries[j].LatestSessionDate
+		if supplierSummaries[i].LatestSessionDate == supplierSummaries[j].LatestSessionDate {
+			return strings.ToLower(supplierSummaries[i].SupplierName) < strings.ToLower(supplierSummaries[j].SupplierName)
 		}
-		return supplierSummaries[i].TotalSessions > supplierSummaries[j].TotalSessions
+		return supplierSummaries[i].LatestSessionDate > supplierSummaries[j].LatestSessionDate
 	})
-	if len(supplierSummaries) > 5 {
-		supplierSummaries = supplierSummaries[:5]
-	}
 
 	recentSessions := make([]checkerRecapSessionItem, 0, len(filteredSessions))
 	for index, session := range filteredSessions {
@@ -206,6 +241,7 @@ func StockCheckCheckerRecapIndex(c *gin.Context) {
 			SessionDateDisplay: session.SessionDateDisplay,
 			StoreName:          session.StoreName,
 			SupplierName:       session.SupplierName,
+			CreatedByName:      session.CreatedByName,
 			Status:             session.Status,
 			StatusLabel:        statusLabel,
 			StatusBadgeClass:   badgeClass,
@@ -213,13 +249,23 @@ func StockCheckCheckerRecapIndex(c *gin.Context) {
 		})
 	}
 
+	periodLabel := "Semua periode"
+	if dateFrom != "" && dateTo != "" {
+		periodLabel = dateFrom + " sampai " + dateTo
+	} else if dateFrom != "" {
+		periodLabel = "Dari " + dateFrom
+	} else if dateTo != "" {
+		periodLabel = "Sampai " + dateTo
+	}
+
 	Render(c, "stock_check_checker_recap.html", gin.H{
 		"Title":             "Rekap SO Checker",
 		"Page":              "stock_check_checker_recap",
 		"CurrentRole":       extractCurrentUserRole(c),
 		"TodayLabel":        now.Format("Monday, 02 Jan 2006"),
-		"DateFrom":          dateFrom.Format("2006-01-02"),
-		"DateTo":            dateTo.Format("2006-01-02"),
+		"DateFrom":          dateFrom,
+		"DateTo":            dateTo,
+		"PeriodLabel":       periodLabel,
 		"SelectedStoreID":   selectedStoreID,
 		"SelectedStatus":    selectedStatus,
 		"Stores":            stores,
@@ -234,16 +280,45 @@ func StockCheckCheckerRecapIndex(c *gin.Context) {
 	})
 }
 
-func parseQueryDateWithFallback(value string, fallback time.Time) time.Time {
+func sanitizeQueryDate(value string) string {
 	value = strings.TrimSpace(value)
 	if value == "" {
-		return fallback
+		return ""
 	}
-	parsed, err := time.Parse("2006-01-02", value)
+	if _, err := time.Parse("2006-01-02", value); err != nil {
+		return ""
+	}
+	return value
+}
+
+func calculateDaysWithoutSO(latestDate string, now time.Time) int {
+	latestDate = strings.TrimSpace(latestDate)
+	if latestDate == "" {
+		return 0
+	}
+
+	parsed, err := time.Parse("2006-01-02", latestDate)
 	if err != nil {
-		return fallback
+		return 0
 	}
-	return parsed
+
+	nowDate := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
+	latest := time.Date(parsed.Year(), parsed.Month(), parsed.Day(), 0, 0, 0, 0, now.Location())
+	if latest.After(nowDate) {
+		return 0
+	}
+
+	return int(nowDate.Sub(latest).Hours() / 24)
+}
+
+func buildDaysWithoutSONote(days int) string {
+	if days <= 0 {
+		return "Hari ini sudah di SO"
+	}
+	if days == 1 {
+		return "1 hari belum di SO"
+	}
+	return strconv.Itoa(days) + " hari belum di SO"
 }
 
 func isCheckerRecapOpenStatus(status string) bool {
