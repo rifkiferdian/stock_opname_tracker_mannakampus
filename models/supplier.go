@@ -161,6 +161,7 @@ type SupplierProductCreateInput struct {
 	PackSize     float64
 	LeadTimeDays int
 	IsPrimary    bool
+	IsActive     bool
 }
 
 type SupplierProductDeleteInput struct {

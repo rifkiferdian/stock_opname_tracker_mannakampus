@@ -567,7 +567,7 @@ func (r *SupplierRepository) UpsertProductSupply(input models.SupplierProductCre
 				lead_time_days,
 				pack_size,
 				is_active
-			) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1)
+			) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
 		`,
 			input.ProductID,
 			input.SupplierID,
@@ -577,6 +577,7 @@ func (r *SupplierRepository) UpsertProductSupply(input models.SupplierProductCre
 			input.MOQ,
 			input.LeadTimeDays,
 			input.PackSize,
+			boolToInt(input.IsActive),
 		)
 		if err != nil {
 			tx.Rollback()
@@ -600,7 +601,7 @@ func (r *SupplierRepository) UpsertProductSupply(input models.SupplierProductCre
 			moq = ?,
 			lead_time_days = ?,
 			pack_size = ?,
-			is_active = 1
+			is_active = ?
 		WHERE id = ?
 	`,
 		boolToInt(input.IsPrimary),
@@ -609,6 +610,7 @@ func (r *SupplierRepository) UpsertProductSupply(input models.SupplierProductCre
 		input.MOQ,
 		input.LeadTimeDays,
 		input.PackSize,
+		boolToInt(input.IsActive),
 		existingID,
 	)
 	if err != nil {

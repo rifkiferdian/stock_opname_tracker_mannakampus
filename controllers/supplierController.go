@@ -79,6 +79,7 @@ func SupplierProductStore(c *gin.Context) {
 		PackSize:     form.PackSize,
 		LeadTimeDays: form.LeadTimeDays,
 		IsPrimary:    form.IsPrimary == 1,
+		IsActive:     c.DefaultPostForm("is_active", "1") == "1",
 	}
 
 	if err := supplierService.CreateSupplierProduct(input); err != nil {
@@ -108,6 +109,7 @@ func SupplierProductUpdate(c *gin.Context) {
 		PackSize     float64 `form:"pack_size"`
 		LeadTimeDays int     `form:"lead_time_days"`
 		IsPrimary    int     `form:"is_primary"`
+		IsActive     int     `form:"is_active"`
 	}
 
 	var form supplierProductEditForm
@@ -126,6 +128,7 @@ func SupplierProductUpdate(c *gin.Context) {
 		PackSize:     form.PackSize,
 		LeadTimeDays: form.LeadTimeDays,
 		IsPrimary:    form.IsPrimary == 1,
+		IsActive:     c.DefaultPostForm("is_active", "1") == "1",
 	})
 	if err != nil {
 		renderSupplierDetailPage(c, supplierService, supplierID, err.Error(), "", models.SupplierProductCreateInput{})

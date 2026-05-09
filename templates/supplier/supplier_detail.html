@@ -211,6 +211,7 @@
                                                         data-pack-size="{{ printf "%.2f" .PackSize }}"
                                                         data-lead-time-days="{{ .LeadTimeDays }}"
                                                         data-is-primary="{{ if .IsPrimary }}1{{ else }}0{{ end }}"
+                                                        data-is-active="{{ if .IsActive }}1{{ else }}0{{ end }}"
                                                     >
                                                         <i class="bx bx-pencil text-sm"></i>
                                                         Edit
@@ -338,6 +339,14 @@
                             <input type="number" id="edit_lead_time_days" name="lead_time_days" min="0" step="1" value="0" class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-[#07142f] outline-none transition focus:border-brand-500">
                         </div>
 
+                        <div>
+                            <label for="edit_is_active" class="text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#566173]">Status</label>
+                            <select id="edit_is_active" name="is_active" class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-[#07142f] outline-none transition focus:border-brand-500">
+                                <option value="1">Aktif</option>
+                                <option value="0">Nonaktif</option>
+                            </select>
+                        </div>
+
                         <label class="flex items-start gap-3 rounded-lg border border-slate-200 bg-slate-50 px-4 py-4">
                             <input type="checkbox" id="edit_is_primary" name="is_primary" value="1" class="mt-1 h-4 w-4 rounded border-slate-300 text-[#001e62] focus:ring-[#001e62]">
                             <span>
@@ -450,6 +459,7 @@
                         var lastPriceEl = document.getElementById('edit_last_price');
                         var moqEl = document.getElementById('edit_moq');
                         var primaryEl = document.getElementById('edit_is_primary');
+                        var statusEl = document.getElementById('edit_is_active');
 
                         if (nameEl) nameEl.value = productName;
                         if (metaEl) metaEl.textContent = barcode ? (productCode + ' - ' + barcode) : productCode;
@@ -458,6 +468,7 @@
                         if (lastPriceEl) lastPriceEl.value = button.getAttribute('data-last-price') || '0';
                         if (moqEl) moqEl.value = button.getAttribute('data-moq') || '0';
                         if (primaryEl) primaryEl.checked = (button.getAttribute('data-is-primary') || '0') === '1';
+                        if (statusEl) statusEl.value = (button.getAttribute('data-is-active') || '1') === '0' ? '0' : '1';
 
                         openModal('supplierProductEditModal');
                     });

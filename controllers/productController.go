@@ -74,6 +74,7 @@ func ProductSupplierNetworkUpdate(c *gin.Context) {
 		PackSize:     form.PackSize,
 		LeadTimeDays: form.LeadTimeDays,
 		IsPrimary:    form.IsPrimary == 1,
+		IsActive:     c.DefaultPostForm("is_active", "1") == "1",
 	})
 	if err != nil {
 		c.Redirect(http.StatusSeeOther, buildProductDetailURL(productID, err.Error(), ""))
@@ -140,6 +141,7 @@ func ProductSupplierNetworkStore(c *gin.Context) {
 		PackSize:     form.PackSize,
 		LeadTimeDays: form.LeadTimeDays,
 		IsPrimary:    form.IsPrimary == 1,
+		IsActive:     c.DefaultPostForm("is_active", "1") == "1",
 	})
 	if err != nil {
 		c.Redirect(http.StatusSeeOther, buildProductDetailURL(productID, err.Error(), ""))
