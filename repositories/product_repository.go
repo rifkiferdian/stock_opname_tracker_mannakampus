@@ -149,10 +149,15 @@ func (r *ProductRepository) GetUnits() ([]models.Unit, error) {
 
 func (r *ProductRepository) GetSuppliers() ([]models.ProductSupplierOption, error) {
 	rows, err := r.DB.Query(`
-		SELECT id, supplier_name
-		FROM suppliers
-		WHERE is_active = 1
-		ORDER BY supplier_name ASC
+		SELECT
+			s.id,
+			s.supplier_name,
+			COALESCE(s.store_id, 0) AS store_id,
+			COALESCE(st.store_name, '') AS store_name
+		FROM suppliers s
+		LEFT JOIN stores st ON st.store_id = s.store_id
+		WHERE s.is_active = 1
+		ORDER BY s.supplier_name ASC
 	`)
 	if err != nil {
 		return nil, err
@@ -162,7 +167,7 @@ func (r *ProductRepository) GetSuppliers() ([]models.ProductSupplierOption, erro
 	var suppliers []models.ProductSupplierOption
 	for rows.Next() {
 		var supplier models.ProductSupplierOption
-		if err := rows.Scan(&supplier.ID, &supplier.SupplierName); err != nil {
+		if err := rows.Scan(&supplier.ID, &supplier.SupplierName, &supplier.StoreID, &supplier.StoreName); err != nil {
 			return nil, err
 		}
 		suppliers = append(suppliers, supplier)
@@ -175,6 +180,8 @@ func (r *ProductRepository) GetByID(id int) (models.ProductDetail, error) {
 	row := r.DB.QueryRow(`
 		SELECT
 			p.id,
+			COALESCE(p.store_id, 0) AS store_id,
+			COALESCE(st.store_name, '') AS store_name,
 			p.product_code,
 			COALESCE(p.barcode, '') AS barcode,
 			COALESCE(p.barcode_box, '') AS barcode_box,
@@ -277,6 +284,7 @@ func (r *ProductRepository) GetByID(id int) (models.ProductDetail, error) {
 				LIMIT 1
 			) AS latest_session_date
 		FROM products p
+		LEFT JOIN stores st ON st.store_id = p.store_id
 		LEFT JOIN product_categories pc ON pc.id = p.category_id
 		LEFT JOIN units u ON u.id = p.unit_id
 		WHERE p.id = ?
@@ -302,6 +310,8 @@ func (r *ProductRepository) GetByID(id int) (models.ProductDetail, error) {
 
 	err := row.Scan(
 		&detail.ID,
+		&detail.StoreID,
+		&detail.StoreName,
 		&detail.ProductCode,
 		&detail.Barcode,
 		&detail.BarcodeBox,
@@ -638,16 +648,16 @@ func (r *ProductRepository) ExistsByID(id int) (bool, error) {
 	return count > 0, err
 }
 
-func (r *ProductRepository) ExistsByCode(code string, ignoreID int) (bool, error) {
+func (r *ProductRepository) ExistsByCode(code string, storeID int, ignoreID int) (bool, error) {
 	var (
 		count int
 		err   error
 	)
 
 	if ignoreID > 0 {
-		err = r.DB.QueryRow(`SELECT COUNT(1) FROM products WHERE product_code = ? AND id <> ?`, code, ignoreID).Scan(&count)
+		err = r.DB.QueryRow(`SELECT COUNT(1) FROM products WHERE product_code = ? AND store_id = ? AND id <> ?`, code, storeID, ignoreID).Scan(&count)
 	} else {
-		err = r.DB.QueryRow(`SELECT COUNT(1) FROM products WHERE product_code = ?`, code).Scan(&count)
+		err = r.DB.QueryRow(`SELECT COUNT(1) FROM products WHERE product_code = ? AND store_id = ?`, code, storeID).Scan(&count)
 	}
 
 	return count > 0, err
@@ -697,6 +707,7 @@ func (r *ProductRepository) Create(input models.ProductCreateInput) error {
 
 	res, err := tx.Exec(`
 		INSERT INTO products (
+			store_id,
 			product_code,
 			barcode,
 			barcode_box,
@@ -714,8 +725,9 @@ func (r *ProductRepository) Create(input models.ProductCreateInput) error {
 			box_per_carton,
 			pcs_per_carton,
 			is_active
-		) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+		) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 	`,
+		nullableInt(input.StoreID),
 		input.ProductCode,
 		nullableString(input.Barcode),
 		nullableString(input.BarcodeBox),
@@ -762,6 +774,7 @@ func (r *ProductRepository) Update(input models.ProductUpdateInput) error {
 	_, err = tx.Exec(`
 		UPDATE products
 		SET
+			store_id = ?,
 			product_code = ?,
 			barcode = ?,
 			barcode_box = ?,
@@ -781,6 +794,7 @@ func (r *ProductRepository) Update(input models.ProductUpdateInput) error {
 			is_active = ?
 		WHERE id = ?
 	`,
+		nullableInt(input.StoreID),
 		input.ProductCode,
 		nullableString(input.Barcode),
 		nullableString(input.BarcodeBox),
@@ -824,6 +838,7 @@ func buildProductListQuery(filter models.ProductListFilter, countOnly bool) (str
 		query = `
 		SELECT COUNT(*)
 		FROM products p
+		LEFT JOIN stores st ON st.store_id = p.store_id
 		LEFT JOIN product_categories pc ON pc.id = p.category_id
 		LEFT JOIN units u ON u.id = p.unit_id
 		`
@@ -831,6 +846,8 @@ func buildProductListQuery(filter models.ProductListFilter, countOnly bool) (str
 		query = `
 		SELECT
 			p.id,
+			COALESCE(p.store_id, 0) AS store_id,
+			COALESCE(st.store_name, '') AS store_name,
 			p.product_code,
 			COALESCE(p.barcode, '') AS barcode,
 			COALESCE(p.barcode_box, '') AS barcode_box,
@@ -875,6 +892,7 @@ func buildProductListQuery(filter models.ProductListFilter, countOnly bool) (str
 			p.created_at,
 			p.updated_at
 		FROM products p
+		LEFT JOIN stores st ON st.store_id = p.store_id
 		LEFT JOIN product_categories pc ON pc.id = p.category_id
 		LEFT JOIN units u ON u.id = p.unit_id
 		`
@@ -932,6 +950,8 @@ func scanProduct(scanner interface {
 
 	err := scanner.Scan(
 		&product.ID,
+		&product.StoreID,
+		&product.StoreName,
 		&product.ProductCode,
 		&product.Barcode,
 		&product.BarcodeBox,

@@ -3,6 +3,8 @@ package models
 type Product struct {
 	ID                          int
 	RowNumber                   int
+	StoreID                     int
+	StoreName                   string
 	ProductCode                 string
 	Barcode                     string
 	BarcodeBox                  string
@@ -46,6 +48,8 @@ type ProductCategory struct {
 type ProductSupplierOption struct {
 	ID           int
 	SupplierName string
+	StoreID      int
+	StoreName    string
 }
 
 type ProductStats struct {
@@ -136,6 +140,7 @@ type ProductListFilter struct {
 }
 
 type ProductCreateInput struct {
+	StoreID             int
 	ProductCode         string
 	Barcode             string
 	BarcodeBox          string
@@ -159,6 +164,7 @@ type ProductCreateInput struct {
 
 type ProductUpdateInput struct {
 	ID                  int
+	StoreID             int
 	ProductCode         string
 	Barcode             string
 	BarcodeBox          string

@@ -57,6 +57,10 @@
                                                     {{ if .Product.UnitName }}{{ .Product.UnitName }}{{ else }}-{{ end }}
                                                 </span>
                                                 <span class="inline-flex items-center gap-1.5 rounded-md bg-slate-100 px-3 py-2 text-sm font-semibold text-[#5a6781]">
+                                                    <i class="bx bx-store text-base"></i>
+                                                    {{ if .Product.StoreName }}{{ .Product.StoreName }}{{ else }}-{{ end }}
+                                                </span>
+                                                <span class="inline-flex items-center gap-1.5 rounded-md bg-slate-100 px-3 py-2 text-sm font-semibold text-[#5a6781]">
                                                     <i class="bx bx-buildings text-base"></i>
                                                     {{ if .Product.PrimarySupplierName }}{{ .Product.PrimarySupplierName }}{{ else }}Gudang A-12{{ end }}
                                                 </span>
@@ -402,6 +406,15 @@
                     <input type="hidden" name="pack_size" value="{{ .Product.PackSize }}">
                     <input type="hidden" name="last_price" value="{{ .Product.PrimarySupplierPrice }}">
                     <div class="grid gap-5 md:grid-cols-2">
+                        <div>
+                            <label for="edit_store_id" class="text-[10px] font-extrabold uppercase text-[#566173]">Store</label>
+                            <select id="edit_store_id" name="store_id" required class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500">
+                                <option value="">Pilih Store</option>
+                                {{ range .Stores }}
+                                <option value="{{ .StoreID }}" {{ if eq .StoreID $.Product.StoreID }}selected{{ end }}>{{ .StoreName }}</option>
+                                {{ end }}
+                            </select>
+                        </div>
                         <div>
                             <label for="edit_product_code" class="text-[10px] font-extrabold uppercase text-[#566173]">SKU/PLU</label>
                             <input type="text" id="edit_product_code" name="product_code" value="{{ .Product.ProductCode }}" required class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold uppercase outline-none transition focus:border-brand-500">

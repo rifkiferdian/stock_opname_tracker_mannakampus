@@ -125,7 +125,7 @@ func (s *ProductService) CreateProduct(input models.ProductCreateInput) error {
 		return err
 	}
 
-	exists, err := s.Repo.ExistsByCode(input.ProductCode, 0)
+	exists, err := s.Repo.ExistsByCode(input.ProductCode, input.StoreID, 0)
 	if err != nil {
 		return err
 	}
@@ -164,7 +164,7 @@ func (s *ProductService) UpdateProduct(input models.ProductUpdateInput) error {
 		return fmt.Errorf("product id %d tidak ditemukan", input.ID)
 	}
 
-	codeExists, err := s.Repo.ExistsByCode(input.ProductCode, input.ID)
+	codeExists, err := s.Repo.ExistsByCode(input.ProductCode, input.StoreID, input.ID)
 	if err != nil {
 		return err
 	}
@@ -268,6 +268,9 @@ func sanitizeProductUpdateInput(input *models.ProductUpdateInput) {
 }
 
 func validateProductCreateInput(input models.ProductCreateInput) error {
+	if input.StoreID <= 0 {
+		return errors.New("store wajib dipilih")
+	}
 	if input.ProductCode == "" {
 		return errors.New("kode produk wajib diisi")
 	}
@@ -281,6 +284,9 @@ func validateProductCreateInput(input models.ProductCreateInput) error {
 }
 
 func validateProductUpdateInput(input models.ProductUpdateInput) error {
+	if input.StoreID <= 0 {
+		return errors.New("store wajib dipilih")
+	}
 	if input.ProductCode == "" {
 		return errors.New("kode produk wajib diisi")
 	}

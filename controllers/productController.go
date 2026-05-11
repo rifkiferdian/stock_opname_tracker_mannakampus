@@ -153,6 +153,7 @@ func ProductSupplierNetworkStore(c *gin.Context) {
 
 func ProductStore(c *gin.Context) {
 	type productForm struct {
+		StoreID             int     `form:"store_id" binding:"required"`
 		ProductCode         string  `form:"product_code" binding:"required"`
 		Barcode             string  `form:"barcode"`
 		BarcodeBox          string  `form:"barcode_box"`
@@ -182,7 +183,18 @@ func ProductStore(c *gin.Context) {
 		return
 	}
 
-	err := productService.CreateProduct(models.ProductCreateInput{
+	hasStoreAccess, err := currentUserHasStoreAccess(c, form.StoreID)
+	if err != nil {
+		c.String(http.StatusInternalServerError, err.Error())
+		return
+	}
+	if !hasStoreAccess {
+		renderProductPage(c, productService, "Store tidak tersedia untuk user login", models.ProductListFilter{Sort: "recent", Page: 1, Limit: 500})
+		return
+	}
+
+	err = productService.CreateProduct(models.ProductCreateInput{
+		StoreID:             form.StoreID,
 		ProductCode:         form.ProductCode,
 		Barcode:             form.Barcode,
 		BarcodeBox:          form.BarcodeBox,
@@ -214,6 +226,7 @@ func ProductStore(c *gin.Context) {
 func ProductUpdate(c *gin.Context) {
 	type productForm struct {
 		ID                  int     `form:"id" binding:"required"`
+		StoreID             int     `form:"store_id" binding:"required"`
 		ProductCode         string  `form:"product_code" binding:"required"`
 		Barcode             string  `form:"barcode"`
 		BarcodeBox          string  `form:"barcode_box"`
@@ -244,8 +257,19 @@ func ProductUpdate(c *gin.Context) {
 		return
 	}
 
-	err := productService.UpdateProduct(models.ProductUpdateInput{
+	hasStoreAccess, err := currentUserHasStoreAccess(c, form.StoreID)
+	if err != nil {
+		c.String(http.StatusInternalServerError, err.Error())
+		return
+	}
+	if !hasStoreAccess {
+		renderProductPage(c, productService, "Store tidak tersedia untuk user login", models.ProductListFilter{Sort: "recent", Page: 1, Limit: 500})
+		return
+	}
+
+	err = productService.UpdateProduct(models.ProductUpdateInput{
 		ID:                  form.ID,
+		StoreID:             form.StoreID,
 		ProductCode:         form.ProductCode,
 		Barcode:             form.Barcode,
 		BarcodeBox:          form.BarcodeBox,
@@ -333,6 +357,15 @@ func renderProductPage(c *gin.Context, productService *services.ProductService, 
 		c.String(http.StatusInternalServerError, err.Error())
 		return
 	}
+	stores, err := getStoreOptionsForCurrentUser(c)
+	if err != nil {
+		c.String(http.StatusInternalServerError, err.Error())
+		return
+	}
+	allowedStoreSet := buildStoreAccessSet(stores)
+	if !currentUserHasRole(c, "super-admin") {
+		suppliers = filterProductSupplierOptionsByStoreAccess(suppliers, allowedStoreSet)
+	}
 
 	pagination := buildProductPagination(filter, totalItems)
 	for i := range products {
@@ -347,6 +380,7 @@ func renderProductPage(c *gin.Context, productService *services.ProductService, 
 		"Categories": categories,
 		"Units":      units,
 		"Suppliers":  suppliers,
+		"Stores":     stores,
 		"Filters":    filter,
 		"Pagination": pagination,
 		"Error":      message,
@@ -404,6 +438,24 @@ func renderProductDetailPage(c *gin.Context, productService *services.ProductSer
 		c.String(http.StatusInternalServerError, err.Error())
 		return
 	}
+	stores, err := getStoreOptionsForCurrentUser(c)
+	if err != nil {
+		c.String(http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	allowedStoreSet := buildStoreAccessSet(stores)
+	if !currentUserHasRole(c, "super-admin") && !isStoreAccessible(allowedStoreSet, product.StoreID) {
+		c.HTML(http.StatusForbidden, "error.html", gin.H{
+			"code_error": 3,
+			"error":      "Anda Tidak punya Akses di Halaman ini",
+		})
+		return
+	}
+	if !currentUserHasRole(c, "super-admin") {
+		supplierOptions = filterProductSupplierOptionsByStoreAccess(supplierOptions, allowedStoreSet)
+	}
+	supplierOptions = filterProductSupplierOptionsByStoreID(supplierOptions, product.StoreID)
 
 	Render(c, "product_detail.html", gin.H{
 		"Title":             product.ProductName,
@@ -415,9 +467,40 @@ func renderProductDetailPage(c *gin.Context, productService *services.ProductSer
 		"Categories":        categories,
 		"Units":             units,
 		"SupplierOptions":   supplierOptions,
+		"Stores":            stores,
 		"Histories":         histories,
 		"HistoryPagination": historyPagination,
 	})
+}
+
+func filterProductSupplierOptionsByStoreAccess(options []models.ProductSupplierOption, allowedStores map[int]struct{}) []models.ProductSupplierOption {
+	if len(options) == 0 {
+		return []models.ProductSupplierOption{}
+	}
+
+	filtered := make([]models.ProductSupplierOption, 0, len(options))
+	for _, option := range options {
+		if isStoreAccessible(allowedStores, option.StoreID) {
+			filtered = append(filtered, option)
+		}
+	}
+
+	return filtered
+}
+
+func filterProductSupplierOptionsByStoreID(options []models.ProductSupplierOption, storeID int) []models.ProductSupplierOption {
+	if len(options) == 0 {
+		return []models.ProductSupplierOption{}
+	}
+
+	filtered := make([]models.ProductSupplierOption, 0, len(options))
+	for _, option := range options {
+		if option.StoreID == storeID {
+			filtered = append(filtered, option)
+		}
+	}
+
+	return filtered
 }
 
 func buildProductDetailHistoryPagination(productID int, currentPage int, pageSize int, totalItems int) models.Pagination {

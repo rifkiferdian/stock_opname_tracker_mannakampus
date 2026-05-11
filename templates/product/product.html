@@ -129,6 +129,7 @@
                                         <tr>
                                             <th class="px-2.5 py-2 text-left">No</th>
                                             <th class="px-2.5 py-2 text-left">SKU</th>
+                                            <th class="px-2.5 py-2 text-left">Store</th>
                                             <th class="px-2.5 py-2 text-left">Detail Produk</th>
                                             <th class="px-2.5 py-2 text-left">Barcode Unit</th>
                                             <th class="px-2.5 py-2 text-left">Barcode Box</th>
@@ -146,6 +147,9 @@
                                             </td>
                                             <td class="px-2.5 py-1.5">
                                                 <p class="font-mono text-[12px] font-black uppercase tracking-[0.12em] text-[#001e62]">{{ $product.ProductCode }}</p>
+                                            </td>
+                                            <td class="px-2.5 py-1.5">
+                                                <p class="text-[12px] font-semibold text-[#1e2b42]">{{ if $product.StoreName }}{{ $product.StoreName }}{{ else }}-{{ end }}</p>
                                             </td>
                                             <td class="px-2.5 py-1.5">
                                                 <div class="flex items-center gap-2">
@@ -197,6 +201,7 @@
                                                         type="button"
                                                         class="btn-edit-product text-base text-[#001e62] transition hover:text-[#002f95]"
                                                         data-id="{{ $product.ID }}"
+                                                        data-store-id="{{ $product.StoreID }}"
                                                         data-product-code="{{ $product.ProductCode }}"
                                                         data-barcode="{{ $product.Barcode }}"
                                                         data-barcode-box="{{ $product.BarcodeBox }}"
@@ -223,7 +228,7 @@
                                         </tr>
                                         {{ else }}
                                         <tr>
-                                            <td colspan="9" class="px-5 py-10 text-center text-sm font-semibold text-[#566173]">
+                                            <td colspan="10" class="px-5 py-10 text-center text-sm font-semibold text-[#566173]">
                                                 {{ if $.Filters.Search }}
                                                     Tidak ada produk yang cocok dengan pencarian "{{ $.Filters.Search }}"
                                                 {{ else }}
@@ -315,6 +320,15 @@
 
                 <form action="/products" method="post" class="mt-6 max-h-[75vh] space-y-5 overflow-y-auto pr-1">
                     <div class="grid gap-5 md:grid-cols-2">
+                        <div>
+                            <label for="store_id" class="text-[10px] font-extrabold uppercase text-[#566173]">Store</label>
+                            <select id="store_id" name="store_id" required class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500">
+                                <option value="">Pilih Store</option>
+                                {{ range .Stores }}
+                                <option value="{{ .StoreID }}">{{ .StoreName }}</option>
+                                {{ end }}
+                            </select>
+                        </div>
                         <div>
                             <label for="product_code" class="text-[10px] font-extrabold uppercase text-[#566173]">SKU/PLU</label>
                             <input type="text" id="product_code" name="product_code" required class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold uppercase outline-none transition focus:border-brand-500" placeholder="BRG-0004">
@@ -420,6 +434,15 @@
                 <form action="/products/update" method="post" class="mt-6 max-h-[75vh] space-y-5 overflow-y-auto pr-1">
                     <input type="hidden" id="edit_id" name="id">
                     <div class="grid gap-5 md:grid-cols-2">
+                        <div>
+                            <label for="edit_store_id" class="text-[10px] font-extrabold uppercase text-[#566173]">Store</label>
+                            <select id="edit_store_id" name="store_id" required class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500">
+                                <option value="">Pilih Store</option>
+                                {{ range .Stores }}
+                                <option value="{{ .StoreID }}">{{ .StoreName }}</option>
+                                {{ end }}
+                            </select>
+                        </div>
                         <div>
                             <label for="edit_product_code" class="text-[10px] font-extrabold uppercase text-[#566173]">SKU/PLU</label>
                             <input type="text" id="edit_product_code" name="product_code" required class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold uppercase outline-none transition focus:border-brand-500">
@@ -594,6 +617,7 @@
                         if (!editModalEl) return;
 
                         editModalEl.querySelector('#edit_id').value = btn.getAttribute('data-id') || '';
+                        editModalEl.querySelector('#edit_store_id').value = btn.getAttribute('data-store-id') || '';
                         editModalEl.querySelector('#edit_product_code').value = btn.getAttribute('data-product-code') || '';
                         editModalEl.querySelector('#edit_barcode').value = btn.getAttribute('data-barcode') || '';
                         editModalEl.querySelector('#edit_barcode_box').value = btn.getAttribute('data-barcode-box') || '';
