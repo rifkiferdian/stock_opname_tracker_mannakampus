@@ -29,12 +29,14 @@
                     <span>Workflow Admin</span>
                 </a>
             </li> -->
+            {{ if index .Permissions "menu_store_access" }}
             <li>
                 <a href="{{ baseURL "/stores" }}" class="flex items-center gap-3 rounded-2xl px-3 py-3 text-[14px] font-semibold transition sm:gap-4 sm:px-4 sm:py-4 sm:text-[15px] {{ if eq .Page "store" }}text-white shadow-card ring-1{{ else }}text-slate-600 hover:bg-brand-50 hover:text-[#f26419]{{ end }}" {{ if eq .Page "store" }}style="background: linear-gradient(135deg, #fb923c 0%, #f26419 100%); --tw-ring-color: rgb(251 146 60 / 0.28); box-shadow: 0 16px 32px -18px rgba(242, 100, 25, 0.85);"{{ end }}>
                     <i class="bx bxs-store text-xl"></i>
                     <span>Store</span>
                 </a>
             </li>
+            {{ end }}
             {{ if index .Permissions "role_management_access" }}
             <li>
                 <a href="{{ baseURL "/role" }}" class="flex items-center gap-3 rounded-2xl px-3 py-3 text-[14px] font-semibold transition sm:gap-4 sm:px-4 sm:py-4 sm:text-[15px] {{ if or (eq .Page "role") (eq .Page "roleForm") (eq .Page "roleEdit") }}text-white shadow-card ring-1{{ else }}text-slate-600 hover:bg-brand-50 hover:text-[#f26419]{{ end }}" {{ if or (eq .Page "role") (eq .Page "roleForm") (eq .Page "roleEdit") }}style="background: linear-gradient(135deg, #fb923c 0%, #f26419 100%); --tw-ring-color: rgb(251 146 60 / 0.28); box-shadow: 0 16px 32px -18px rgba(242, 100, 25, 0.85);"{{ end }}>
@@ -51,6 +53,7 @@
                 </a>
             </li>
             {{ end }}
+            {{ if and .User (eq (index .User "role") "checker") }}
             <li>
                 <a href="{{ baseURL "/stock-checker" }}" class="flex items-center gap-3 rounded-2xl px-3 py-3 text-[14px] font-semibold transition sm:gap-4 sm:px-4 sm:py-4 sm:text-[15px] {{ if eq .Page "stock_check_checker" }}text-white shadow-card ring-1{{ else }}text-slate-600 hover:bg-brand-50 hover:text-[#f26419]{{ end }}" {{ if eq .Page "stock_check_checker" }}style="background: linear-gradient(135deg, #fb923c 0%, #f26419 100%); --tw-ring-color: rgb(251 146 60 / 0.28); box-shadow: 0 16px 32px -18px rgba(242, 100, 25, 0.85);"{{ end }}>
                     <i class="bx bx-clipboard text-xl"></i>
@@ -63,12 +66,16 @@
                     <span>Rekap SO Checker</span>
                 </a>
             </li>
+            {{ end }}
+            {{ if index .Permissions "menu_stock_check_session_access" }}
             <li>
                 <a href="{{ baseURL "/stock-check-sessions" }}" class="flex items-center gap-3 rounded-2xl px-3 py-3 text-[14px] font-semibold transition sm:gap-4 sm:px-4 sm:py-4 sm:text-[15px] {{ if eq .Page "stock_check_sessions" }}text-white shadow-card ring-1{{ else }}text-slate-600 hover:bg-brand-50 hover:text-[#f26419]{{ end }}" {{ if eq .Page "stock_check_sessions" }}style="background: linear-gradient(135deg, #fb923c 0%, #f26419 100%); --tw-ring-color: rgb(251 146 60 / 0.28); box-shadow: 0 16px 32px -18px rgba(242, 100, 25, 0.85);"{{ end }}>
                     <i class="bx bx-id-card text-xl"></i>
                     <span>Sesi Stock Check</span>
                 </a>
             </li>
+            {{ end }}
+            {{ if index .Permissions "menu_report_access" }}
             <li class="space-y-1">
                 <button type="button" class="flex w-full items-center justify-between rounded-2xl px-3 py-3 text-left text-[14px] font-semibold transition hover:bg-brand-50 hover:text-[#f26419] sm:px-4 sm:py-4 sm:text-[15px] {{ if or (eq .Page "report_stock_opname") (eq .Page "report_stock_opname_detail") }}bg-brand-50 text-[#f26419]{{ else }}text-slate-600{{ end }}" data-submenu-toggle="reports-submenu" aria-expanded="{{ if or (eq .Page "report_stock_opname") (eq .Page "report_stock_opname_detail") }}true{{ else }}false{{ end }}" aria-controls="reports-submenu">
                     <span class="flex items-center gap-3 sm:gap-4">
@@ -87,7 +94,9 @@
                     
                 </ul>
             </li>
+            {{ end }}
 
+            {{ if index .Permissions "menu_settings_access" }}
             <li class="space-y-1">
                 <button type="button" class="flex w-full items-center justify-between rounded-2xl px-3 py-3 text-left text-[14px] font-semibold transition hover:bg-brand-50 hover:text-[#f26419] sm:px-4 sm:py-4 sm:text-[15px] {{ if or (eq .Page "supplier") (eq .Page "supplierDetail") (eq .Page "supplierGroup") (eq .Page "product") (eq .Page "unit") }}bg-brand-50 text-[#f26419]{{ else }}text-slate-600{{ end }}" data-submenu-toggle="settings-submenu" aria-expanded="{{ if or (eq .Page "supplier") (eq .Page "supplierDetail") (eq .Page "supplierGroup") (eq .Page "product") (eq .Page "unit") }}true{{ else }}false{{ end }}" aria-controls="settings-submenu">
                     <span class="flex items-center gap-3 sm:gap-4">
@@ -118,6 +127,7 @@
                     </li>
                 </ul>
             </li>
+            {{ end }}
         </ul>
     </nav>
 </aside>
