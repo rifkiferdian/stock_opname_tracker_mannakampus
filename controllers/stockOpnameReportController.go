@@ -12,7 +12,9 @@ import (
 	"gobase-app/services"
 	"net/http"
 	"net/url"
+	"sort"
 	"strconv"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 )
@@ -50,6 +52,19 @@ func StockOpnameReportDetail(c *gin.Context) {
 		}
 
 		c.String(http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	hasStoreAccess, err := currentUserHasStoreAccess(c, supplier.StoreID)
+	if err != nil {
+		c.String(http.StatusInternalServerError, err.Error())
+		return
+	}
+	if !hasStoreAccess {
+		c.HTML(http.StatusForbidden, "error.html", gin.H{
+			"code_error": 3,
+			"error":      "Anda Tidak punya Akses di Halaman ini",
+		})
 		return
 	}
 
@@ -98,6 +113,29 @@ func StockOpnameReportApplyAllSubmitted(c *gin.Context) {
 	redirectTo := sanitizeRedirectTarget(c.PostForm("redirect_to"))
 	if redirectTo == "" {
 		redirectTo = fmt.Sprintf("/reports/stock-opname/%d", id)
+	}
+
+	supplier, err := buildSupplierService().GetSupplierByID(id)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			c.String(http.StatusNotFound, "supplier tidak ditemukan")
+			return
+		}
+		c.String(http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	hasStoreAccess, err := currentUserHasStoreAccess(c, supplier.StoreID)
+	if err != nil {
+		c.String(http.StatusInternalServerError, err.Error())
+		return
+	}
+	if !hasStoreAccess {
+		c.HTML(http.StatusForbidden, "error.html", gin.H{
+			"code_error": 3,
+			"error":      "Anda Tidak punya Akses di Halaman ini",
+		})
+		return
 	}
 
 	service := buildStockCheckSessionService()
@@ -193,22 +231,94 @@ func renderStockOpnameReportSupplierPage(c *gin.Context, supplierService *servic
 		filter.Limit = 10
 	}
 
-	suppliers, totalItems, err := supplierService.GetSuppliers(filter)
-	if err != nil {
-		c.String(http.StatusInternalServerError, err.Error())
-		return
-	}
+	isSuperAdmin := currentUserHasRole(c, "super-admin")
+	var (
+		suppliers  []models.Supplier
+		totalItems int
+		stats      models.SupplierStats
+		types      []string
+		err        error
+	)
 
-	stats, err := supplierService.GetSupplierStats()
-	if err != nil {
-		c.String(http.StatusInternalServerError, err.Error())
-		return
-	}
+	if isSuperAdmin {
+		suppliers, totalItems, err = supplierService.GetSuppliers(filter)
+		if err != nil {
+			c.String(http.StatusInternalServerError, err.Error())
+			return
+		}
 
-	types, err := supplierService.GetSupplierTypes()
-	if err != nil {
-		c.String(http.StatusInternalServerError, err.Error())
-		return
+		stats, err = supplierService.GetSupplierStats()
+		if err != nil {
+			c.String(http.StatusInternalServerError, err.Error())
+			return
+		}
+
+		types, err = supplierService.GetSupplierTypes()
+		if err != nil {
+			c.String(http.StatusInternalServerError, err.Error())
+			return
+		}
+	} else {
+		stores, err := getStoreOptionsForCurrentUser(c)
+		if err != nil {
+			c.String(http.StatusInternalServerError, err.Error())
+			return
+		}
+		allowedStoreSet := buildStoreAccessSet(stores)
+
+		fetchFilter := filter
+		fetchFilter.Page = 1
+		fetchFilter.Limit = 2000
+
+		suppliersRaw, _, err := supplierService.GetSuppliers(fetchFilter)
+		if err != nil {
+			c.String(http.StatusInternalServerError, err.Error())
+			return
+		}
+
+		accessibleSuppliers := make([]models.Supplier, 0, len(suppliersRaw))
+		typeSet := map[string]struct{}{}
+		for _, supplier := range suppliersRaw {
+			if !isStoreAccessible(allowedStoreSet, supplier.StoreID) {
+				continue
+			}
+			accessibleSuppliers = append(accessibleSuppliers, supplier)
+
+			supplierType := strings.TrimSpace(supplier.SupplierType)
+			if supplierType != "" {
+				typeSet[supplierType] = struct{}{}
+			}
+		}
+
+		totalItems = len(accessibleSuppliers)
+		totalPages := 0
+		if totalItems > 0 {
+			totalPages = (totalItems + filter.Limit - 1) / filter.Limit
+			if filter.Page > totalPages {
+				filter.Page = totalPages
+			}
+		}
+
+		startIndex := (filter.Page - 1) * filter.Limit
+		if startIndex < 0 {
+			startIndex = 0
+		}
+		endIndex := startIndex + filter.Limit
+		if endIndex > totalItems {
+			endIndex = totalItems
+		}
+
+		if startIndex < endIndex {
+			suppliers = accessibleSuppliers[startIndex:endIndex]
+		} else {
+			suppliers = []models.Supplier{}
+		}
+
+		stats = buildSupplierStatsFromList(accessibleSuppliers)
+		for supplierType := range typeSet {
+			types = append(types, supplierType)
+		}
+		sort.Strings(types)
 	}
 
 	Render(c, "stock_opname_report_supplier_list.html", gin.H{
@@ -221,6 +331,20 @@ func renderStockOpnameReportSupplierPage(c *gin.Context, supplierService *servic
 		"Pagination": buildStockOpnameReportPagination(filter, totalItems),
 		"Error":      message,
 	})
+}
+
+func buildSupplierStatsFromList(suppliers []models.Supplier) models.SupplierStats {
+	stats := models.SupplierStats{}
+	for _, supplier := range suppliers {
+		stats.TotalSuppliers++
+		if supplier.IsActive {
+			stats.ActiveSuppliers++
+		} else {
+			stats.InactiveSuppliers++
+		}
+		stats.LinkedProducts += supplier.ProductCount
+	}
+	return stats
 }
 
 func buildStockOpnameReportPagination(filter models.SupplierListFilter, totalItems int) models.Pagination {

@@ -405,6 +405,28 @@ func StockCheckSessionReviewItemUpdate(c *gin.Context) {
 	var form stockCheckSessionReviewItemForm
 	service := buildStockCheckSessionService()
 
+	session, err := service.Repo.GetByID(sessionID)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			c.String(http.StatusNotFound, "stock check session tidak ditemukan")
+			return
+		}
+		c.String(http.StatusInternalServerError, err.Error())
+		return
+	}
+	hasStoreAccess, err := currentUserCanAccessStockCheckStore(c, service, session.StoreID)
+	if err != nil {
+		c.String(http.StatusInternalServerError, err.Error())
+		return
+	}
+	if !hasStoreAccess {
+		c.HTML(http.StatusForbidden, "error.html", gin.H{
+			"code_error": 3,
+			"error":      "Anda Tidak punya Akses di Halaman ini",
+		})
+		return
+	}
+
 	if err := c.ShouldBind(&form); err != nil {
 		if redirectTo := sanitizeRedirectTarget(form.RedirectTo); redirectTo != "" {
 			c.Redirect(http.StatusSeeOther, appendRedirectMessage(redirectTo, "error", "Form edit item tidak lengkap"))
@@ -540,6 +562,44 @@ func StockCheckSessionStore(c *gin.Context) {
 		backURL = buildStockCheckCheckerDefaultBackURL(form.SupplierID)
 	}
 
+	hasStoreAccess, err := currentUserCanAccessStockCheckStore(c, service, form.StoreID)
+	if err != nil {
+		c.String(http.StatusInternalServerError, err.Error())
+		return
+	}
+	if !hasStoreAccess {
+		if isStockCheckCheckerDetailRedirectTarget(redirectTarget, form.SupplierID) {
+			renderStockCheckCheckerDetailPage(
+				c,
+				buildSupplierService(),
+				service,
+				form.SupplierID,
+				buildCheckerDetailFilterFromRedirectTarget(redirectTarget, form.SupplierID),
+				"Store tidak tersedia untuk user login",
+				"",
+				"create",
+				formSession,
+				extractCurrentUserID(c),
+			)
+			return
+		}
+		if isStockCheckCheckerCreateRedirectTarget(redirectTarget, form.SupplierID) {
+			renderStockCheckCheckerCreateSessionPage(
+				c,
+				buildSupplierService(),
+				service,
+				form.SupplierID,
+				"Store tidak tersedia untuk user login",
+				formSession,
+				extractCurrentUserID(c),
+				backURL,
+			)
+			return
+		}
+		renderStockCheckSessionPage(c, service, "Store tidak tersedia untuk user login", "create", formSession, filter)
+		return
+	}
+
 	sessionID, err := service.CreateSession(models.StockCheckSessionCreateInput{
 		SessionDate:    form.SessionDate,
 		StoreID:        form.StoreID,
@@ -629,7 +689,57 @@ func StockCheckSessionUpdate(c *gin.Context) {
 	}
 	redirectTarget = sanitizeRedirectTarget(form.ReturnTo)
 
-	err := service.UpdateSession(models.StockCheckSessionUpdateInput{
+	existingSession, err := service.Repo.GetByID(form.ID)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			if redirectTarget != "" {
+				c.Redirect(http.StatusSeeOther, appendRedirectMessage(redirectTarget, "error", "stock check session tidak ditemukan"))
+				return
+			}
+			c.String(http.StatusNotFound, "stock check session tidak ditemukan")
+			return
+		}
+		c.String(http.StatusInternalServerError, err.Error())
+		return
+	}
+	hasExistingStoreAccess, err := currentUserCanAccessStockCheckStore(c, service, existingSession.StoreID)
+	if err != nil {
+		c.String(http.StatusInternalServerError, err.Error())
+		return
+	}
+	if !hasExistingStoreAccess {
+		c.HTML(http.StatusForbidden, "error.html", gin.H{
+			"code_error": 3,
+			"error":      "Anda Tidak punya Akses di Halaman ini",
+		})
+		return
+	}
+
+	hasStoreAccess, err := currentUserCanAccessStockCheckStore(c, service, form.StoreID)
+	if err != nil {
+		c.String(http.StatusInternalServerError, err.Error())
+		return
+	}
+	if !hasStoreAccess {
+		if redirectTarget != "" {
+			c.Redirect(http.StatusSeeOther, appendRedirectMessage(redirectTarget, "error", "Store tidak tersedia untuk user login"))
+			return
+		}
+
+		renderStockCheckSessionPage(c, service, "Store tidak tersedia untuk user login", "edit", models.StockCheckSession{
+			ID:             form.ID,
+			SessionNumber:  form.SessionNumber,
+			SessionDate:    form.SessionDate,
+			StoreID:        form.StoreID,
+			SupplierID:     form.SupplierID,
+			InitiationType: form.InitiationType,
+			Status:         form.Status,
+			Notes:          form.Notes,
+		}, filter)
+		return
+	}
+
+	err = service.UpdateSession(models.StockCheckSessionUpdateInput{
 		ID:             form.ID,
 		SessionDate:    form.SessionDate,
 		StoreID:        form.StoreID,
@@ -673,6 +783,29 @@ func StockCheckSessionDelete(c *gin.Context) {
 	}
 
 	service := buildStockCheckSessionService()
+	session, err := service.Repo.GetByID(id)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			c.String(http.StatusNotFound, "stock check session tidak ditemukan")
+			return
+		}
+		c.String(http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	hasStoreAccess, err := currentUserCanAccessStockCheckStore(c, service, session.StoreID)
+	if err != nil {
+		c.String(http.StatusInternalServerError, err.Error())
+		return
+	}
+	if !hasStoreAccess {
+		c.HTML(http.StatusForbidden, "error.html", gin.H{
+			"code_error": 3,
+			"error":      "Anda Tidak punya Akses di Halaman ini",
+		})
+		return
+	}
+
 	if err := service.DeleteSession(id); err != nil {
 		renderStockCheckSessionPage(c, service, err.Error(), "", models.StockCheckSession{}, buildStockCheckSessionFilter(c))
 		return
@@ -694,22 +827,101 @@ func renderStockCheckSessionPage(c *gin.Context, service *services.StockCheckSes
 		filter.Limit = 10
 	}
 
-	sessions, totalItems, err := service.GetSessions(filter)
+	isSuperAdmin := currentUserHasRole(c, "super-admin")
+	currentUserID := extractCurrentUserID(c)
+
+	var stores []models.Store
+	var err error
+	if isSuperAdmin {
+		stores, err = service.GetStoreOptions()
+	} else {
+		stores, err = service.GetStoreOptionsByUserID(currentUserID)
+	}
 	if err != nil {
 		c.String(http.StatusInternalServerError, err.Error())
 		return
 	}
-
-	stores, err := service.GetStoreOptions()
-	if err != nil {
-		c.String(http.StatusInternalServerError, err.Error())
-		return
+	allowedStoreSet := buildStoreAccessSet(stores)
+	if !isSuperAdmin && filter.StoreID > 0 && !isStoreAccessible(allowedStoreSet, filter.StoreID) {
+		filter.StoreID = 0
 	}
 
 	suppliers, err := service.GetSupplierOptions()
 	if err != nil {
 		c.String(http.StatusInternalServerError, err.Error())
 		return
+	}
+	if !isSuperAdmin {
+		suppliers = filterSuppliersByStoreAccess(suppliers, allowedStoreSet)
+	}
+
+	sessions := []models.StockCheckSession{}
+	totalItems := 0
+
+	if isSuperAdmin || filter.StoreID > 0 {
+		sessions, totalItems, err = service.GetSessions(filter)
+		if err != nil {
+			c.String(http.StatusInternalServerError, err.Error())
+			return
+		}
+		if !isSuperAdmin {
+			filteredSessions := make([]models.StockCheckSession, 0, len(sessions))
+			for _, session := range sessions {
+				if !isStoreAccessible(allowedStoreSet, session.StoreID) {
+					continue
+				}
+				filteredSessions = append(filteredSessions, session)
+			}
+			sessions = filteredSessions
+			totalItems = len(filteredSessions)
+		}
+	} else {
+		fetchFilter := filter
+		fetchFilter.Page = 1
+		fetchFilter.Limit = 2000
+
+		sessionsRaw, _, err := service.GetSessions(fetchFilter)
+		if err != nil {
+			c.String(http.StatusInternalServerError, err.Error())
+			return
+		}
+
+		accessibleSessions := make([]models.StockCheckSession, 0, len(sessionsRaw))
+		for _, session := range sessionsRaw {
+			if !isStoreAccessible(allowedStoreSet, session.StoreID) {
+				continue
+			}
+			accessibleSessions = append(accessibleSessions, session)
+		}
+
+		totalItems = len(accessibleSessions)
+		totalPages := 0
+		if totalItems > 0 {
+			totalPages = (totalItems + filter.Limit - 1) / filter.Limit
+			if filter.Page > totalPages {
+				filter.Page = totalPages
+			}
+		}
+
+		startIndex := (filter.Page - 1) * filter.Limit
+		if startIndex < 0 {
+			startIndex = 0
+		}
+		endIndex := startIndex + filter.Limit
+		if endIndex > totalItems {
+			endIndex = totalItems
+		}
+
+		if startIndex < endIndex {
+			sessions = accessibleSessions[startIndex:endIndex]
+		}
+	}
+
+	if formMode == "create" && !isSuperAdmin && formSession.StoreID > 0 && !isStoreAccessible(allowedStoreSet, formSession.StoreID) {
+		formSession.StoreID = 0
+	}
+	if formMode == "edit" && !isSuperAdmin && formSession.StoreID > 0 && !isStoreAccessible(allowedStoreSet, formSession.StoreID) {
+		formSession.StoreID = 0
 	}
 
 	pagination := buildStockCheckSessionPagination(filter, totalItems)
@@ -1022,6 +1234,20 @@ func renderStockCheckSessionDetailPage(c *gin.Context, service *services.StockCh
 		c.String(http.StatusInternalServerError, err.Error())
 		return
 	}
+
+	hasStoreAccess, err := currentUserCanAccessStockCheckStore(c, service, pageData.Session.StoreID)
+	if err != nil {
+		c.String(http.StatusInternalServerError, err.Error())
+		return
+	}
+	if !hasStoreAccess {
+		c.HTML(http.StatusForbidden, "error.html", gin.H{
+			"code_error": 3,
+			"error":      "Anda Tidak punya Akses di Halaman ini",
+		})
+		return
+	}
+
 	pageData.Pagination = buildStockCheckSessionDetailPagination(id, pageData.Pagination)
 
 	Render(c, "stock_check_session_detail.html", gin.H{
@@ -1448,6 +1674,42 @@ func buildStockCheckSessionPageURL(filter models.StockCheckSessionListFilter, pa
 		return "/stock-check-sessions"
 	}
 	return "/stock-check-sessions?" + encoded
+}
+
+func currentUserCanAccessStockCheckStore(c *gin.Context, service *services.StockCheckSessionService, storeID int) (bool, error) {
+	if currentUserHasRole(c, "super-admin") {
+		return true, nil
+	}
+
+	userID := extractCurrentUserID(c)
+	if userID <= 0 {
+		return false, nil
+	}
+
+	hasStoreAccess, err := service.Repo.UserHasStoreAccess(userID, storeID)
+	if err != nil {
+		return false, err
+	}
+	if hasStoreAccess {
+		return true, nil
+	}
+
+	return service.Repo.UserHasRole(userID, "checker")
+}
+
+func filterSuppliersByStoreAccess(suppliers []models.Supplier, allowedStores map[int]struct{}) []models.Supplier {
+	if len(suppliers) == 0 {
+		return []models.Supplier{}
+	}
+
+	filtered := make([]models.Supplier, 0, len(suppliers))
+	for _, supplier := range suppliers {
+		if isStoreAccessible(allowedStores, supplier.StoreID) {
+			filtered = append(filtered, supplier)
+		}
+	}
+
+	return filtered
 }
 
 func buildStockCheckCheckerSupplierPagination(filter models.SupplierListFilter, totalItems int) models.Pagination {

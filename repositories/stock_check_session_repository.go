@@ -316,7 +316,10 @@ func (r *StockCheckSessionRepository) UserHasRole(userID int, roleName string) (
 
 func (r *StockCheckSessionRepository) GetSupplierOptions() ([]models.Supplier, error) {
 	rows, err := r.DB.Query(`
-		SELECT id, supplier_name
+		SELECT
+			id,
+			supplier_name,
+			COALESCE(store_id, 0) AS store_id
 		FROM suppliers
 		WHERE is_active = 1
 		ORDER BY supplier_name ASC
@@ -329,7 +332,7 @@ func (r *StockCheckSessionRepository) GetSupplierOptions() ([]models.Supplier, e
 	var suppliers []models.Supplier
 	for rows.Next() {
 		var supplier models.Supplier
-		if err := rows.Scan(&supplier.ID, &supplier.SupplierName); err != nil {
+		if err := rows.Scan(&supplier.ID, &supplier.SupplierName, &supplier.StoreID); err != nil {
 			return nil, err
 		}
 		suppliers = append(suppliers, supplier)
