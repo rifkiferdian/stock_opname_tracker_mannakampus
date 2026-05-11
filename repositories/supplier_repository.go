@@ -55,6 +55,8 @@ func buildSupplierListQuery(filter models.SupplierListFilter, countOnly bool) (s
 		query = `
 		SELECT
 			s.id,
+			COALESCE(s.store_id, 0) AS store_id,
+			COALESCE(st.store_name, '') AS store_name,
 			COALESCE(s.supplier_group_id, 0) AS supplier_group_id,
 			COALESCE(sg.group_name, '') AS supplier_group_name,
 			s.supplier_code,
@@ -71,6 +73,7 @@ func buildSupplierListQuery(filter models.SupplierListFilter, countOnly bool) (s
 			COUNT(DISTINCT CASE WHEN ps.is_active = 1 THEN ps.product_id END) AS product_count,
 			MAX(scs.session_date) AS last_so_date
 		FROM suppliers s
+		LEFT JOIN stores st ON st.store_id = s.store_id
 		LEFT JOIN supplier_groups sg ON sg.id = s.supplier_group_id
 		LEFT JOIN product_suppliers ps ON ps.supplier_id = s.id
 		LEFT JOIN stock_check_sessions scs ON scs.supplier_id = s.id
@@ -114,6 +117,8 @@ func buildSupplierListQuery(filter models.SupplierListFilter, countOnly bool) (s
 	query += `
 		GROUP BY
 			s.id,
+			s.store_id,
+			st.store_name,
 			s.supplier_group_id,
 			sg.group_name,
 			s.supplier_code,
@@ -149,6 +154,8 @@ func (r *SupplierRepository) GetByID(id int) (models.Supplier, error) {
 	query := `
 		SELECT
 			s.id,
+			COALESCE(s.store_id, 0) AS store_id,
+			COALESCE(st.store_name, '') AS store_name,
 			COALESCE(s.supplier_group_id, 0) AS supplier_group_id,
 			COALESCE(sg.group_name, '') AS supplier_group_name,
 			s.supplier_code,
@@ -165,12 +172,15 @@ func (r *SupplierRepository) GetByID(id int) (models.Supplier, error) {
 			COUNT(DISTINCT CASE WHEN ps.is_active = 1 THEN ps.product_id END) AS product_count,
 			MAX(scs.session_date) AS last_so_date
 		FROM suppliers s
+		LEFT JOIN stores st ON st.store_id = s.store_id
 		LEFT JOIN supplier_groups sg ON sg.id = s.supplier_group_id
 		LEFT JOIN product_suppliers ps ON ps.supplier_id = s.id
 		LEFT JOIN stock_check_sessions scs ON scs.supplier_id = s.id
 		WHERE s.id = ?
 		GROUP BY
 			s.id,
+			s.store_id,
+			st.store_name,
 			s.supplier_group_id,
 			sg.group_name,
 			s.supplier_code,
@@ -353,10 +363,15 @@ func (r *SupplierRepository) GetStats() (models.SupplierStats, error) {
 
 func (r *SupplierRepository) GetActiveGroups() ([]models.SupplierGroup, error) {
 	rows, err := r.DB.Query(`
-		SELECT id, group_name
-		FROM supplier_groups
-		WHERE is_active = 1
-		ORDER BY group_name ASC
+		SELECT
+			sg.id,
+			sg.group_name,
+			COALESCE(sg.store_id, 0) AS store_id,
+			COALESCE(st.store_name, '') AS store_name
+		FROM supplier_groups sg
+		LEFT JOIN stores st ON st.store_id = sg.store_id
+		WHERE sg.is_active = 1
+		ORDER BY sg.group_name ASC
 	`)
 	if err != nil {
 		return nil, err
@@ -366,7 +381,7 @@ func (r *SupplierRepository) GetActiveGroups() ([]models.SupplierGroup, error) {
 	var groups []models.SupplierGroup
 	for rows.Next() {
 		var group models.SupplierGroup
-		if err := rows.Scan(&group.ID, &group.GroupName); err != nil {
+		if err := rows.Scan(&group.ID, &group.GroupName, &group.StoreID, &group.StoreName); err != nil {
 			return nil, err
 		}
 		groups = append(groups, group)
@@ -421,16 +436,16 @@ func (r *SupplierRepository) ProductSupplyExists(supplierID, productID int) (boo
 	return count > 0, err
 }
 
-func (r *SupplierRepository) ExistsByCode(code string, ignoreID int) (bool, error) {
+func (r *SupplierRepository) ExistsByCode(code string, storeID int, ignoreID int) (bool, error) {
 	var (
 		count int
 		err   error
 	)
 
 	if ignoreID > 0 {
-		err = r.DB.QueryRow(`SELECT COUNT(1) FROM suppliers WHERE supplier_code = ? AND id <> ?`, code, ignoreID).Scan(&count)
+		err = r.DB.QueryRow(`SELECT COUNT(1) FROM suppliers WHERE supplier_code = ? AND store_id = ? AND id <> ?`, code, storeID, ignoreID).Scan(&count)
 	} else {
-		err = r.DB.QueryRow(`SELECT COUNT(1) FROM suppliers WHERE supplier_code = ?`, code).Scan(&count)
+		err = r.DB.QueryRow(`SELECT COUNT(1) FROM suppliers WHERE supplier_code = ? AND store_id = ?`, code, storeID).Scan(&count)
 	}
 
 	return count > 0, err
@@ -439,6 +454,7 @@ func (r *SupplierRepository) ExistsByCode(code string, ignoreID int) (bool, erro
 func (r *SupplierRepository) Create(input models.SupplierCreateInput) error {
 	_, err := r.DB.Exec(`
 		INSERT INTO suppliers (
+			store_id,
 			supplier_group_id,
 			supplier_code,
 			supplier_name,
@@ -449,8 +465,9 @@ func (r *SupplierRepository) Create(input models.SupplierCreateInput) error {
 			pic_name,
 			payment_term_days,
 			is_active
-		) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+		) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 	`,
+		nullableInt(input.StoreID),
 		nullableInt(input.SupplierGroupID),
 		input.SupplierCode,
 		input.SupplierName,
@@ -470,6 +487,7 @@ func (r *SupplierRepository) Update(input models.SupplierUpdateInput) error {
 	_, err := r.DB.Exec(`
 		UPDATE suppliers
 		SET
+			store_id = ?,
 			supplier_group_id = ?,
 			supplier_code = ?,
 			supplier_name = ?,
@@ -481,7 +499,8 @@ func (r *SupplierRepository) Update(input models.SupplierUpdateInput) error {
 			payment_term_days = ?,
 			is_active = ?
 		WHERE id = ?
-	`,
+		`,
+		nullableInt(input.StoreID),
 		nullableInt(input.SupplierGroupID),
 		input.SupplierCode,
 		input.SupplierName,
@@ -703,6 +722,8 @@ func scanSupplier(scanner interface {
 
 	err := scanner.Scan(
 		&supplier.ID,
+		&supplier.StoreID,
+		&supplier.StoreName,
 		&supplier.SupplierGroupID,
 		&supplier.SupplierGroupName,
 		&supplier.SupplierCode,

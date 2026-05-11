@@ -27,6 +27,7 @@ func SupplierGroupIndex(c *gin.Context) {
 
 func SupplierGroupStore(c *gin.Context) {
 	type supplierGroupForm struct {
+		StoreID     int    `form:"store_id" binding:"required"`
 		GroupCode   string `form:"group_code" binding:"required"`
 		GroupName   string `form:"group_name" binding:"required"`
 		Description string `form:"description"`
@@ -41,7 +42,18 @@ func SupplierGroupStore(c *gin.Context) {
 		return
 	}
 
-	err := supplierGroupService.CreateSupplierGroup(models.SupplierGroupCreateInput{
+	hasStoreAccess, err := currentUserHasStoreAccess(c, form.StoreID)
+	if err != nil {
+		c.String(http.StatusInternalServerError, err.Error())
+		return
+	}
+	if !hasStoreAccess {
+		renderSupplierGroupPage(c, supplierGroupService, "Store tidak tersedia untuk user login", models.SupplierGroupListFilter{Sort: "recent", Page: 1, Limit: 10})
+		return
+	}
+
+	err = supplierGroupService.CreateSupplierGroup(models.SupplierGroupCreateInput{
+		StoreID:     form.StoreID,
 		GroupCode:   form.GroupCode,
 		GroupName:   form.GroupName,
 		Description: form.Description,
@@ -58,6 +70,7 @@ func SupplierGroupStore(c *gin.Context) {
 func SupplierGroupUpdate(c *gin.Context) {
 	type supplierGroupForm struct {
 		ID          int    `form:"id" binding:"required"`
+		StoreID     int    `form:"store_id" binding:"required"`
 		GroupCode   string `form:"group_code" binding:"required"`
 		GroupName   string `form:"group_name" binding:"required"`
 		Description string `form:"description"`
@@ -72,8 +85,19 @@ func SupplierGroupUpdate(c *gin.Context) {
 		return
 	}
 
-	err := supplierGroupService.UpdateSupplierGroup(models.SupplierGroupUpdateInput{
+	hasStoreAccess, err := currentUserHasStoreAccess(c, form.StoreID)
+	if err != nil {
+		c.String(http.StatusInternalServerError, err.Error())
+		return
+	}
+	if !hasStoreAccess {
+		renderSupplierGroupPage(c, supplierGroupService, "Store tidak tersedia untuk user login", models.SupplierGroupListFilter{Sort: "recent", Page: 1, Limit: 10})
+		return
+	}
+
+	err = supplierGroupService.UpdateSupplierGroup(models.SupplierGroupUpdateInput{
 		ID:          form.ID,
+		StoreID:     form.StoreID,
 		GroupCode:   form.GroupCode,
 		GroupName:   form.GroupName,
 		Description: form.Description,
@@ -128,12 +152,19 @@ func renderSupplierGroupPage(c *gin.Context, supplierGroupService *services.Supp
 		return
 	}
 
+	stores, err := getStoreOptionsForCurrentUser(c)
+	if err != nil {
+		c.String(http.StatusInternalServerError, err.Error())
+		return
+	}
+
 	pagination := buildSupplierGroupPagination(filter, totalItems)
 
 	Render(c, "supplier_group.html", gin.H{
 		"Title":      "Master Supplier Group",
 		"Page":       "supplierGroup",
 		"Groups":     groups,
+		"Stores":     stores,
 		"Stats":      stats,
 		"Filters":    filter,
 		"Pagination": pagination,

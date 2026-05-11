@@ -97,7 +97,7 @@ func (s *SupplierService) CreateSupplier(input models.SupplierCreateInput) error
 		return err
 	}
 
-	exists, err := s.Repo.ExistsByCode(input.SupplierCode, 0)
+	exists, err := s.Repo.ExistsByCode(input.SupplierCode, input.StoreID, 0)
 	if err != nil {
 		return err
 	}
@@ -126,7 +126,7 @@ func (s *SupplierService) UpdateSupplier(input models.SupplierUpdateInput) error
 		return fmt.Errorf("supplier id %d tidak ditemukan", input.ID)
 	}
 
-	codeExists, err := s.Repo.ExistsByCode(input.SupplierCode, input.ID)
+	codeExists, err := s.Repo.ExistsByCode(input.SupplierCode, input.StoreID, input.ID)
 	if err != nil {
 		return err
 	}
@@ -258,6 +258,9 @@ func sanitizeSupplierProductCreateInput(input *models.SupplierProductCreateInput
 }
 
 func validateSupplierCreateInput(input models.SupplierCreateInput) error {
+	if input.StoreID <= 0 {
+		return errors.New("store wajib dipilih")
+	}
 	if input.SupplierCode == "" {
 		return errors.New("kode supplier wajib diisi")
 	}
@@ -268,6 +271,9 @@ func validateSupplierCreateInput(input models.SupplierCreateInput) error {
 }
 
 func validateSupplierUpdateInput(input models.SupplierUpdateInput) error {
+	if input.StoreID <= 0 {
+		return errors.New("store wajib dipilih")
+	}
 	if input.SupplierCode == "" {
 		return errors.New("kode supplier wajib diisi")
 	}

@@ -2,6 +2,8 @@ package models
 
 type Supplier struct {
 	ID                int
+	StoreID           int
+	StoreName         string
 	SupplierGroupID   int
 	SupplierGroupName string
 	SupplierCode      string
@@ -25,6 +27,8 @@ type Supplier struct {
 
 type SupplierGroup struct {
 	ID               int
+	StoreID          int
+	StoreName        string
 	GroupCode        string
 	GroupName        string
 	Description      string
@@ -120,6 +124,7 @@ type Pagination struct {
 }
 
 type SupplierCreateInput struct {
+	StoreID         int
 	SupplierGroupID int
 	SupplierCode    string
 	SupplierName    string
@@ -133,6 +138,7 @@ type SupplierCreateInput struct {
 }
 
 type SupplierGroupCreateInput struct {
+	StoreID     int
 	GroupCode   string
 	GroupName   string
 	Description string
@@ -141,6 +147,7 @@ type SupplierGroupCreateInput struct {
 
 type SupplierUpdateInput struct {
 	ID              int
+	StoreID         int
 	SupplierGroupID int
 	SupplierCode    string
 	SupplierName    string
@@ -171,6 +178,7 @@ type SupplierProductDeleteInput struct {
 
 type SupplierGroupUpdateInput struct {
 	ID          int
+	StoreID     int
 	GroupCode   string
 	GroupName   string
 	Description string

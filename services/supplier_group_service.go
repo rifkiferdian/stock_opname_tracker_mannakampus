@@ -67,7 +67,7 @@ func (s *SupplierGroupService) CreateSupplierGroup(input models.SupplierGroupCre
 		return err
 	}
 
-	exists, err := s.Repo.ExistsByCode(input.GroupCode, 0)
+	exists, err := s.Repo.ExistsByCode(input.GroupCode, input.StoreID, 0)
 	if err != nil {
 		return err
 	}
@@ -96,7 +96,7 @@ func (s *SupplierGroupService) UpdateSupplierGroup(input models.SupplierGroupUpd
 		return fmt.Errorf("supplier group id %d tidak ditemukan", input.ID)
 	}
 
-	codeExists, err := s.Repo.ExistsByCode(input.GroupCode, input.ID)
+	codeExists, err := s.Repo.ExistsByCode(input.GroupCode, input.StoreID, input.ID)
 	if err != nil {
 		return err
 	}
@@ -127,6 +127,9 @@ func sanitizeSupplierGroupUpdateInput(input *models.SupplierGroupUpdateInput) {
 }
 
 func validateSupplierGroupCreateInput(input models.SupplierGroupCreateInput) error {
+	if input.StoreID <= 0 {
+		return errors.New("store wajib dipilih")
+	}
 	if input.GroupCode == "" {
 		return errors.New("kode supplier group wajib diisi")
 	}
@@ -137,6 +140,9 @@ func validateSupplierGroupCreateInput(input models.SupplierGroupCreateInput) err
 }
 
 func validateSupplierGroupUpdateInput(input models.SupplierGroupUpdateInput) error {
+	if input.StoreID <= 0 {
+		return errors.New("store wajib dipilih")
+	}
 	if input.GroupCode == "" {
 		return errors.New("kode supplier group wajib diisi")
 	}

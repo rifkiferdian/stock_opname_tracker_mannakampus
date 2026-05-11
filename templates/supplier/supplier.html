@@ -142,6 +142,7 @@
                                             <tr>
                                                 <th class="px-4 py-3 text-left">No</th>
                                                 <th class="px-4 py-3 text-left">Nama Supplier</th>
+                                                <th class="px-4 py-3 text-left">Store</th>
                                                 <th class="px-4 py-3 text-left">Kontak Utama</th>
                                                 <th class="px-4 py-3 text-left">Nomor Kontak</th>
                                                 <th class="px-4 py-3 text-left">Jumlah Item</th>
@@ -168,6 +169,9 @@
                                                             <p class="mt-0.5 text-[10px] font-extrabold uppercase leading-tight text-[#8b95a5]">{{ $supplier.SupplierCode }}</p>
                                                         </div>
                                                     </div>
+                                                </td>
+                                                <td class="px-4 py-2 font-semibold text-[#1e2b42]">
+                                                    {{ if $supplier.StoreName }}{{ $supplier.StoreName }}{{ else }}-{{ end }}
                                                 </td>
                                                 <td class="px-4 py-2 font-semibold text-[#1e2b42]">
                                                     {{ if $supplier.PICName }}{{ $supplier.PICName }}{{ else }}-{{ end }}
@@ -199,6 +203,7 @@
                                                             type="button"
                                                             class="btn-edit-supplier inline-flex rounded-md px-2.5 py-1.5 text-xs font-extrabold text-amber-700 transition hover:bg-amber-50"
                                                             data-id="{{ $supplier.ID }}"
+                                                            data-store-id="{{ $supplier.StoreID }}"
                                                             data-supplier-group-id="{{ $supplier.SupplierGroupID }}"
                                                             data-supplier-code="{{ $supplier.SupplierCode }}"
                                                             data-supplier-name="{{ $supplier.SupplierName }}"
@@ -219,7 +224,7 @@
                                             </tr>
                                             {{ else }}
                                             <tr>
-                                                <td colspan="8" class="px-5 py-10 text-center text-sm font-semibold text-[#566173]">
+                                                <td colspan="9" class="px-5 py-10 text-center text-sm font-semibold text-[#566173]">
                                                     {{ if $.Filters.Search }}
                                                         Tidak ada supplier yang cocok dengan pencarian "{{ $.Filters.Search }}"
                                                     {{ else }}
@@ -290,11 +295,20 @@
                 <form action="/suppliers" method="post" class="mt-6 space-y-5">
                     <div class="grid gap-5 md:grid-cols-2">
                         <div>
+                            <label for="store_id" class="text-[10px] font-extrabold uppercase text-[#566173]">Store</label>
+                            <select id="store_id" name="store_id" required class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500">
+                                <option value="">Pilih Store</option>
+                                {{ range .Stores }}
+                                <option value="{{ .StoreID }}">{{ .StoreName }}</option>
+                                {{ end }}
+                            </select>
+                        </div>
+                        <div>
                             <label for="supplier_group_id" class="text-[10px] font-extrabold uppercase text-[#566173]">Grup Supplier</label>
                             <select id="supplier_group_id" name="supplier_group_id" class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500">
                                 <option value="0">Pilih Group</option>
                                 {{ range .Groups }}
-                                <option value="{{ .ID }}">{{ .GroupName }}</option>
+                                <option value="{{ .ID }}">{{ .GroupName }}{{ if .StoreName }} - {{ .StoreName }}{{ end }}</option>
                                 {{ end }}
                             </select>
                         </div>
@@ -361,11 +375,20 @@
                     <input type="hidden" id="edit_id" name="id">
                     <div class="grid gap-5 md:grid-cols-2">
                         <div>
+                            <label for="edit_store_id" class="text-[10px] font-extrabold uppercase text-[#566173]">Store</label>
+                            <select id="edit_store_id" name="store_id" required class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500">
+                                <option value="">Pilih Store</option>
+                                {{ range .Stores }}
+                                <option value="{{ .StoreID }}">{{ .StoreName }}</option>
+                                {{ end }}
+                            </select>
+                        </div>
+                        <div>
                             <label for="edit_supplier_group_id" class="text-[10px] font-extrabold uppercase text-[#566173]">Grup Supplier</label>
                             <select id="edit_supplier_group_id" name="supplier_group_id" class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500">
                                 <option value="0">Pilih Group</option>
                                 {{ range .Groups }}
-                                <option value="{{ .ID }}">{{ .GroupName }}</option>
+                                <option value="{{ .ID }}">{{ .GroupName }}{{ if .StoreName }} - {{ .StoreName }}{{ end }}</option>
                                 {{ end }}
                             </select>
                         </div>
@@ -500,6 +523,7 @@
                         if (!editModalEl) return;
 
                         editModalEl.querySelector('#edit_id').value = btn.getAttribute('data-id') || '';
+                        editModalEl.querySelector('#edit_store_id').value = btn.getAttribute('data-store-id') || '';
                         editModalEl.querySelector('#edit_supplier_group_id').value = btn.getAttribute('data-supplier-group-id') || '0';
                         editModalEl.querySelector('#edit_supplier_code').value = btn.getAttribute('data-supplier-code') || '';
                         editModalEl.querySelector('#edit_supplier_name').value = btn.getAttribute('data-supplier-name') || '';

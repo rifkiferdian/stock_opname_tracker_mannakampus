@@ -165,6 +165,7 @@ func SupplierProductDelete(c *gin.Context) {
 
 func SupplierStore(c *gin.Context) {
 	type supplierForm struct {
+		StoreID         int    `form:"store_id" binding:"required"`
 		SupplierGroupID int    `form:"supplier_group_id"`
 		SupplierCode    string `form:"supplier_code" binding:"required"`
 		SupplierName    string `form:"supplier_name" binding:"required"`
@@ -185,7 +186,18 @@ func SupplierStore(c *gin.Context) {
 		return
 	}
 
-	err := supplierService.CreateSupplier(models.SupplierCreateInput{
+	hasStoreAccess, err := currentUserHasStoreAccess(c, form.StoreID)
+	if err != nil {
+		c.String(http.StatusInternalServerError, err.Error())
+		return
+	}
+	if !hasStoreAccess {
+		renderSupplierPage(c, supplierService, "Store tidak tersedia untuk user login", models.SupplierListFilter{Sort: "recent", Page: 1, Limit: 150})
+		return
+	}
+
+	err = supplierService.CreateSupplier(models.SupplierCreateInput{
+		StoreID:         form.StoreID,
 		SupplierGroupID: form.SupplierGroupID,
 		SupplierCode:    form.SupplierCode,
 		SupplierName:    form.SupplierName,
@@ -208,6 +220,7 @@ func SupplierStore(c *gin.Context) {
 func SupplierUpdate(c *gin.Context) {
 	type supplierForm struct {
 		ID              int    `form:"id" binding:"required"`
+		StoreID         int    `form:"store_id" binding:"required"`
 		SupplierGroupID int    `form:"supplier_group_id"`
 		SupplierCode    string `form:"supplier_code" binding:"required"`
 		SupplierName    string `form:"supplier_name" binding:"required"`
@@ -228,8 +241,19 @@ func SupplierUpdate(c *gin.Context) {
 		return
 	}
 
-	err := supplierService.UpdateSupplier(models.SupplierUpdateInput{
+	hasStoreAccess, err := currentUserHasStoreAccess(c, form.StoreID)
+	if err != nil {
+		c.String(http.StatusInternalServerError, err.Error())
+		return
+	}
+	if !hasStoreAccess {
+		renderSupplierPage(c, supplierService, "Store tidak tersedia untuk user login", models.SupplierListFilter{Sort: "recent", Page: 1, Limit: 150})
+		return
+	}
+
+	err = supplierService.UpdateSupplier(models.SupplierUpdateInput{
 		ID:              form.ID,
+		StoreID:         form.StoreID,
 		SupplierGroupID: form.SupplierGroupID,
 		SupplierCode:    form.SupplierCode,
 		SupplierName:    form.SupplierName,
@@ -270,6 +294,21 @@ func buildSupplierService() *services.SupplierService {
 	return &services.SupplierService{Repo: supplierRepo}
 }
 
+func buildStoreService() *services.StoreService {
+	storeRepo := &repositories.StoreRepository{DB: config.DB}
+	return &services.StoreService{Repo: storeRepo}
+}
+
+func activeStoresOnly(stores []models.Store) []models.Store {
+	active := make([]models.Store, 0, len(stores))
+	for _, store := range stores {
+		if store.IsActive {
+			active = append(active, store)
+		}
+	}
+	return active
+}
+
 func renderSupplierPage(c *gin.Context, supplierService *services.SupplierService, message string, filter models.SupplierListFilter) {
 	if filter.Page <= 0 {
 		filter.Page = 1
@@ -296,6 +335,16 @@ func renderSupplierPage(c *gin.Context, supplierService *services.SupplierServic
 		return
 	}
 
+	stores, err := getStoreOptionsForCurrentUser(c)
+	if err != nil {
+		c.String(http.StatusInternalServerError, err.Error())
+		return
+	}
+	allowedStoreSet := buildStoreAccessSet(stores)
+	if !currentUserHasRole(c, "super-admin") {
+		groups = filterSupplierGroupsByStoreAccess(groups, allowedStoreSet)
+	}
+
 	pagination := buildSupplierPagination(filter, totalItems)
 
 	Render(c, "supplier.html", gin.H{
@@ -304,6 +353,7 @@ func renderSupplierPage(c *gin.Context, supplierService *services.SupplierServic
 		"suppliers":  suppliers,
 		"Stats":      stats,
 		"Groups":     groups,
+		"Stores":     stores,
 		"Filters":    filter,
 		"Pagination": pagination,
 		"Error":      message,
@@ -444,4 +494,37 @@ func buildSupplierDetailURL(id int, successMessage string) string {
 	values := url.Values{}
 	values.Set("success", successMessage)
 	return fmt.Sprintf("/suppliers/%d?%s", id, values.Encode())
+}
+
+func getStoreOptionsForCurrentUser(c *gin.Context) ([]models.Store, error) {
+	if currentUserHasRole(c, "super-admin") {
+		stores, err := buildStoreService().GetStores()
+		if err != nil {
+			return nil, err
+		}
+		return activeStoresOnly(stores), nil
+	}
+
+	return buildStockCheckSessionService().GetStoreOptionsByUserID(extractCurrentUserID(c))
+}
+
+func currentUserHasStoreAccess(c *gin.Context, storeID int) (bool, error) {
+	stores, err := getStoreOptionsForCurrentUser(c)
+	if err != nil {
+		return false, err
+	}
+	return isStoreAccessible(buildStoreAccessSet(stores), storeID), nil
+}
+
+func filterSupplierGroupsByStoreAccess(groups []models.SupplierGroup, allowedStores map[int]struct{}) []models.SupplierGroup {
+	if len(groups) == 0 {
+		return []models.SupplierGroup{}
+	}
+	filtered := make([]models.SupplierGroup, 0, len(groups))
+	for _, group := range groups {
+		if isStoreAccessible(allowedStores, group.StoreID) {
+			filtered = append(filtered, group)
+		}
+	}
+	return filtered
 }

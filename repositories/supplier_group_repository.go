@@ -54,6 +54,8 @@ func buildSupplierGroupListQuery(filter models.SupplierGroupListFilter, countOnl
 		query = `
 		SELECT
 			sg.id,
+			COALESCE(sg.store_id, 0) AS store_id,
+			COALESCE(st.store_name, '') AS store_name,
 			sg.group_code,
 			sg.group_name,
 			COALESCE(sg.description, '') AS description,
@@ -62,6 +64,7 @@ func buildSupplierGroupListQuery(filter models.SupplierGroupListFilter, countOnl
 			sg.updated_at,
 			COUNT(DISTINCT s.id) AS supplier_count
 		FROM supplier_groups sg
+		LEFT JOIN stores st ON st.store_id = sg.store_id
 		LEFT JOIN suppliers s ON s.supplier_group_id = sg.id
 	`
 	}
@@ -93,6 +96,8 @@ func buildSupplierGroupListQuery(filter models.SupplierGroupListFilter, countOnl
 	query += `
 		GROUP BY
 			sg.id,
+			sg.store_id,
+			st.store_name,
 			sg.group_code,
 			sg.group_name,
 			sg.description,
@@ -147,16 +152,16 @@ func (r *SupplierGroupRepository) ExistsByID(id int) (bool, error) {
 	return count > 0, err
 }
 
-func (r *SupplierGroupRepository) ExistsByCode(code string, ignoreID int) (bool, error) {
+func (r *SupplierGroupRepository) ExistsByCode(code string, storeID int, ignoreID int) (bool, error) {
 	var (
 		count int
 		err   error
 	)
 
 	if ignoreID > 0 {
-		err = r.DB.QueryRow(`SELECT COUNT(1) FROM supplier_groups WHERE group_code = ? AND id <> ?`, code, ignoreID).Scan(&count)
+		err = r.DB.QueryRow(`SELECT COUNT(1) FROM supplier_groups WHERE group_code = ? AND store_id = ? AND id <> ?`, code, storeID, ignoreID).Scan(&count)
 	} else {
-		err = r.DB.QueryRow(`SELECT COUNT(1) FROM supplier_groups WHERE group_code = ?`, code).Scan(&count)
+		err = r.DB.QueryRow(`SELECT COUNT(1) FROM supplier_groups WHERE group_code = ? AND store_id = ?`, code, storeID).Scan(&count)
 	}
 
 	return count > 0, err
@@ -165,12 +170,14 @@ func (r *SupplierGroupRepository) ExistsByCode(code string, ignoreID int) (bool,
 func (r *SupplierGroupRepository) Create(input models.SupplierGroupCreateInput) error {
 	_, err := r.DB.Exec(`
 		INSERT INTO supplier_groups (
+			store_id,
 			group_code,
 			group_name,
 			description,
 			is_active
-		) VALUES (?, ?, ?, ?)
+		) VALUES (?, ?, ?, ?, ?)
 	`,
+		nullableInt(input.StoreID),
 		input.GroupCode,
 		input.GroupName,
 		nullableString(input.Description),
@@ -184,12 +191,14 @@ func (r *SupplierGroupRepository) Update(input models.SupplierGroupUpdateInput) 
 	_, err := r.DB.Exec(`
 		UPDATE supplier_groups
 		SET
+			store_id = ?,
 			group_code = ?,
 			group_name = ?,
 			description = ?,
 			is_active = ?
 		WHERE id = ?
 	`,
+		nullableInt(input.StoreID),
 		input.GroupCode,
 		input.GroupName,
 		nullableString(input.Description),
@@ -217,6 +226,8 @@ func scanSupplierGroup(scanner interface {
 
 	err := scanner.Scan(
 		&group.ID,
+		&group.StoreID,
+		&group.StoreName,
 		&group.GroupCode,
 		&group.GroupName,
 		&group.Description,
