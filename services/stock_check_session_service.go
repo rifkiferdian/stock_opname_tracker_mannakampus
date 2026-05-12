@@ -186,15 +186,6 @@ func (s *StockCheckSessionService) GetCheckerInputPage(sessionID int, userID int
 		return models.StockCheckSessionCheckerInputPage{}, errors.New("session tidak tersedia untuk user login")
 	}
 
-	// Scanner input must follow user's assigned store and session supplier.
-	hasDirectStoreAccess, err := s.Repo.UserHasStoreAccess(userID, session.StoreID)
-	if err != nil {
-		return models.StockCheckSessionCheckerInputPage{}, err
-	}
-	if !hasDirectStoreAccess {
-		return models.StockCheckSessionCheckerInputPage{}, errors.New("session tidak tersedia untuk store user login")
-	}
-
 	items, err := s.Repo.GetCheckerInputItems(sessionID, session.StoreID, session.SupplierID)
 	if err != nil {
 		return models.StockCheckSessionCheckerInputPage{}, err

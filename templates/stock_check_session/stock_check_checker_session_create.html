@@ -116,7 +116,7 @@
                                 <!-- <p class="mt-1 text-sm font-medium text-slate-500">Nomor session dibuat otomatis saat data berhasil disimpan.</p> -->
                             </div>
 
-                            <form action="/stock-check-sessions" method="post" class="mt-6 space-y-5">
+                            <form action="/stock-checker/sessions" method="post" class="mt-6 space-y-5">
                                 <input type="hidden" name="supplier_id" value="{{ .Supplier.ID }}">
                                 <input type="hidden" name="return_to" value="{{ .CurrentURL }}">
                                 <input type="hidden" name="back_to" value="{{ .BackURL }}">

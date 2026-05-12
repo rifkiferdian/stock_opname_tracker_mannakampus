@@ -86,6 +86,32 @@ func RequirePermission(perm string) gin.HandlerFunc {
 	}
 }
 
+func RequireAnyPermission(perms ...string) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		sess := sessions.Default(c)
+		userID := extractUserID(sess)
+
+		if userID == 0 {
+			c.AbortWithStatus(401)
+			return
+		}
+
+		for _, perm := range perms {
+			ok, err := services.UserHasPermission(userID, perm)
+			if err == nil && ok {
+				c.Next()
+				return
+			}
+		}
+
+		c.HTML(403, "error.html", gin.H{
+			"code_error": 3,
+			"error":      "Anda Tidak punya Akses di Halaman ini",
+		})
+		c.Abort()
+	}
+}
+
 // extractUserID mencoba mengambil user_id dari session (baik dari key "user_id" maupun payload "user").
 func extractUserID(sess sessions.Session) int {
 	if v := sess.Get("user_id"); v != nil {
