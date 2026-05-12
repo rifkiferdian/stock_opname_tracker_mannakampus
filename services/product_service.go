@@ -277,9 +277,6 @@ func validateProductCreateInput(input models.ProductCreateInput) error {
 	if input.Barcode == "" {
 		return errors.New("barcode pcs wajib diisi")
 	}
-	if input.BarcodeCarton == "" {
-		return errors.New("barcode carton wajib diisi")
-	}
 	if input.ProductName == "" {
 		return errors.New("nama produk wajib diisi")
 	}
@@ -298,9 +295,6 @@ func validateProductUpdateInput(input models.ProductUpdateInput) error {
 	}
 	if input.Barcode == "" {
 		return errors.New("barcode pcs wajib diisi")
-	}
-	if input.BarcodeCarton == "" {
-		return errors.New("barcode carton wajib diisi")
 	}
 	if input.ProductName == "" {
 		return errors.New("nama produk wajib diisi")
