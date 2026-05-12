@@ -721,7 +721,14 @@ func (r *StockCheckSessionRepository) GetCheckerInputItems(sessionID int, storeI
 		LEFT JOIN units un ON un.id = p.unit_id
 		WHERE si.stock_check_session_id = ?
 			AND COALESCE(p.store_id, 0) = ?
-		ORDER BY p.product_name ASC, si.id ASC
+		ORDER BY
+			CASE
+				WHEN COALESCE(si.updated_at, si.created_at) > COALESCE(si.created_at, si.updated_at) THEN 0
+				ELSE 1
+			END ASC,
+			COALESCE(si.updated_at, si.created_at) DESC,
+			p.product_name ASC,
+			si.id ASC
 	`, supplierID, sessionID, storeID)
 	if err != nil {
 		return nil, err

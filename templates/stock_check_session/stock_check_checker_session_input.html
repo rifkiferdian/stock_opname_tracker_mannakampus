@@ -912,7 +912,7 @@
                                     <div class="flex items-start justify-between gap-3">
                                         <div class="compact-item-meta">
                                             <h3 class="compact-item-title text-sm font-extrabold text-slate-800">{{ .ProductName }}</h3>
-                                            <p class="mt-0.5 truncate text-[11px] font-semibold text-slate-400">{{ .ProductCode }}{{ if .HasBarcode }} &middot; {{ .BarcodeSummary }}{{ end }}</p>
+                                            <p class="mt-0.5 truncate text-[11px] font-semibold text-slate-400">PLU : {{ .ProductCode }}</p>
                                         </div>
                                         <div class="flex flex-col items-end gap-2">
                                             <span class="item-status-badge px-2.5 py-1 text-[10px] {{ if eq .Status "submitted" }}item-status-badge-submitted{{ else if eq .StatusLabel "Unknown" }}item-status-badge-unknown{{ else }}item-status-badge-default{{ end }}">{{ .StatusLabel }}</span>
