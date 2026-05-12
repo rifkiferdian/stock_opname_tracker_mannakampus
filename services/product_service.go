@@ -134,7 +134,7 @@ func (s *ProductService) CreateProduct(input models.ProductCreateInput) error {
 	}
 
 	for _, barcode := range []string{input.Barcode, input.BarcodeBox, input.BarcodeCarton} {
-		barcodeExists, err := s.Repo.ExistsAnyBarcode(barcode, 0)
+		barcodeExists, err := s.Repo.ExistsAnyBarcode(barcode, input.StoreID, 0)
 		if err != nil {
 			return err
 		}
@@ -173,7 +173,7 @@ func (s *ProductService) UpdateProduct(input models.ProductUpdateInput) error {
 	}
 
 	for _, barcode := range []string{input.Barcode, input.BarcodeBox, input.BarcodeCarton} {
-		barcodeExists, err := s.Repo.ExistsAnyBarcode(barcode, input.ID)
+		barcodeExists, err := s.Repo.ExistsAnyBarcode(barcode, input.StoreID, input.ID)
 		if err != nil {
 			return err
 		}
@@ -274,6 +274,12 @@ func validateProductCreateInput(input models.ProductCreateInput) error {
 	if input.ProductCode == "" {
 		return errors.New("kode produk wajib diisi")
 	}
+	if input.Barcode == "" {
+		return errors.New("barcode pcs wajib diisi")
+	}
+	if input.BarcodeCarton == "" {
+		return errors.New("barcode carton wajib diisi")
+	}
 	if input.ProductName == "" {
 		return errors.New("nama produk wajib diisi")
 	}
@@ -289,6 +295,12 @@ func validateProductUpdateInput(input models.ProductUpdateInput) error {
 	}
 	if input.ProductCode == "" {
 		return errors.New("kode produk wajib diisi")
+	}
+	if input.Barcode == "" {
+		return errors.New("barcode pcs wajib diisi")
+	}
+	if input.BarcodeCarton == "" {
+		return errors.New("barcode carton wajib diisi")
 	}
 	if input.ProductName == "" {
 		return errors.New("nama produk wajib diisi")

@@ -641,7 +641,7 @@ func (r *StockCheckSessionRepository) DeleteByID(id int) error {
 	return err
 }
 
-func (r *StockCheckSessionRepository) SeedItemsFromSupplier(sessionID int, supplierID int, userID int) error {
+func (r *StockCheckSessionRepository) SeedItemsFromSupplier(sessionID int, supplierID int, storeID int, userID int) error {
 	_, err := r.DB.Exec(`
 		INSERT INTO stock_check_session_items (
 			stock_check_session_id,
@@ -662,6 +662,7 @@ func (r *StockCheckSessionRepository) SeedItemsFromSupplier(sessionID int, suppl
 		INNER JOIN products p ON p.id = ps.product_id
 		WHERE ps.supplier_id = ?
 			AND ps.is_active = 1
+			AND COALESCE(p.store_id, 0) = ?
 			AND NOT EXISTS (
 				SELECT 1
 				FROM stock_check_session_items si
@@ -675,13 +676,14 @@ func (r *StockCheckSessionRepository) SeedItemsFromSupplier(sessionID int, suppl
 		userID,
 		userID,
 		supplierID,
+		storeID,
 		sessionID,
 	)
 
 	return err
 }
 
-func (r *StockCheckSessionRepository) GetCheckerInputItems(sessionID int) ([]models.StockCheckSessionCheckerInputItem, error) {
+func (r *StockCheckSessionRepository) GetCheckerInputItems(sessionID int, storeID int, supplierID int) ([]models.StockCheckSessionCheckerInputItem, error) {
 	rows, err := r.DB.Query(`
 		SELECT
 			si.id,
@@ -712,11 +714,15 @@ func (r *StockCheckSessionRepository) GetCheckerInputItems(sessionID int) ([]mod
 			COALESCE(si.status, 'draft') AS status
 		FROM stock_check_session_items si
 		INNER JOIN products p ON p.id = si.product_id
+		INNER JOIN product_suppliers ps ON ps.product_id = p.id
+			AND ps.supplier_id = ?
+			AND ps.is_active = 1
 		LEFT JOIN product_categories pc ON pc.id = p.category_id
 		LEFT JOIN units un ON un.id = p.unit_id
 		WHERE si.stock_check_session_id = ?
+			AND COALESCE(p.store_id, 0) = ?
 		ORDER BY p.product_name ASC, si.id ASC
-	`, sessionID)
+	`, supplierID, sessionID, storeID)
 	if err != nil {
 		return nil, err
 	}
@@ -803,7 +809,7 @@ func (r *StockCheckSessionRepository) GetCheckerInputItems(sessionID int) ([]mod
 	return items, rows.Err()
 }
 
-func (r *StockCheckSessionRepository) UpdateCheckerItemQtyByBarcode(sessionID int, location string, barcode string, qtyCarton int, qtyBox int, qtyPcs int, updatedBy int) (int, error) {
+func (r *StockCheckSessionRepository) UpdateCheckerItemQtyByBarcode(sessionID int, storeID int, supplierID int, location string, barcode string, qtyCarton int, qtyBox int, qtyPcs int, updatedBy int) (int, error) {
 	tx, err := r.DB.Begin()
 	if err != nil {
 		return 0, err
@@ -839,14 +845,18 @@ func (r *StockCheckSessionRepository) UpdateCheckerItemQtyByBarcode(sessionID in
 			COALESCE(si.qty_warehouse_pcs, 0) AS qty_warehouse_pcs
 		FROM stock_check_session_items si
 		INNER JOIN products p ON p.id = si.product_id
+		INNER JOIN product_suppliers ps ON ps.product_id = p.id
+			AND ps.supplier_id = ?
+			AND ps.is_active = 1
 		WHERE si.stock_check_session_id = ?
+			AND COALESCE(p.store_id, 0) = ?
 			AND (
 				LOWER(COALESCE(p.barcode, '')) = LOWER(?)
 				OR LOWER(COALESCE(p.barcode_box, '')) = LOWER(?)
 				OR LOWER(COALESCE(p.barcode_carton, '')) = LOWER(?)
 			)
 		LIMIT 1
-	`, sessionID, strings.TrimSpace(barcode), strings.TrimSpace(barcode), strings.TrimSpace(barcode)).Scan(
+	`, supplierID, sessionID, storeID, strings.TrimSpace(barcode), strings.TrimSpace(barcode), strings.TrimSpace(barcode)).Scan(
 		&itemID,
 		&pcsPerBox,
 		&pcsPerCarton,

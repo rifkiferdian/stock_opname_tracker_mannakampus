@@ -663,7 +663,7 @@ func (r *ProductRepository) ExistsByCode(code string, storeID int, ignoreID int)
 	return count > 0, err
 }
 
-func (r *ProductRepository) ExistsAnyBarcode(barcode string, ignoreID int) (bool, error) {
+func (r *ProductRepository) ExistsAnyBarcode(barcode string, storeID int, ignoreID int) (bool, error) {
 	barcode = strings.TrimSpace(barcode)
 	if barcode == "" {
 		return false, nil
@@ -679,21 +679,25 @@ func (r *ProductRepository) ExistsAnyBarcode(barcode string, ignoreID int) (bool
 			SELECT COUNT(1)
 			FROM products
 			WHERE id <> ?
+				AND COALESCE(store_id, 0) = ?
 				AND (
 					COALESCE(barcode, '') = ?
 					OR COALESCE(barcode_box, '') = ?
 					OR COALESCE(barcode_carton, '') = ?
 				)
-		`, ignoreID, barcode, barcode, barcode).Scan(&count)
+		`, ignoreID, storeID, barcode, barcode, barcode).Scan(&count)
 	} else {
 		err = r.DB.QueryRow(`
 			SELECT COUNT(1)
 			FROM products
 			WHERE
-				COALESCE(barcode, '') = ?
-				OR COALESCE(barcode_box, '') = ?
-				OR COALESCE(barcode_carton, '') = ?
-		`, barcode, barcode, barcode).Scan(&count)
+				COALESCE(store_id, 0) = ?
+				AND (
+					COALESCE(barcode, '') = ?
+					OR COALESCE(barcode_box, '') = ?
+					OR COALESCE(barcode_carton, '') = ?
+				)
+		`, storeID, barcode, barcode, barcode).Scan(&count)
 	}
 
 	return count > 0, err
