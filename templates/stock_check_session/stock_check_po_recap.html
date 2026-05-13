@@ -1,0 +1,638 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+        <title>
+            {{ if .Title }}
+                {{ .Title }}
+            {{ else }}
+                Rekap PO Supplier
+            {{ end }}
+        </title>
+
+        <link rel="stylesheet" href="/assets/fonts/google/plus-jakarta-sans.css">
+        <link rel="stylesheet" href="/assets/css/tailwind.css">
+        <link href="/assets/vendor/boxicons/css/boxicons.min.css" rel="stylesheet" />
+        <style>
+            body {
+                background: #f4f6fb;
+            }
+
+            .session-shell {
+                display: flex;
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .session-toolbar {
+                border: 1px solid #edf1f7;
+                border-radius: 1.2rem;
+                background: #ffffff;
+                padding: 1rem;
+                box-shadow: 0 16px 40px -34px rgba(15, 23, 42, 0.34);
+            }
+
+            .toolbar-grid {
+                display: grid;
+                gap: 0.75rem;
+                grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr) auto;
+            }
+
+            .toolbar-field {
+                min-width: 0;
+            }
+
+            .toolbar-field-date {
+                grid-column: span 1;
+            }
+
+            .toolbar-label {
+                margin-bottom: 0.45rem;
+                display: block;
+                font-size: 0.6rem;
+                font-weight: 800;
+                letter-spacing: 0.18em;
+                text-transform: uppercase;
+                color: #7f8ba3;
+            }
+
+            .toolbar-input-wrap {
+                position: relative;
+            }
+
+            .toolbar-leading-icon,
+            .toolbar-trailing-icon {
+                pointer-events: none;
+                position: absolute;
+                top: 50%;
+                z-index: 1;
+                transform: translateY(-50%);
+                color: #8c98ae;
+            }
+
+            .toolbar-leading-icon {
+                left: 0.9rem;
+                font-size: 0.95rem;
+            }
+
+            .toolbar-trailing-icon {
+                right: 0.85rem;
+                font-size: 0.95rem;
+            }
+
+            .toolbar-date-trigger {
+                position: absolute;
+                top: 50%;
+                right: 0.55rem;
+                z-index: 2;
+                display: inline-flex;
+                height: 2rem;
+                width: 2rem;
+                align-items: center;
+                justify-content: center;
+                transform: translateY(-50%);
+                border: none;
+                border-radius: 0.65rem;
+                background: transparent;
+                color: #8c98ae;
+                transition: background-color 180ms ease, color 180ms ease;
+            }
+
+            .toolbar-date-trigger:hover {
+                background: #e9eef7;
+                color: #214a98;
+            }
+
+            .toolbar-date-trigger:focus-visible {
+                outline: none;
+                box-shadow: 0 0 0 3px rgba(21, 62, 138, 0.12);
+                background: #e9eef7;
+                color: #214a98;
+            }
+
+            .toolbar-control {
+                appearance: none;
+                color-scheme: light;
+                width: 100%;
+                min-height: 2.95rem;
+                border: 1px solid #edf1f7;
+                border-radius: 0.8rem;
+                background: #f8f9fc !important;
+                padding: 0.8rem 2.9rem 0.8rem 2.4rem;
+                font-size: 0.84rem;
+                font-weight: 700;
+                line-height: 1.2rem;
+                color: #445066 !important;
+                outline: none;
+                transition: border-color 180ms ease, box-shadow 180ms ease, background-color 180ms ease;
+            }
+
+            .toolbar-control[type="date"] {
+                min-width: 8.5rem;
+            }
+
+            .toolbar-control:focus {
+                border-color: #153e8a;
+                box-shadow: 0 0 0 3px rgba(21, 62, 138, 0.1);
+                background: #ffffff !important;
+            }
+
+            .toolbar-control::-webkit-calendar-picker-indicator {
+                position: absolute;
+                right: 0.75rem;
+                opacity: 0;
+                cursor: pointer;
+                width: 1rem;
+                height: 1rem;
+            }
+
+            .date-range-combo {
+                display: grid;
+                grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+                gap: 0.35rem;
+                align-items: center;
+            }
+
+            .date-range-separator {
+                font-size: 0.85rem;
+                font-weight: 800;
+                color: #94a3b8;
+            }
+
+            .toolbar-reset {
+                display: inline-flex;
+                min-height: 2.95rem;
+                align-items: center;
+                justify-content: center;
+                gap: 0.55rem;
+                border: 1px solid #edf1f7;
+                border-radius: 0.8rem;
+                background: #eef2f8;
+                padding: 0.8rem 1.3rem;
+                font-size: 0.88rem;
+                font-weight: 800;
+                color: #214a98;
+                transition: background-color 180ms ease;
+            }
+
+            .toolbar-reset:hover {
+                background: #e4ebf6;
+            }
+
+            .toolbar-apply {
+                display: inline-flex;
+                min-height: 2.95rem;
+                align-items: center;
+                justify-content: center;
+                gap: 0.5rem;
+                border-radius: 0.8rem;
+                background: linear-gradient(180deg, #123d8d 0%, #0f347d 100%);
+                padding: 0.8rem 1.2rem;
+                font-size: 0.88rem;
+                font-weight: 800;
+                color: #ffffff;
+                box-shadow: 0 12px 24px -18px rgba(18, 61, 141, 0.9), inset 0 1px 0 rgba(255, 255, 255, 0.14);
+                transition: transform 180ms ease, box-shadow 180ms ease, background 180ms ease;
+            }
+
+            .toolbar-apply:hover {
+                transform: translateY(-1px);
+                background: linear-gradient(180deg, #15469f 0%, #113985 100%);
+                box-shadow: 0 16px 28px -18px rgba(18, 61, 141, 0.95), inset 0 1px 0 rgba(255, 255, 255, 0.16);
+            }
+
+            .session-table-card {
+                overflow: hidden;
+                border: 1px solid #edf1f7;
+                border-radius: 1.25rem;
+                background: #ffffff;
+                box-shadow: 0 20px 48px -38px rgba(15, 23, 42, 0.34);
+            }
+
+            .session-table {
+                width: 100%;
+                min-width: 960px;
+                border-collapse: separate;
+                border-spacing: 0;
+            }
+
+            .session-table thead {
+                background: linear-gradient(180deg, #123d8d 0%, #0d3279 100%);
+            }
+
+            .session-table thead th {
+                padding: 1rem 1rem;
+                text-align: left;
+                font-size: 0.64rem;
+                font-weight: 800;
+                letter-spacing: 0.18em;
+                text-transform: uppercase;
+                color: rgba(255, 255, 255, 0.96);
+            }
+
+            .session-table tbody tr:nth-child(even) {
+                background: #f8f9fc;
+            }
+
+            .session-table tbody td {
+                padding: 1.1rem 1rem;
+                vertical-align: top;
+                border-top: 1px solid #edf1f7;
+            }
+
+            .session-table tbody tr:first-child td {
+                border-top: none;
+            }
+
+            .session-status {
+                display: inline-flex;
+                align-items: center;
+                gap: 0.7rem;
+                font-size: 0.88rem;
+                font-weight: 800;
+                line-height: 1.25;
+            }
+
+            .session-status-dot {
+                display: inline-block;
+                height: 0.7rem;
+                width: 0.7rem;
+                flex: none;
+                border-radius: 9999px;
+                vertical-align: middle;
+            }
+
+            .session-status-label {
+                display: inline-block;
+            }
+
+            .session-status-label.break {
+                max-width: 4.75rem;
+            }
+
+            .session-status-text-draft {
+                color: #64748b;
+            }
+
+            .session-status-dot-draft {
+                background: #94a3b8;
+            }
+
+            .session-status-text-in-progress {
+                color: #f28b53;
+            }
+
+            .session-status-dot-in-progress {
+                background: #f28b53;
+            }
+
+            .session-status-text-submitted {
+                color: #2563eb;
+            }
+
+            .session-status-dot-submitted {
+                background: #2563eb;
+            }
+
+            .session-status-text-reviewed {
+                color: #64748b;
+            }
+
+            .session-status-dot-reviewed {
+                background: #64748b;
+            }
+
+            .session-status-text-closed {
+                color: #059669;
+            }
+
+            .session-status-dot-closed {
+                background: #10b981;
+            }
+
+            .session-status-text-cancelled {
+                color: #e11d48;
+            }
+
+            .session-status-dot-cancelled {
+                background: #f43f5e;
+            }
+
+            .session-action-button {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                gap: 0.35rem;
+                border-radius: 0.7rem;
+                padding: 0.45rem 0.65rem;
+                font-size: 0.76rem;
+                font-weight: 800;
+                transition: background-color 180ms ease, border-color 180ms ease, color 180ms ease;
+            }
+
+            .session-action-button.view {
+                border: 1px solid #dbeafe;
+                background: #eff6ff;
+                color: #1d4ed8;
+            }
+
+            .session-action-button.view:hover {
+                background: #dbeafe;
+            }
+
+            .session-pagination {
+                display: flex;
+                align-items: center;
+                gap: 0.4rem;
+            }
+
+            .session-pagination-link {
+                display: inline-flex;
+                height: 2rem;
+                min-width: 2rem;
+                align-items: center;
+                justify-content: center;
+                border-radius: 0.55rem;
+                font-size: 0.8rem;
+                font-weight: 800;
+                color: #667085;
+                transition: background-color 180ms ease, color 180ms ease;
+            }
+
+            .session-pagination-link:hover {
+                background: #eef2f8;
+            }
+
+            .session-pagination-link.active {
+                background: #153e8a;
+                color: #ffffff;
+                box-shadow: 0 10px 18px -14px rgba(21, 62, 138, 0.95);
+            }
+
+            .session-pagination-link.icon {
+                color: #9aa6bb;
+            }
+
+            @media (max-width: 1279px) {
+                .toolbar-grid {
+                    grid-template-columns: repeat(2, minmax(0, 1fr));
+                }
+            }
+
+            @media (max-width: 767px) {
+                .toolbar-grid {
+                    grid-template-columns: minmax(0, 1fr);
+                }
+
+                .date-range-combo {
+                    grid-template-columns: minmax(0, 1fr);
+                }
+
+                .date-range-separator {
+                    display: none;
+                }
+            }
+        </style>
+    </head>
+    <body class="font-display text-slate-900">
+        <div class="flex min-h-screen">
+            {{ template "sidebar" . }}
+
+            <div class="flex min-h-screen min-w-0 flex-1 flex-col">
+                {{ template "header" . }}
+
+                <main class="flex-1 px-4 py-6 lg:px-8">
+                    <div class="session-shell mx-auto w-full max-w-7xl">
+                        <section class="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+                            <div>
+                                <h1 class="text-[1.8rem] font-extrabold tracking-tight text-[#153e8a]">Ready For PO</h1>
+                                <p class="mt-1 text-[13px] font-medium text-slate-500">List sesi stock check yang sudah closed.</p>
+                            </div>
+                        </section>
+
+                        <section class="session-toolbar">
+                            <form method="get" action="{{ baseURL "/stock-checker/po-recap" }}" class="toolbar-grid">
+                                <div class="toolbar-field toolbar-field-date">
+                                    <label class="toolbar-label">Date Range</label>
+                                    <div class="date-range-combo">
+                                        <div class="toolbar-input-wrap">
+                                            <i class="bx bx-calendar toolbar-leading-icon"></i>
+                                            <input id="po-date-from-filter" type="date" name="date_from" value="{{ .Filters.DateFrom }}" class="toolbar-control">
+                                            <button type="button" class="toolbar-date-trigger" data-date-picker-target="po-date-from-filter" aria-label="Pilih tanggal mulai">
+                                                <i class="bx bx-chevron-down text-base"></i>
+                                            </button>
+                                        </div>
+                                        <span class="date-range-separator">-</span>
+                                        <div class="toolbar-input-wrap">
+                                            <i class="bx bx-calendar toolbar-leading-icon"></i>
+                                            <input id="po-date-to-filter" type="date" name="date_to" value="{{ .Filters.DateTo }}" class="toolbar-control">
+                                            <button type="button" class="toolbar-date-trigger" data-date-picker-target="po-date-to-filter" aria-label="Pilih tanggal akhir">
+                                                <i class="bx bx-chevron-down text-base"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="toolbar-field">
+                                    <label class="toolbar-label">Supplier Name</label>
+                                    <div class="toolbar-input-wrap">
+                                        <i class="bx bx-search toolbar-leading-icon"></i>
+                                        <input type="text" name="supplier_name" value="{{ .Filters.SupplierName }}" class="toolbar-control" placeholder="Cari nama supplier..." style="padding-right: 1rem;">
+                                    </div>
+                                </div>
+
+                                <div class="toolbar-field self-end">
+                                    <div class="flex gap-2">
+                                        <button type="submit" class="toolbar-apply">
+                                            Apply
+                                        </button>
+                                        <a href="{{ baseURL "/stock-checker/po-recap" }}" class="toolbar-reset">
+                                            <i class="bx bx-reset text-base"></i>
+                                            <span>Reset</span>
+                                        </a>
+                                    </div>
+                                </div>
+                            </form>
+                        </section>
+
+                        <section class="session-table-card">
+                            <div class="overflow-x-auto">
+                                <table class="session-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Session No</th>
+                                            <th>Date</th>
+                                            <th>Store</th>
+                                            <th>Supplier</th>
+                                            <th>Status</th>
+                                            <th>Created By</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {{ range .Sessions }}
+                                            <tr class="transition hover:bg-[#f3f6fb]">
+                                                <td>
+                                                    <a href="/stock-check-sessions/{{ .ID }}/po-detail" class="max-w-[7rem] break-words text-[13px] font-extrabold leading-6 text-[#214a98] transition hover:text-[#153e8a] hover:underline">{{ .SessionNumber }}</a>
+                                                </td>
+                                                <td>
+                                                    <div class="text-[13px] font-bold leading-5 text-slate-600">
+                                                        <p>{{ .SessionDateDay }} {{ .SessionDateMonthShort }} {{ .SessionDateYear }}</p>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <p class="max-w-[9rem] text-[13px] font-bold leading-6 text-slate-700">{{ .StoreName }}</p>
+                                                </td>
+                                                <td>
+                                                    <p class="max-w-[9rem] text-[13px] font-medium leading-6 text-slate-500">{{ .SupplierName }}</p>
+                                                </td>
+                                                <td>
+                                                    <span class="session-status {{ .StatusTextClass }}">
+                                                        <span class="session-status-dot {{ .StatusDotClass }}"></span>
+                                                        <span class="session-status-label {{ if eq .Status "in_progress" }}break{{ end }}">
+                                                            {{ .StatusLabel }}
+                                                        </span>
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <div class="flex items-start gap-2.5">
+                                                        <div>
+                                                            <p class="text-[13px] font-semibold leading-5 text-slate-700">{{ .CreatedByName }}</p>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <div class="flex flex-wrap items-center gap-2">
+                                                        <a
+                                                            href="/stock-check-sessions/{{ .ID }}/po-detail"
+                                                            class="session-action-button view">
+                                                            <i class="bx bx-show text-sm"></i>
+                                                            PO Detail
+                                                        </a>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        {{ else }}
+                                            <tr>
+                                                <td colspan="7" class="px-5 py-12 text-center">
+                                                    <div class="mx-auto max-w-md">
+                                                        <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 text-slate-400">
+                                                            <i class="bx bx-folder-open text-3xl"></i>
+                                                        </div>
+                                                        <p class="mt-4 text-[15px] font-bold text-slate-700">Belum ada session closed yang cocok dengan filter saat ini.</p>
+                                                        <p class="mt-1 text-[13px] font-medium text-slate-400">Coba ubah rentang tanggal atau nama supplier.</p>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        {{ end }}
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <div class="flex flex-col gap-4 border-t border-[#edf1f7] px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
+                                <p class="text-[13px] font-semibold text-slate-500">
+                                    {{ if gt .Pagination.TotalItems 0 }}
+                                        Showing {{ .Pagination.StartItem }}-{{ .Pagination.EndItem }} of {{ .Pagination.TotalItems }} sessions
+                                    {{ else }}
+                                        No sessions found
+                                    {{ end }}
+                                </p>
+
+                                <div class="session-pagination">
+                                    {{ if .Pagination.HasPrev }}
+                                        <a href="{{ .Pagination.PrevURL }}" class="session-pagination-link icon">
+                                            <i class="bx bx-chevron-left text-lg"></i>
+                                        </a>
+                                    {{ else }}
+                                        <span class="session-pagination-link icon text-slate-300">
+                                            <i class="bx bx-chevron-left text-lg"></i>
+                                        </span>
+                                    {{ end }}
+
+                                    {{ range .Pagination.Pages }}
+                                        <a href="{{ .URL }}" class="session-pagination-link {{ if .Active }}active{{ end }}">
+                                            {{ .Number }}
+                                        </a>
+                                    {{ end }}
+
+                                    {{ if .Pagination.HasNext }}
+                                        <a href="{{ .Pagination.NextURL }}" class="session-pagination-link icon">
+                                            <i class="bx bx-chevron-right text-lg"></i>
+                                        </a>
+                                    {{ else }}
+                                        <span class="session-pagination-link icon text-slate-300">
+                                            <i class="bx bx-chevron-right text-lg"></i>
+                                        </span>
+                                    {{ end }}
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+                </main>
+
+                {{ template "footer" . }}
+            </div>
+        </div>
+
+        <div id="sidebar-overlay" class="fixed inset-0 z-40 hidden bg-slate-900/50 lg:hidden"></div>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                var sidebar = document.getElementById('app-sidebar');
+                var overlay = document.getElementById('sidebar-overlay');
+                var toggleButtons = document.querySelectorAll('[data-sidebar-toggle]');
+
+                function closeSidebar() {
+                    if (!sidebar) return;
+                    sidebar.classList.add('-translate-x-full');
+                    if (overlay) overlay.classList.add('hidden');
+                    document.body.classList.remove('overflow-hidden');
+                }
+
+                function openSidebar() {
+                    if (!sidebar) return;
+                    if (typeof window.closeHeaderInteractivePanels === 'function') {
+                        window.closeHeaderInteractivePanels();
+                    }
+                    sidebar.classList.remove('-translate-x-full');
+                    if (overlay) overlay.classList.remove('hidden');
+                    document.body.classList.add('overflow-hidden');
+                }
+
+                function openNativeDatePickerByTarget(targetId) {
+                    var target = document.getElementById(targetId);
+                    if (!target) return;
+                    if (typeof target.showPicker === 'function') {
+                        target.showPicker();
+                        return;
+                    }
+                    target.focus();
+                    target.click();
+                }
+
+                toggleButtons.forEach(function (button) {
+                    button.addEventListener('click', function () {
+                        if (!sidebar) return;
+                        if (sidebar.classList.contains('-translate-x-full')) {
+                            openSidebar();
+                        } else {
+                            closeSidebar();
+                        }
+                    });
+                });
+
+                document.querySelectorAll('[data-date-picker-target]').forEach(function (trigger) {
+                    trigger.addEventListener('click', function () {
+                        openNativeDatePickerByTarget(trigger.getAttribute('data-date-picker-target'));
+                    });
+                });
+
+                if (overlay) {
+                    overlay.addEventListener('click', closeSidebar);
+                }
+            });
+        </script>
+    </body>
+</html>

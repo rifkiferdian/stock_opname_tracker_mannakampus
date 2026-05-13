@@ -30,13 +30,14 @@ type StockCheckSession struct {
 }
 
 type StockCheckSessionListFilter struct {
-	DateFrom   string
-	DateTo     string
-	StoreID    int
-	SupplierID int
-	Status     string
-	Page       int
-	Limit      int
+	DateFrom     string
+	DateTo       string
+	StoreID      int
+	SupplierID   int
+	SupplierName string
+	Status       string
+	Page         int
+	Limit        int
 }
 
 type StockCheckSessionCreateInput struct {

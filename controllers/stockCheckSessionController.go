@@ -388,6 +388,133 @@ func StockCheckSessionDetail(c *gin.Context) {
 	renderStockCheckSessionDetailPage(c, buildStockCheckSessionService(), id, c.Query("success"), "", models.StockCheckSessionReviewItemEditForm{})
 }
 
+type stockCheckSessionPOItemView struct {
+	No               int
+	ProductName      string
+	ProductCode      string
+	UnitName         string
+	QtyDisplay       string
+	UnitPriceDisplay string
+	SubtotalDisplay  string
+}
+
+func StockCheckSessionPODetail(c *gin.Context) {
+	sessionID, err := strconv.Atoi(c.Param("id"))
+	if err != nil || sessionID <= 0 {
+		c.String(http.StatusBadRequest, "invalid stock check session id")
+		return
+	}
+
+	sessionService := buildStockCheckSessionService()
+	pageData, err := sessionService.GetSessionDetailPage(sessionID, 1, 0)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			c.HTML(http.StatusNotFound, "error.html", gin.H{
+				"code_error": http.StatusNotFound,
+				"error":      "Stock check session tidak ditemukan",
+			})
+			return
+		}
+
+		c.String(http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	hasStoreAccess, err := currentUserCanAccessStockCheckStore(c, sessionService, pageData.Session.StoreID)
+	if err != nil {
+		c.String(http.StatusInternalServerError, err.Error())
+		return
+	}
+	if !hasStoreAccess {
+		c.HTML(http.StatusForbidden, "error.html", gin.H{
+			"code_error": 3,
+			"error":      "Anda Tidak punya Akses di Halaman ini",
+		})
+		return
+	}
+
+	supplier, err := buildSupplierService().GetSupplierByID(pageData.Session.SupplierID)
+	if err != nil {
+		c.String(http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	storeAddress := ""
+	stores, err := buildStoreService().GetStores()
+	if err == nil {
+		for _, store := range stores {
+			if store.StoreID == pageData.Session.StoreID {
+				storeAddress = strings.TrimSpace(store.StoreAddress)
+				break
+			}
+		}
+	}
+
+	buyerApproverName, err := sessionService.Repo.GetLatestBuyerApproverName(sessionID)
+	if err != nil {
+		c.String(http.StatusInternalServerError, err.Error())
+		return
+	}
+	if strings.TrimSpace(buyerApproverName) == "" {
+		buyerApproverName = "-"
+	}
+
+	items := make([]stockCheckSessionPOItemView, 0, len(pageData.Items))
+	subtotal := 0.0
+	totalQty := 0.0
+	for _, item := range pageData.Items {
+		if item.ApprovedBuyQty <= 0 {
+			continue
+		}
+
+		unitPrice := 0.0
+		if item.ApprovedBuyQty > 0 {
+			unitPrice = item.ApprovedLineValue / item.ApprovedBuyQty
+		}
+		lineSubtotal := item.ApprovedLineValue
+		subtotal += lineSubtotal
+		totalQty += item.ApprovedBuyQty
+
+		items = append(items, stockCheckSessionPOItemView{
+			No:               len(items) + 1,
+			ProductName:      item.ProductName,
+			ProductCode:      item.ProductCode,
+			UnitName:         item.UnitName,
+			QtyDisplay:       formatStockCheckPOWholeNumber(item.ApprovedBuyQty),
+			UnitPriceDisplay: formatStockCheckPOCurrency(unitPrice),
+			SubtotalDisplay:  formatStockCheckPOCurrency(lineSubtotal),
+		})
+	}
+
+	shippingHandling := 0.0
+	estimatedTax := subtotal * 0.08
+	totalAmount := subtotal + shippingHandling + estimatedTax
+
+	Render(c, "stock_check_session_po_detail.html", gin.H{
+		"Title":               "PO Detail " + pageData.Session.SessionNumber,
+		"Page":                "stock_check_po_recap",
+		"CurrentRole":         extractCurrentUserRole(c),
+		"Session":             pageData.Session,
+		"Supplier":            supplier,
+		"StoreAddress":        storeAddress,
+		"BuyerApproverName":   buyerApproverName,
+		"POItems":             items,
+		"POItemCount":         len(items),
+		"POTotalQtyDisplay":   formatStockCheckPOWholeNumber(totalQty),
+		"SubtotalDisplay":     formatStockCheckPOCurrency(subtotal),
+		"ShippingDisplay":     formatStockCheckPOCurrency(shippingHandling),
+		"EstimatedTaxDisplay": formatStockCheckPOCurrency(estimatedTax),
+		"TotalAmountDisplay":  formatStockCheckPOCurrency(totalAmount),
+		"PODateDisplay":       pageData.Session.SessionDateDisplay,
+		"PONumberDisplay":     "PO-" + pageData.Session.SessionNumber,
+		"BackToRecapPOPageURL": buildStockCheckPORecapPageURL(models.StockCheckSessionListFilter{
+			DateFrom:     sanitizeQueryDate(c.Query("date_from")),
+			DateTo:       sanitizeQueryDate(c.Query("date_to")),
+			SupplierName: c.Query("supplier_name"),
+		}, parsePositiveInt(c.Query("page"), 1)),
+	})
+}
+
 func StockCheckSessionReviewItemUpdate(c *gin.Context) {
 	type stockCheckSessionReviewItemForm struct {
 		ItemID         int    `form:"item_id" binding:"required"`
@@ -1965,4 +2092,38 @@ func buildStockCheckCheckerSessionCreatePageURL(supplierID int, backURL string) 
 
 func buildStockCheckCheckerDefaultBackURL(supplierID int) string {
 	return fmt.Sprintf("/stock-checker/%d", supplierID)
+}
+
+func formatStockCheckPOWholeNumber(value float64) string {
+	return fmt.Sprintf("%.0f", value)
+}
+
+func formatStockCheckPOCurrency(value float64) string {
+	negative := value < 0
+	if negative {
+		value = -value
+	}
+
+	raw := fmt.Sprintf("%.2f", value)
+	parts := strings.SplitN(raw, ".", 2)
+	integerPart := parts[0]
+	decimalPart := "00"
+	if len(parts) == 2 {
+		decimalPart = parts[1]
+	}
+
+	var grouped strings.Builder
+	for idx, char := range integerPart {
+		if idx > 0 && (len(integerPart)-idx)%3 == 0 {
+			grouped.WriteRune(',')
+		}
+		grouped.WriteRune(char)
+	}
+
+	prefix := ""
+	if negative {
+		prefix = "-"
+	}
+
+	return prefix + "$" + grouped.String() + "." + decimalPart
 }

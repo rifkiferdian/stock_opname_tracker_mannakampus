@@ -1,0 +1,562 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+        <title>
+            {{ if .Title }}
+                {{ .Title }}
+            {{ else }}
+                PO Detail
+            {{ end }}
+        </title>
+
+        <link rel="stylesheet" href="/assets/fonts/google/manrope-space-grotesk.css">
+        <link rel="stylesheet" href="/assets/css/tailwind.css">
+        <link href="/assets/vendor/boxicons/css/boxicons.min.css" rel="stylesheet" />
+
+        <style>
+            body {
+                background: #f3f6fb;
+                color: #0f1f3e;
+                font-family: "Manrope", sans-serif;
+            }
+
+            .po-sheet {
+                max-width: 900px;
+                margin: 0 auto;
+                border: 1px solid #dbe4f3;
+                border-radius: 1rem;
+                background: #ffffff;
+                box-shadow: 0 24px 54px -42px rgba(15, 23, 42, 0.42);
+                overflow: hidden;
+            }
+
+            .po-top-actions {
+                max-width: 900px;
+                margin: 0 auto;
+                display: flex;
+                flex-wrap: wrap;
+                align-items: center;
+                justify-content: space-between;
+                gap: 0.9rem;
+            }
+
+            .po-top-title {
+                font-size: 2rem;
+                line-height: 1.1;
+                font-weight: 800;
+                color: #0f3d86;
+                font-family: "Manrope", sans-serif;
+            }
+
+            .po-top-subtitle {
+                margin-top: 0.35rem;
+                font-size: 0.92rem;
+                line-height: 1.35;
+                font-weight: 600;
+                color: #4b5d7b;
+            }
+
+            .po-top-actions-buttons {
+                display: flex;
+                align-items: center;
+                gap: 0.65rem;
+            }
+
+            .po-action-button {
+                display: inline-flex;
+                min-height: 2.5rem;
+                align-items: center;
+                justify-content: center;
+                gap: 0.5rem;
+                border-radius: 0.65rem;
+                padding: 0.55rem 0.95rem;
+                font-size: 0.86rem;
+                font-weight: 800;
+                transition: all 180ms ease;
+            }
+
+            .po-action-button.print {
+                border: 1px solid #cfd8e7;
+                background: #f7f9fd;
+                color: #223a61;
+            }
+
+            .po-action-button.print:hover {
+                background: #eef3fb;
+            }
+
+            .po-action-button.send {
+                background: #0f3b86;
+                color: #ffffff;
+                box-shadow: 0 14px 30px -24px rgba(15, 59, 134, 0.95);
+            }
+
+            .po-action-button.send:hover {
+                background: #13489f;
+            }
+
+            .po-head {
+                padding: 1.25rem 1.35rem;
+                border-bottom: 1px solid #e7edf7;
+                display: flex;
+                gap: 1rem;
+                justify-content: space-between;
+            }
+
+            .po-brand {
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+                font-family: "Space Grotesk", sans-serif;
+                font-weight: 800;
+                color: #0f2f78;
+                letter-spacing: 0.02em;
+            }
+
+            .po-brand-icon {
+                height: 1.4rem;
+                width: 1.4rem;
+                border-radius: 0.3rem;
+                background: #123d8d;
+                color: #ffffff;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 0.92rem;
+            }
+
+            .po-title {
+                font-family: "Space Grotesk", sans-serif;
+                font-size: 1.85rem;
+                line-height: 1.1;
+                font-weight: 800;
+                color: #d6d8df;
+                text-transform: uppercase;
+                letter-spacing: 0.02em;
+                text-align: right;
+            }
+
+            .po-top-grid {
+                display: grid;
+                gap: 0.85rem;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                padding: 1rem 1.35rem 1.1rem;
+                border-bottom: 1px solid #edf2fa;
+            }
+
+            .po-block-label {
+                font-size: 0.62rem;
+                line-height: 1.2;
+                font-weight: 800;
+                text-transform: uppercase;
+                letter-spacing: 0.14em;
+                color: #7f8da5;
+            }
+
+            .po-block-title {
+                margin-top: 0.3rem;
+                font-size: 1rem;
+                line-height: 1.28;
+                font-weight: 800;
+                color: #172b52;
+            }
+
+            .po-block-copy {
+                margin-top: 0.28rem;
+                font-size: 0.82rem;
+                line-height: 1.45;
+                font-weight: 700;
+                color: #5a6a84;
+                white-space: pre-line;
+            }
+
+            .po-meta-grid {
+                display: grid;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 0.6rem 1rem;
+            }
+
+            .po-meta-copy {
+                margin-top: 0.2rem;
+                font-size: 0.9rem;
+                line-height: 1.3;
+                font-weight: 800;
+                color: #0e234e;
+            }
+
+            .po-table-wrap {
+                padding: 1rem 1.35rem 0;
+            }
+
+            .po-table {
+                width: 100%;
+                border-collapse: separate;
+                border-spacing: 0;
+            }
+
+            .po-table thead th {
+                background: #0f2f78;
+                color: #ffffff;
+                padding: 0.72rem 0.64rem;
+                font-size: 0.58rem;
+                letter-spacing: 0.1em;
+                text-transform: uppercase;
+                font-weight: 800;
+                text-align: left;
+            }
+
+            .po-table thead th:first-child {
+                border-top-left-radius: 0.45rem;
+            }
+
+            .po-table thead th:last-child {
+                border-top-right-radius: 0.45rem;
+                text-align: right;
+            }
+
+            .po-table tbody td {
+                padding: 0.9rem 0.64rem;
+                border-bottom: 1px solid #edf1f8;
+                vertical-align: top;
+                font-size: 0.82rem;
+                line-height: 1.35;
+                font-weight: 700;
+                color: #334155;
+            }
+
+            .po-table tbody tr:nth-child(even) td {
+                background: #f9fbff;
+            }
+
+            .po-table tbody td.num {
+                width: 3rem;
+                color: #123d8d;
+                font-weight: 800;
+            }
+
+            .po-table tbody td.qty {
+                width: 5rem;
+                text-align: center;
+                color: #0b2a6c;
+                font-weight: 800;
+                font-size: 0.94rem;
+                line-height: 1.2;
+                font-family: "Space Grotesk", sans-serif;
+                letter-spacing: 0.01em;
+            }
+
+            .po-table tbody td.money {
+                width: 8.5rem;
+                text-align: right;
+                font-weight: 800;
+                color: #132d62;
+            }
+
+            .po-item-title {
+                font-size: 0.92rem;
+                line-height: 1.25;
+                font-weight: 800;
+                color: #0f1f3e;
+            }
+
+            .po-item-sub {
+                margin-top: 0.24rem;
+                font-size: 0.8rem;
+                line-height: 1.3;
+                font-weight: 800;
+                color: #4b5c78;
+            }
+
+            .po-item-sub b {
+                color: #0f2f78;
+                font-weight: 800;
+            }
+
+            .po-summary {
+                display: grid;
+                justify-content: end;
+                padding: 1.2rem 1.35rem 1.25rem;
+                gap: 0.35rem;
+            }
+
+            .po-summary-row {
+                display: grid;
+                grid-template-columns: 180px 130px;
+                align-items: center;
+                gap: 1rem;
+                font-size: 0.84rem;
+                font-weight: 700;
+                color: #4b5c78;
+            }
+
+            .po-summary-row strong {
+                text-align: right;
+                font-weight: 800;
+                color: #102a5f;
+            }
+
+            .po-summary-total {
+                margin-top: 0.5rem;
+                border-radius: 0.7rem;
+                background: #0f2f78;
+                color: #ffffff;
+                padding: 0.7rem 0.8rem;
+                display: grid;
+                grid-template-columns: 1fr auto;
+                align-items: center;
+                gap: 0.8rem;
+            }
+
+            .po-summary-total .label {
+                font-size: 0.62rem;
+                line-height: 1.2;
+                font-weight: 800;
+                letter-spacing: 0.12em;
+                text-transform: uppercase;
+                color: rgba(255, 255, 255, 0.78);
+            }
+
+            .po-summary-total .value {
+                margin-top: 0.18rem;
+                font-family: "Space Grotesk", sans-serif;
+                font-size: 1.8rem;
+                line-height: 1.05;
+                font-weight: 800;
+                color: #ffffff;
+            }
+
+            .po-signatures {
+                display: grid;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 1.1rem;
+                padding: 1.2rem 1.35rem 1.35rem;
+            }
+
+            .po-signature-note {
+                font-size: 0.78rem;
+                line-height: 1.45;
+                font-style: italic;
+                font-weight: 700;
+                color: #334155;
+            }
+
+            .po-signature-line {
+                margin-top: 0.6rem;
+                height: 1px;
+                width: 100%;
+                background: #8190aa;
+            }
+
+            .po-signature-name {
+                margin-top: 0.6rem;
+                font-size: 1.05rem;
+                line-height: 1.2;
+                font-weight: 800;
+                color: #0f1f3e;
+            }
+
+            .po-signature-role {
+                margin-top: 0.15rem;
+                font-size: 0.67rem;
+                line-height: 1.2;
+                font-weight: 800;
+                letter-spacing: 0.14em;
+                text-transform: uppercase;
+                color: #1e293b;
+            }
+
+            @media (max-width: 900px) {
+                .po-title {
+                    font-size: 1.35rem;
+                }
+
+                .po-top-title {
+                    font-size: 1.45rem;
+                }
+
+                .po-top-subtitle {
+                    font-size: 0.82rem;
+                }
+
+                .po-top-grid {
+                    grid-template-columns: minmax(0, 1fr);
+                }
+
+                .po-summary {
+                    justify-content: stretch;
+                }
+
+                .po-summary-row {
+                    grid-template-columns: 1fr auto;
+                }
+
+                .po-signatures {
+                    grid-template-columns: minmax(0, 1fr);
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <div class="flex min-h-screen">
+            {{ template "sidebar" . }}
+
+            <div class="flex min-h-screen min-w-0 flex-1 flex-col">
+                {{ template "header" . }}
+
+                <main class="min-w-0 flex-1 px-3 py-4 sm:px-6 sm:py-5 lg:px-8">
+                    <div class="mx-auto flex w-full max-w-7xl flex-col gap-4">
+                        <div>
+                            <a href="{{ if .BackToRecapPOPageURL }}{{ .BackToRecapPOPageURL }}{{ else }}/stock-checker/po-recap{{ end }}" class="inline-flex items-center gap-2 text-sm font-extrabold text-[#123d8f] transition hover:text-[#214a98]">
+                                <i class="bx bx-arrow-back text-base"></i>
+                                Back to Ready For PO
+                            </a>
+                        </div>
+
+                        <section class="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+                            <div>
+                                <h1 class="text-xl font-extrabold leading-tight text-[#001e62] sm:text-2xl">Purchase Order Detail</h1>
+                                <p class="mt-1 text-sm font-medium text-[#566173]">Review and approve procurement document </p>
+                            </div>
+
+                            <div class="flex flex-wrap items-center gap-3">
+                                <button type="button" onclick="window.print()" class="inline-flex items-center justify-center gap-2 rounded-md border border-[#001e62] bg-white px-5 py-3 text-sm font-extrabold text-[#001e62] transition hover:bg-slate-50">
+                                    <i class="bx bx-printer text-base"></i>
+                                    Print to PDF
+                                </button>
+                                <a href="{{ if .Supplier.Email }}mailto:{{ .Supplier.Email }}?subject={{ .PONumberDisplay }}&body=Berikut PO detail untuk ditinjau.{{ else }}#{{ end }}" class="inline-flex items-center justify-center gap-2 rounded-md bg-[#001e62] px-5 py-3 text-sm font-extrabold text-white shadow-md shadow-[#001e62]/20 transition hover:bg-[#002f95]">
+                                    <i class="bx bx-send text-base"></i>
+                                    Send to Supplier
+                                </a>
+                            </div>
+                        </section>
+
+                        <section class="po-sheet">
+                            <div class="po-head">
+                                <div class="po-brand">
+                                    <span class="po-brand-icon"><i class="bx bx-package"></i></span>
+                                    <span>INVENTORY PRO</span>
+                                </div>
+                                <div class="po-title">Purchase Order</div>
+                            </div>
+
+                            <div class="po-top-grid">
+                                <article>
+                                    <p class="po-block-label">Supplier Details</p>
+                                    <p class="po-block-title">{{ .Supplier.SupplierName }}</p>
+                                    <p class="po-block-copy" style="margin-top: 0.1rem;">Code: {{ if .Supplier.SupplierCode }}{{ .Supplier.SupplierCode }}{{ else }}-{{ end }}</p>
+                                    <p class="po-block-copy">{{ if .Supplier.Address }}{{ .Supplier.Address }}{{ else }}-{{ end }}</p>
+                                </article>
+
+                                <article class="po-meta-grid">
+                                    <div>
+                                        <p class="po-block-label">PO Number</p>
+                                        <p class="po-meta-copy">{{ .PONumberDisplay }}</p>
+                                    </div>
+                                    <div>
+                                        <p class="po-block-label">Order Date</p>
+                                        <p class="po-meta-copy">{{ .PODateDisplay }}</p>
+                                    </div>
+                                    <div>
+                                        <p class="po-block-label">Delivery Store</p>
+                                        <p class="po-meta-copy">{{ .Session.StoreName }}</p>
+                                        <p class="po-block-copy">{{ if .StoreAddress }}{{ .StoreAddress }}{{ else }}-{{ end }}</p>
+                                    </div>
+                                </article>
+                            </div>
+
+                            <div class="po-table-wrap">
+                                <table class="po-table">
+                                    <thead>
+                                        <tr>
+                                            <th style="width: 3rem;">No</th>
+                                            <th>Item Description</th>
+                                            <th style="width: 5rem;">Qty</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {{ range .POItems }}
+                                            <tr>
+                                                <td class="num">{{ printf "%02d" .No }}</td>
+                                                <td>
+                                                    <p class="po-item-title">{{ .ProductName }}</p>
+                                                    <p class="po-item-sub">PLU: <b>{{ .ProductCode }}</b></p>
+                                                </td>
+                                                <td class="qty">{{ .QtyDisplay }}</td>
+                                            </tr>
+                                        {{ else }}
+                                            <tr>
+                                                <td colspan="3" style="text-align:center; padding: 1.2rem; font-weight: 700; color: #64748b;">Belum ada item approved untuk PO ini.</td>
+                                            </tr>
+                                        {{ end }}
+                                    </tbody>
+                                    <tfoot>
+                                        <tr>
+                                            <td colspan="2" style="padding: 0.82rem 0.64rem; font-size: 0.82rem; font-weight: 800; color: #0f2f78; border-top: 1px solid #dce5f4; background: #f7faff;">
+                                                Total Item: {{ .POItemCount }}
+                                            </td>
+                                            <td class="qty" style="border-top: 1px solid #dce5f4; background: #f7faff; color: #f26419 ;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ .POTotalQtyDisplay }}</td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+
+                            <div class="po-signatures">
+                                <div>
+                                    <p class="po-signature-note">Approver By</p>
+                                    <div class="po-signature-line"></div>
+                                    <p class="po-signature-name">{{ if .Session.CreatedByName }}{{ .Session.CreatedByName }}{{ else }}-{{ end }}</p>
+                                </div>
+                                
+                            </div>
+                        </section>
+                    </div>
+                </main>
+            </div>
+        </div>
+
+        <div id="sidebar-overlay" class="fixed inset-0 z-40 hidden bg-slate-900/50 lg:hidden"></div>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                var sidebar = document.getElementById('app-sidebar');
+                var overlay = document.getElementById('sidebar-overlay');
+                var toggleButtons = document.querySelectorAll('[data-sidebar-toggle]');
+
+                function closeSidebar() {
+                    if (!sidebar) return;
+                    sidebar.classList.add('-translate-x-full');
+                    if (overlay) overlay.classList.add('hidden');
+                    document.body.classList.remove('overflow-hidden');
+                }
+
+                function openSidebar() {
+                    if (!sidebar) return;
+                    if (typeof window.closeHeaderInteractivePanels === 'function') {
+                        window.closeHeaderInteractivePanels();
+                    }
+                    sidebar.classList.remove('-translate-x-full');
+                    if (overlay) overlay.classList.remove('hidden');
+                    document.body.classList.add('overflow-hidden');
+                }
+
+                toggleButtons.forEach(function (button) {
+                    button.addEventListener('click', function () {
+                        if (!sidebar) return;
+                        if (sidebar.classList.contains('-translate-x-full')) {
+                            openSidebar();
+                        } else {
+                            closeSidebar();
+                        }
+                    });
+                });
+
+                if (overlay) {
+                    overlay.addEventListener('click', closeSidebar);
+                }
+            });
+        </script>
+    </body>
+</html>

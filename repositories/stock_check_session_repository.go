@@ -714,6 +714,28 @@ func (r *StockCheckSessionRepository) GetSubmittedItemsBySession(sessionID int) 
 	return items, rows.Err()
 }
 
+func (r *StockCheckSessionRepository) GetLatestBuyerApproverName(sessionID int) (string, error) {
+	var approverName sql.NullString
+	err := r.DB.QueryRow(`
+		SELECT COALESCE(u.name, '')
+		FROM stock_check_session_items si
+		INNER JOIN users u ON u.id = si.reviewed_by
+		WHERE si.stock_check_session_id = ?
+			AND si.reviewed_by IS NOT NULL
+			AND si.reviewed_at IS NOT NULL
+		ORDER BY si.reviewed_at DESC, si.id DESC
+		LIMIT 1
+	`, sessionID).Scan(&approverName)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return "", nil
+		}
+		return "", err
+	}
+
+	return strings.TrimSpace(approverName.String), nil
+}
+
 func (r *StockCheckSessionRepository) DeleteByID(id int) error {
 	_, err := r.DB.Exec(`DELETE FROM stock_check_sessions WHERE id = ?`, id)
 	return err
@@ -1109,6 +1131,10 @@ func buildStockCheckSessionListQuery(filter models.StockCheckSessionListFilter, 
 	if filter.SupplierID > 0 {
 		conditions = append(conditions, "scs.supplier_id = ?")
 		args = append(args, filter.SupplierID)
+	}
+	if strings.TrimSpace(filter.SupplierName) != "" {
+		conditions = append(conditions, "LOWER(sp.supplier_name) LIKE LOWER(?)")
+		args = append(args, "%"+strings.TrimSpace(filter.SupplierName)+"%")
 	}
 	if filter.Status != "" {
 		conditions = append(conditions, "scs.status = ?")
