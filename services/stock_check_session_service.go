@@ -353,10 +353,7 @@ func (s *StockCheckSessionService) ApplyAllSubmittedLatestBySupplier(supplierID 
 
 	appliedCount := 0
 	for _, item := range items {
-		approvedQty := item.SuggestBuyQty
-		if item.ApprovedBuyQty > 0 {
-			approvedQty = item.ApprovedBuyQty
-		}
+		approvedQty := float64(item.SuggestBuyCarton)
 
 		if err := s.UpdateReviewItem(models.StockCheckSessionReviewItemUpdateInput{
 			SessionID:      item.SessionID,

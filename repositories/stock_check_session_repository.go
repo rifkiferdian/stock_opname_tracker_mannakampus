@@ -17,7 +17,7 @@ type StockCheckSessionRepository struct {
 type StockCheckLatestSubmittedItem struct {
 	SessionID      int
 	ItemID         int
-	SuggestBuyQty  float64
+	SuggestBuyCarton int
 	ApprovedBuyQty float64
 	BuyerNotes     string
 }
@@ -586,7 +586,7 @@ func (r *StockCheckSessionRepository) GetLatestSubmittedItemsBySupplier(supplier
 		SELECT
 			si.stock_check_session_id,
 			si.id,
-			COALESCE(si.suggest_buy_qty, 0) AS suggest_buy_qty,
+			COALESCE(si.suggest_buy_carton, 0) AS suggest_buy_carton,
 			COALESCE(si.approved_buy_qty, 0) AS approved_buy_qty,
 			COALESCE(si.buyer_notes, '') AS buyer_notes
 		FROM stock_check_session_items si
@@ -609,22 +609,22 @@ func (r *StockCheckSessionRepository) GetLatestSubmittedItemsBySupplier(supplier
 	for rows.Next() {
 		var (
 			item           StockCheckLatestSubmittedItem
-			suggestBuyQty  sql.NullFloat64
+			suggestBuyCarton sql.NullInt64
 			approvedBuyQty sql.NullFloat64
 		)
 
 		if err := rows.Scan(
 			&item.SessionID,
 			&item.ItemID,
-			&suggestBuyQty,
+			&suggestBuyCarton,
 			&approvedBuyQty,
 			&item.BuyerNotes,
 		); err != nil {
 			return nil, err
 		}
 
-		if suggestBuyQty.Valid {
-			item.SuggestBuyQty = suggestBuyQty.Float64
+		if suggestBuyCarton.Valid {
+			item.SuggestBuyCarton = int(suggestBuyCarton.Int64)
 		}
 		if approvedBuyQty.Valid {
 			item.ApprovedBuyQty = approvedBuyQty.Float64
