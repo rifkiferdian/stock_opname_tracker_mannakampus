@@ -240,10 +240,17 @@
 
                             <center>
                             <div class="toolbar-actions">
+                                {{ if .HasTodaySession }}
+                                <button type="button" class="inline-flex min-h-[46px] cursor-not-allowed items-center justify-center gap-2 rounded-xl bg-slate-300 px-4 py-2.5 text-sm font-extrabold text-slate-600" disabled title="Session hari ini sudah ada">
+                                    <i class="bx bx-plus"></i>
+                                    <span>Tambah Session Baru</span>
+                                </button>
+                                {{ else }}
                                 <a href="{{ .CreateURL }}" class="inline-flex min-h-[46px] items-center justify-center gap-2 rounded-xl bg-[#f26419] px-4 py-2.5 text-sm font-extrabold text-white transition hover:bg-[#de5b16]">
                                     <i class="bx bx-plus"></i>
                                     <span>Tambah Session Baru</span>
                                 </a>
+                                {{ end }}
                             </div>
                             </center>
                         </div>
@@ -424,10 +431,17 @@
                                     </div>
                                     <h3 class="mt-4 text-lg font-extrabold text-[#153e8a]">Belum ada session untuk supplier ini</h3>
                                     <p class="mt-2 text-sm font-medium text-slate-500">Checker bisa langsung membuat sesi baru dari halaman supplier ini.</p>
+                                    {{ if .HasTodaySession }}
+                                    <button type="button" class="mt-5 inline-flex min-h-[48px] cursor-not-allowed items-center gap-2 rounded-xl bg-slate-300 px-5 py-3 text-sm font-extrabold text-slate-600" disabled title="Session hari ini sudah ada">
+                                        <i class="bx bx-plus"></i>
+                                        <span>Buat Session Baru</span>
+                                    </button>
+                                    {{ else }}
                                     <a href="{{ .CreateURL }}" class="mt-5 inline-flex min-h-[48px] items-center gap-2 rounded-xl bg-[#f26419] px-5 py-3 text-sm font-extrabold text-white transition hover:bg-[#de5b16]">
                                         <i class="bx bx-plus"></i>
                                         <span>Buat Session Baru</span>
                                     </a>
+                                    {{ end }}
                                 </div>
                             </div>
                             {{ end }}

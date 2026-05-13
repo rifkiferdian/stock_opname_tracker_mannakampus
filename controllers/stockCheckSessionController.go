@@ -420,6 +420,10 @@ func StockCheckSessionReviewItemUpdate(c *gin.Context) {
 		return
 	}
 	if !hasStoreAccess {
+		if redirectTo := sanitizeRedirectTarget(c.PostForm("redirect_to")); redirectTo != "" {
+			c.Redirect(http.StatusSeeOther, appendRedirectMessage(redirectTo, "error", "Anda Tidak punya Akses di Halaman ini"))
+			return
+		}
 		c.HTML(http.StatusForbidden, "error.html", gin.H{
 			"code_error": 3,
 			"error":      "Anda Tidak punya Akses di Halaman ini",
@@ -1019,6 +1023,28 @@ func renderStockCheckCheckerDetailPage(c *gin.Context, supplierService *services
 		accessibleSessions = append(accessibleSessions, session)
 	}
 
+	todayKey := time.Now().Format("2006-01-02")
+	hasTodaySession := false
+	todayFilter := models.StockCheckSessionListFilter{
+		SupplierID: supplierID,
+		DateFrom:   todayKey,
+		DateTo:     todayKey,
+		Page:       1,
+		Limit:      200,
+	}
+	todaySessionsRaw, _, err := sessionService.GetSessions(todayFilter)
+	if err != nil {
+		c.String(http.StatusInternalServerError, err.Error())
+		return
+	}
+	for _, session := range todaySessionsRaw {
+		if !isStoreAccessible(allowedStoreSet, session.StoreID) {
+			continue
+		}
+		hasTodaySession = true
+		break
+	}
+
 	totalItems := len(accessibleSessions)
 	totalPages := 0
 	if totalItems > 0 {
@@ -1067,6 +1093,7 @@ func renderStockCheckCheckerDetailPage(c *gin.Context, supplierService *services
 		"CurrentPath": c.Request.URL.Path,
 		"CurrentURL":  currentURL,
 		"CreateURL":   buildStockCheckCheckerSessionCreatePageURL(supplierID, currentURL),
+		"HasTodaySession": hasTodaySession,
 	})
 }
 
