@@ -32,7 +32,11 @@ func (r *DashboardRepository) GetBuyerDashboardMetrics(userID int, currentDate s
 			) AS active_supplier_count,
 			COALESCE(SUM(
 				CASE
-					WHEN si.status IN ('draft', 'submitted', 'reviewed') THEN si.suggest_buy_qty * COALESCE(
+					WHEN si.status IN ('draft', 'submitted', 'reviewed') THEN (
+						COALESCE(si.suggest_buy_carton, 0) * COALESCE((SELECT pconv.pcs_per_carton FROM products pconv WHERE pconv.id = si.product_id LIMIT 1), 0) +
+						COALESCE(si.suggest_buy_box, 0) * COALESCE((SELECT pconv.pcs_per_box FROM products pconv WHERE pconv.id = si.product_id LIMIT 1), 0) +
+						COALESCE(si.suggest_buy_pcs, 0)
+					) * COALESCE(
 						(
 							SELECT ps.last_price
 							FROM product_suppliers ps
@@ -208,7 +212,11 @@ func (r *DashboardRepository) GetBuyerPriorityItems(userID int, limit int) ([]mo
 			si.status,
 			COALESCE(si.total_qty, 0) AS physical_qty,
 			COALESCE(si.system_qty_store + si.system_qty_warehouse, 0) AS system_qty,
-			COALESCE(si.suggest_buy_qty, 0) AS suggest_buy_qty,
+			(
+				COALESCE(si.suggest_buy_carton, 0) * COALESCE(p.pcs_per_carton, 0) +
+				COALESCE(si.suggest_buy_box, 0) * COALESCE(p.pcs_per_box, 0) +
+				COALESCE(si.suggest_buy_pcs, 0)
+			) AS suggest_qty,
 			COALESCE(
 				(
 					SELECT ps.last_price
@@ -271,7 +279,11 @@ func (r *DashboardRepository) GetBuyerPriorityItems(userID int, limit int) ([]mo
 				WHEN 'overstock' THEN 4
 				ELSE 5
 			END,
-			(COALESCE(si.suggest_buy_qty, 0) * COALESCE(
+			((
+				COALESCE(si.suggest_buy_carton, 0) * COALESCE(p.pcs_per_carton, 0) +
+				COALESCE(si.suggest_buy_box, 0) * COALESCE(p.pcs_per_box, 0) +
+				COALESCE(si.suggest_buy_pcs, 0)
+			) * COALESCE(
 				(
 					SELECT ps.last_price
 					FROM product_suppliers ps
@@ -470,7 +482,11 @@ func (r *DashboardRepository) GetBuyerSupplierQueues(userID int, limit int) ([]m
 			COUNT(DISTINCT scs.id) AS open_sessions,
 			COALESCE(SUM(CASE WHEN si.condition_status IN ('empty_rack', 'missing', 'damaged') THEN 1 ELSE 0 END), 0) AS critical_items,
 			COALESCE(SUM(
-				si.suggest_buy_qty * COALESCE(
+				(
+					COALESCE(si.suggest_buy_carton, 0) * COALESCE((SELECT pconv.pcs_per_carton FROM products pconv WHERE pconv.id = si.product_id LIMIT 1), 0) +
+					COALESCE(si.suggest_buy_box, 0) * COALESCE((SELECT pconv.pcs_per_box FROM products pconv WHERE pconv.id = si.product_id LIMIT 1), 0) +
+					COALESCE(si.suggest_buy_pcs, 0)
+				) * COALESCE(
 					(
 						SELECT ps.last_price
 						FROM product_suppliers ps
@@ -591,7 +607,11 @@ func (r *DashboardRepository) GetBuyerSessionQueues(userID int, limit int) ([]mo
 			COALESCE(SUM(CASE WHEN si.status = 'rejected' THEN 1 ELSE 0 END), 0) AS rejected_items,
 			COALESCE(SUM(
 				CASE
-					WHEN si.status IN ('draft', 'submitted', 'reviewed') THEN si.suggest_buy_qty * COALESCE(
+					WHEN si.status IN ('draft', 'submitted', 'reviewed') THEN (
+						COALESCE(si.suggest_buy_carton, 0) * COALESCE((SELECT pconv.pcs_per_carton FROM products pconv WHERE pconv.id = si.product_id LIMIT 1), 0) +
+						COALESCE(si.suggest_buy_box, 0) * COALESCE((SELECT pconv.pcs_per_box FROM products pconv WHERE pconv.id = si.product_id LIMIT 1), 0) +
+						COALESCE(si.suggest_buy_pcs, 0)
+					) * COALESCE(
 						(
 							SELECT ps.last_price
 							FROM product_suppliers ps

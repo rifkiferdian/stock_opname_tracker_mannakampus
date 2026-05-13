@@ -94,7 +94,11 @@ func (r *StockCheckSessionRepository) GetReviewItems(sessionID int) ([]models.St
 			si.qty_warehouse,
 			si.total_qty,
 			(si.system_qty_store + si.system_qty_warehouse) AS system_total_qty,
-			si.suggest_buy_qty,
+			(
+				COALESCE(si.suggest_buy_carton, 0) * COALESCE(p.pcs_per_carton, 0) +
+				COALESCE(si.suggest_buy_box, 0) * COALESCE(p.pcs_per_box, 0) +
+				COALESCE(si.suggest_buy_pcs, 0)
+			) AS suggest_qty,
 			COALESCE(si.approved_buy_qty, 0) AS approved_buy_qty,
 			COALESCE(sel.supplier_name, sessup.supplier_name, '') AS selected_supplier_name,
 			COALESCE(si.checker_notes, '') AS checker_notes,
@@ -710,7 +714,11 @@ func (r *StockCheckSessionRepository) GetCheckerInputItems(sessionID int, storeI
 			COALESCE(si.suggest_buy_carton, 0) AS suggest_buy_carton,
 			COALESCE(si.suggest_buy_box, 0) AS suggest_buy_box,
 			COALESCE(si.suggest_buy_pcs, 0) AS suggest_buy_pcs,
-			COALESCE(si.suggest_buy_qty, 0) AS suggest_buy_qty,
+			(
+				COALESCE(si.suggest_buy_carton, 0) * COALESCE(p.pcs_per_carton, 0) +
+				COALESCE(si.suggest_buy_box, 0) * COALESCE(p.pcs_per_box, 0) +
+				COALESCE(si.suggest_buy_pcs, 0)
+			) AS suggest_qty,
 			COALESCE(si.status, 'draft') AS status
 		FROM stock_check_session_items si
 		INNER JOIN products p ON p.id = si.product_id
@@ -982,7 +990,7 @@ func (r *StockCheckSessionRepository) UpdateCheckerItemSuggest(sessionID int, it
 		return fmt.Errorf("produk ini belum memiliki konversi pcs per box")
 	}
 
-	suggestQty, err := computeStockCheckQtyInPcs(suggestCarton, suggestBox, suggestPcs, pcsPerBox, pcsPerCarton)
+	_, err = computeStockCheckQtyInPcs(suggestCarton, suggestBox, suggestPcs, pcsPerBox, pcsPerCarton)
 	if err != nil {
 		return err
 	}
@@ -992,10 +1000,9 @@ func (r *StockCheckSessionRepository) UpdateCheckerItemSuggest(sessionID int, it
 			suggest_buy_carton = ?,
 			suggest_buy_box = ?,
 			suggest_buy_pcs = ?,
-			suggest_buy_qty = ?,
 			updated_by = ?
 		WHERE stock_check_session_id = ? AND id = ?
-	`, suggestCarton, suggestBox, suggestPcs, suggestQty, updatedBy, sessionID, itemID)
+	`, suggestCarton, suggestBox, suggestPcs, updatedBy, sessionID, itemID)
 	if err != nil {
 		return err
 	}

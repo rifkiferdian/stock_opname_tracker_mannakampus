@@ -535,12 +535,17 @@ func (r *ProductRepository) GetStockHistory(productID int, limit int, offset int
 			COALESCE(si.qty_warehouse_pcs, 0) AS qty_warehouse_pcs,
 			si.qty_warehouse,
 			((si.qty_store + si.qty_warehouse) - (si.system_qty_store + si.system_qty_warehouse)) AS discrepancy,
-			si.suggest_buy_qty,
+			(
+				COALESCE(si.suggest_buy_carton, 0) * COALESCE(p.pcs_per_carton, 0) +
+				COALESCE(si.suggest_buy_box, 0) * COALESCE(p.pcs_per_box, 0) +
+				COALESCE(si.suggest_buy_pcs, 0)
+			) AS suggest_qty,
 			COALESCE(si.approved_buy_qty, 0) AS approved_buy_qty,
 			COALESCE(si.checker_notes, '') AS checker_notes,
 			si.status
 		FROM stock_check_session_items si
 		INNER JOIN stock_check_sessions scs ON scs.id = si.stock_check_session_id
+		INNER JOIN products p ON p.id = si.product_id
 		INNER JOIN stores st ON st.store_id = scs.store_id
 		LEFT JOIN users u ON u.id = si.created_by
 		WHERE si.product_id = ?

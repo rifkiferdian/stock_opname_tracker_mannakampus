@@ -170,7 +170,11 @@ func (r *StockOpnameReportRepository) GetReportRecords(supplierID int, status st
 			COALESCE(si.suggest_buy_carton, 0) AS suggest_buy_carton,
 			COALESCE(si.suggest_buy_box, 0) AS suggest_buy_box,
 			COALESCE(si.suggest_buy_pcs, 0) AS suggest_buy_pcs,
-			COALESCE(si.suggest_buy_qty, 0) AS suggest_buy_qty,
+			(
+				COALESCE(si.suggest_buy_carton, 0) * COALESCE(p.pcs_per_carton, 0) +
+				COALESCE(si.suggest_buy_box, 0) * COALESCE(p.pcs_per_box, 0) +
+				COALESCE(si.suggest_buy_pcs, 0)
+			) AS suggest_qty,
 			COALESCE(si.approved_buy_qty, 0) AS approved_buy_qty,
 			COALESCE(si.status, '') AS status,
 			COALESCE(si.condition_status, '') AS condition_status,
