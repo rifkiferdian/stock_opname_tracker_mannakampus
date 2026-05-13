@@ -82,7 +82,7 @@ func (s *StockOpnameReportService) GetDetailPage(supplierID int, filter models.S
 		return models.StockOpnameReportPage{}, err
 	}
 
-	sessionDates, err := s.Repo.GetDistinctSessionDates(supplierID, 13)
+	sessionDates, err := s.Repo.GetDistinctSessionDates(supplierID, 21)
 	if err != nil {
 		return models.StockOpnameReportPage{}, err
 	}
@@ -135,7 +135,7 @@ func (s *StockOpnameReportService) GetDetailPage(supplierID int, filter models.S
 		return models.StockOpnameReportPage{}, err
 	}
 
-	poTrendStart := time.Date(currentDate.Year(), currentDate.Month(), 1, 0, 0, 0, 0, currentDate.Location()).AddDate(0, -5, 0)
+	poTrendStart := time.Date(currentDate.Year(), currentDate.Month(), 1, 0, 0, 0, 0, currentDate.Location()).AddDate(0, -12, 0)
 	poMonthlyRecords, err := s.Repo.GetProductMonthlyPORecords(supplierID, filter.Status, currentDate, poTrendStart)
 	if err != nil {
 		return models.StockOpnameReportPage{}, err
@@ -150,7 +150,7 @@ func (s *StockOpnameReportService) GetDetailPage(supplierID int, filter models.S
 	page.ApplyAllSubmittedCount = summaryMetrics.SubmittedItems
 
 	anchorDate := currentDate
-	monthlyCounts, err := s.Repo.GetMonthlyApprovalCounts(supplierID, time.Date(anchorDate.Year(), anchorDate.Month(), 1, 0, 0, 0, 0, anchorDate.Location()).AddDate(0, -11, 0))
+	monthlyCounts, err := s.Repo.GetMonthlyApprovalCounts(supplierID, time.Date(anchorDate.Year(), anchorDate.Month(), 1, 0, 0, 0, 0, anchorDate.Location()).AddDate(0, -12, 0))
 	if err != nil {
 		return models.StockOpnameReportPage{}, err
 	}
@@ -313,8 +313,8 @@ func buildStockOpnameReportRows(records []repositories.StockOpnameReportRecord, 
 			row.POTrendLabelsJSON = mustMarshalStockOpnameReportJSON(trend.Labels)
 			row.POTrendTotalLabel = reportFormatWholeNumber(sumStockOpnameTrendValues(trend.Values))
 		} else {
-			row.POTrendSeriesJSON = "[0,0,0,0,0,0]"
-			row.POTrendLabelsJSON = `["-","-","-","-","-","-"]`
+			row.POTrendSeriesJSON = "[0,0,0,0,0,0,0,0,0,0,0,0,0]"
+			row.POTrendLabelsJSON = `["-","-","-","-","-","-","-","-","-","-","-","-","-"]`
 			row.POTrendTotalLabel = "0"
 		}
 
@@ -388,13 +388,13 @@ func buildStockOpnameReportRows(records []repositories.StockOpnameReportRecord, 
 }
 
 func buildStockOpnameProductMonthlyPOTrendMap(records []repositories.StockOpnameProductMonthlyPORecord, anchorDate time.Time) map[int]stockOpnamePOMonthlyTrend {
-	monthKeys := make([]string, 0, 6)
-	labels := make([]string, 0, 6)
-	startMonth := time.Date(anchorDate.Year(), anchorDate.Month(), 1, 0, 0, 0, 0, anchorDate.Location()).AddDate(0, -5, 0)
-	for offset := 0; offset < 6; offset++ {
+	monthKeys := make([]string, 0, 13)
+	labels := make([]string, 0, 13)
+	startMonth := time.Date(anchorDate.Year(), anchorDate.Month(), 1, 0, 0, 0, 0, anchorDate.Location()).AddDate(0, -12, 0)
+	for offset := 0; offset < 13; offset++ {
 		currentMonth := startMonth.AddDate(0, offset, 0)
 		monthKeys = append(monthKeys, currentMonth.Format("2006-01"))
-		labels = append(labels, currentMonth.Format("Jan"))
+		labels = append(labels, currentMonth.Format("Jan 06"))
 	}
 
 	valuesByProduct := make(map[int]map[string]float64)
@@ -505,10 +505,10 @@ func buildStockOpnameReportTrendBars(anchorDate time.Time, counts map[string]flo
 		anchorDate = time.Now()
 	}
 
-	start := time.Date(anchorDate.Year(), anchorDate.Month(), 1, 0, 0, 0, 0, anchorDate.Location()).AddDate(0, -11, 0)
-	series := make([]float64, 0, 12)
+	start := time.Date(anchorDate.Year(), anchorDate.Month(), 1, 0, 0, 0, 0, anchorDate.Location()).AddDate(0, -12, 0)
+	series := make([]float64, 0, 13)
 	maxValue := 0.0
-	for offset := 0; offset < 12; offset++ {
+	for offset := 0; offset < 13; offset++ {
 		currentMonth := start.AddDate(0, offset, 0)
 		monthKey := currentMonth.Format("2006-01")
 		value := counts[monthKey]
@@ -521,7 +521,7 @@ func buildStockOpnameReportTrendBars(anchorDate time.Time, counts map[string]flo
 		maxValue = 1.0
 	}
 
-	bars := make([]models.StockOpnameReportTrendBar, 0, 12)
+	bars := make([]models.StockOpnameReportTrendBar, 0, 13)
 	for offset, value := range series {
 		currentMonth := start.AddDate(0, offset, 0)
 		height := 18 + int(math.Round((value/maxValue)*72))
