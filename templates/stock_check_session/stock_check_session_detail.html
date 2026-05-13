@@ -346,9 +346,22 @@
             }
 
             .item-title {
-                font-size: 0.9rem;
+                font-size: 0.74rem;
                 font-weight: 800;
                 color: #10204a;
+            }
+
+            .item-title-button {
+                cursor: pointer;
+                border: 0;
+                background: transparent;
+                padding: 0;
+                text-align: left;
+                transition: color 0.2s ease;
+            }
+
+            .item-title-button:hover {
+                color: #f26419;
             }
 
             .item-subtitle {
@@ -360,7 +373,7 @@
 
             .qty-grid {
                 display: grid;
-                grid-template-columns: repeat(3, minmax(0, 1fr));
+                grid-template-columns: repeat(2, minmax(0, 1fr));
                 gap: 0.5rem;
                 min-width: 9rem;
             }
@@ -1041,7 +1054,7 @@
                                     </div>
 
                                     <div class="shrink-0">
-                                        <span class="headline-badge {{ .Session.StatusBadgeClass }}">{{ .Session.StatusLabel }}</span>
+                                        <span class="headline-badge {{ .Session.StatusBadgeClass }}">{{ .Session.StatusLabel }}</span><br><br>
                                         <p class="headline-time">
                                             Opened:
                                             <strong>{{ .Session.CreatedAtDisplay }}</strong>
@@ -1057,8 +1070,8 @@
                             </article>
 
                             <article class="panel-card metric-card">
-                                <p class="metric-label">Suggested Purchase Value</p>
-                                <p class="metric-value">{{ .Session.SuggestedPurchaseValueDisplay }}</p>
+                                <p class="metric-label">Total Approved Buy Qty</p>
+                                <p class="metric-value">{{ .Session.TotalApprovedQtyDisplay }}</p>
 
                                 <div class="metric-grid">
                                     <div>
@@ -1078,10 +1091,6 @@
                                 <button type="button" class="tool-button neutral">
                                     <i class="bx bx-filter-alt"></i>
                                     Filter Items
-                                </button>
-                                <button type="button" class="tool-button neutral">
-                                    <i class="bx bx-export"></i>
-                                    Export
                                 </button>
                             </div>
 
@@ -1106,7 +1115,6 @@
                                             <th>Suggested</th>
                                             <th>Final Approve</th>
                                             <th>Status</th>
-                                            <th>Aksi</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -1116,7 +1124,16 @@
                                                 <div class="item-cell">
                                                     <!-- <span class="item-avatar" style="background: {{ .ProductAvatarClass }};">{{ .ProductInitials }}</span> -->
                                                     <div class="min-w-0">
-                                                        <p class="item-title">{{ .ProductName }}</p>
+                                                        <button
+                                                            type="button"
+                                                            class="item-title item-title-button btn-edit-review"
+                                                            data-item-id="{{ .ID }}"
+                                                            data-product-name="{{ .ProductName }}"
+                                                            data-approved-buy-qty="{{ if eq .Status "rejected" }}0{{ else if gt .ApprovedBuyQty 0.0 }}{{ .ApprovedBuyQty }}{{ else }}{{ .SuggestBuyQty }}{{ end }}"
+                                                            data-buyer-notes="{{ .BuyerNotes }}"
+                                                        >
+                                                            {{ .ProductName }}
+                                                        </button>
                                                         <p class="item-subtitle">
                                                             SKU: {{ .ProductCode }}{{ if .Brand }} • {{ .Brand }}{{ end }}
                                                         </p>
@@ -1148,25 +1165,10 @@
                                             <td>
                                                 <span class="status-pill {{ .StatusBadgeClass }}">{{ .StatusLabel }}</span>
                                             </td>
-                                            <td>
-                                                <div class="action-buttons">
-                                                    <button
-                                                        type="button"
-                                                        class="item-edit-button btn-edit-review"
-                                                        data-item-id="{{ .ID }}"
-                                                        data-product-name="{{ .ProductName }}"
-                                                        data-approved-buy-qty="{{ if eq .Status "rejected" }}0{{ else if gt .ApprovedBuyQty 0.0 }}{{ .ApprovedBuyQty }}{{ else }}{{ .SuggestBuyQty }}{{ end }}"
-                                                        data-buyer-notes="{{ .BuyerNotes }}"
-                                                    >
-                                                        <i class="bx bx-edit-alt"></i>
-                                                        Edit
-                                                    </button>
-                                                </div>
-                                            </td>
                                         </tr>
                                         {{ else }}
                                         <tr>
-                                            <td colspan="6" class="px-5 py-12 text-center">
+                                            <td colspan="5" class="px-5 py-12 text-center">
                                                 <div class="mx-auto max-w-md">
                                                     <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 text-slate-400">
                                                         <i class="bx bx-clipboard text-3xl"></i>
@@ -1193,41 +1195,6 @@
                                     </div>
                                 </div>
 
-                                {{ if gt .Pagination.TotalPages 0 }}
-                                <div class="session-pagination">
-                                    {{ if .Pagination.HasPrev }}
-                                    <a href="{{ .Pagination.PrevURL }}" class="session-pagination-link icon">
-                                        <i class="bx bx-chevron-left text-lg"></i>
-                                    </a>
-                                    {{ else }}
-                                    <span class="session-pagination-link icon text-slate-300">
-                                        <i class="bx bx-chevron-left text-lg"></i>
-                                    </span>
-                                    {{ end }}
-
-                                    {{ range .Pagination.Pages }}
-                                        {{ if .Active }}
-                                        <a href="{{ .URL }}" class="session-pagination-link active">
-                                            {{ .Number }}
-                                        </a>
-                                        {{ else }}
-                                        <a href="{{ .URL }}" class="session-pagination-link">
-                                            {{ .Number }}
-                                        </a>
-                                        {{ end }}
-                                    {{ end }}
-
-                                    {{ if .Pagination.HasNext }}
-                                    <a href="{{ .Pagination.NextURL }}" class="session-pagination-link icon">
-                                        <i class="bx bx-chevron-right text-lg"></i>
-                                    </a>
-                                    {{ else }}
-                                    <span class="session-pagination-link icon text-slate-300">
-                                        <i class="bx bx-chevron-right text-lg"></i>
-                                    </span>
-                                    {{ end }}
-                                </div>
-                                {{ end }}
                             </div>
                         </section>
 

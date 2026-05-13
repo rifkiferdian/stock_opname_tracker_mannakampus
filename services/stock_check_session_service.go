@@ -76,9 +76,7 @@ func (s *StockCheckSessionService) GetSessionDetailPage(id int, page int, limit 
 	if page <= 0 {
 		page = 1
 	}
-	if limit <= 0 {
-		limit = 100
-	}
+	disablePagination := limit <= 0
 
 	session, err := s.Repo.GetByID(id)
 	if err != nil {
@@ -92,7 +90,12 @@ func (s *StockCheckSessionService) GetSessionDetailPage(id int, page int, limit 
 
 	totalItems := len(items)
 	totalPages := 0
-	if totalItems > 0 {
+	if disablePagination {
+		page = 1
+		if totalItems > 0 {
+			totalPages = 1
+		}
+	} else if totalItems > 0 {
 		totalPages = (totalItems + limit - 1) / limit
 		if page > totalPages {
 			page = totalPages
@@ -100,7 +103,7 @@ func (s *StockCheckSessionService) GetSessionDetailPage(id int, page int, limit 
 	}
 
 	pagedItems := items
-	if totalItems > 0 {
+	if !disablePagination && totalItems > 0 {
 		startIndex := (page - 1) * limit
 		endIndex := startIndex + limit
 		if endIndex > totalItems {
@@ -144,7 +147,7 @@ func (s *StockCheckSessionService) GetSessionDetailPage(id int, page int, limit 
 
 	detail.DistinctSupplierCount = len(distinctSuppliers)
 	detail.TotalSuggestedQtyDisplay = formatStockCheckSessionDecimal(detail.TotalSuggestedQty)
-	detail.TotalApprovedQtyDisplay = formatStockCheckSessionDecimal(detail.TotalApprovedQty)
+	detail.TotalApprovedQtyDisplay = formatStockCheckSessionWholeNumber(detail.TotalApprovedQty)
 	detail.SuggestedPurchaseValueDisplay = formatStockCheckSessionCurrency(detail.SuggestedPurchaseValue)
 	detail.FinalApprovedValueDisplay = formatStockCheckSessionCurrency(detail.FinalApprovedValue)
 	if detail.SuggestedPurchaseValue > 0 {
@@ -697,6 +700,10 @@ func buildStockCheckSessionOverviewCards(detail models.StockCheckSessionDetail, 
 
 func formatStockCheckSessionDecimal(value float64) string {
 	return fmt.Sprintf("%0.2f", value)
+}
+
+func formatStockCheckSessionWholeNumber(value float64) string {
+	return fmt.Sprintf("%.0f", value)
 }
 
 func formatStockCheckSessionCurrency(value float64) string {

@@ -18,7 +18,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-const stockCheckSessionDetailItemLimit = 100
+const stockCheckSessionDetailItemLimit = 0
 
 func StockCheckCheckerSupplierIndex(c *gin.Context) {
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
@@ -1294,7 +1294,7 @@ func renderStockCheckCheckerSessionScanPage(c *gin.Context, service *services.St
 }
 
 func renderStockCheckSessionDetailPage(c *gin.Context, service *services.StockCheckSessionService, id int, successMessage string, errorMessage string, reviewForm models.StockCheckSessionReviewItemEditForm) {
-	currentPage := parsePositiveInt(c.Query("page"), 1)
+	currentPage := 1
 	pageData, err := service.GetSessionDetailPage(id, currentPage, stockCheckSessionDetailItemLimit)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
