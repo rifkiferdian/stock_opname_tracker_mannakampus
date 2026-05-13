@@ -15,11 +15,11 @@ type StockCheckSessionRepository struct {
 }
 
 type StockCheckLatestSubmittedItem struct {
-	SessionID      int
-	ItemID         int
+	SessionID        int
+	ItemID           int
 	SuggestBuyCarton int
-	ApprovedBuyQty float64
-	BuyerNotes     string
+	ApprovedBuyQty   float64
+	BuyerNotes       string
 }
 
 func (r *StockCheckSessionRepository) GetAll(filter models.StockCheckSessionListFilter) ([]models.StockCheckSession, error) {
@@ -90,7 +90,13 @@ func (r *StockCheckSessionRepository) GetReviewItems(sessionID int) ([]models.St
 			p.product_name,
 			COALESCE(p.brand, '') AS brand,
 			COALESCE(un.unit_name, '') AS unit_name,
+			COALESCE(si.qty_store_carton, 0) AS qty_store_carton,
+			COALESCE(si.qty_store_box, 0) AS qty_store_box,
+			COALESCE(si.qty_store_pcs, 0) AS qty_store_pcs,
 			si.qty_store,
+			COALESCE(si.qty_warehouse_carton, 0) AS qty_warehouse_carton,
+			COALESCE(si.qty_warehouse_box, 0) AS qty_warehouse_box,
+			COALESCE(si.qty_warehouse_pcs, 0) AS qty_warehouse_pcs,
 			si.qty_warehouse,
 			si.total_qty,
 			(si.system_qty_store + si.system_qty_warehouse) AS system_total_qty,
@@ -99,6 +105,9 @@ func (r *StockCheckSessionRepository) GetReviewItems(sessionID int) ([]models.St
 				COALESCE(si.suggest_buy_box, 0) * COALESCE(p.pcs_per_box, 0) +
 				COALESCE(si.suggest_buy_pcs, 0)
 			) AS suggest_qty,
+			COALESCE(si.suggest_buy_carton, 0) AS suggest_buy_carton,
+			COALESCE(si.suggest_buy_box, 0) AS suggest_buy_box,
+			COALESCE(si.suggest_buy_pcs, 0) AS suggest_buy_pcs,
 			COALESCE(si.approved_buy_qty, 0) AS approved_buy_qty,
 			COALESCE(sel.supplier_name, sessup.supplier_name, '') AS selected_supplier_name,
 			COALESCE(si.checker_notes, '') AS checker_notes,
@@ -167,11 +176,20 @@ func (r *StockCheckSessionRepository) GetReviewItems(sessionID int) ([]models.St
 			&item.ProductName,
 			&item.Brand,
 			&item.UnitName,
+			&item.QtyStoreCarton,
+			&item.QtyStoreBox,
+			&item.QtyStorePcs,
 			&qtyStore,
+			&item.QtyWarehouseCarton,
+			&item.QtyWarehouseBox,
+			&item.QtyWarehousePcs,
 			&qtyWarehouse,
 			&totalQty,
 			&systemTotalQty,
 			&suggestQty,
+			&item.SuggestBuyCarton,
+			&item.SuggestBuyBox,
+			&item.SuggestBuyPcs,
 			&approvedQty,
 			&item.SelectedSupplierName,
 			&item.CheckerNotes,
@@ -220,10 +238,17 @@ func (r *StockCheckSessionRepository) GetReviewItems(sessionID int) ([]models.St
 		}
 		item.ProductAvatarClass = stockCheckSessionProductAvatarClass(item.ProductName)
 		item.QtyStoreDisplay = formatStockCheckWholeNumber(item.QtyStore)
+		item.QtyStoreBreakdownDisplay = formatStockCheckUnitBreakdownShort(item.QtyStoreCarton, item.QtyStoreBox, item.QtyStorePcs)
 		item.QtyWarehouseDisplay = formatStockCheckWholeNumber(item.QtyWarehouse)
+		item.QtyWarehouseBreakdownDisplay = formatStockCheckUnitBreakdownShort(item.QtyWarehouseCarton, item.QtyWarehouseBox, item.QtyWarehousePcs)
+		item.TotalQtyCarton = item.QtyStoreCarton + item.QtyWarehouseCarton
+		item.TotalQtyBox = item.QtyStoreBox + item.QtyWarehouseBox
+		item.TotalQtyPcs = item.QtyStorePcs + item.QtyWarehousePcs
 		item.TotalQtyDisplay = formatStockCheckWholeNumber(item.TotalQty)
+		item.TotalQtyBreakdownDisplay = formatStockCheckUnitBreakdownShort(item.TotalQtyCarton, item.TotalQtyBox, item.TotalQtyPcs)
 		item.SystemTotalQtyDisplay = formatStockCheckWholeNumber(item.SystemTotalQty)
 		item.SuggestBuyQtyDisplay = formatStockCheckWholeNumber(item.SuggestBuyQty)
+		item.SuggestBuyBreakdownDisplay = formatStockCheckUnitBreakdownShort(item.SuggestBuyCarton, item.SuggestBuyBox, item.SuggestBuyPcs)
 		item.ApprovedBuyQtyDisplay = formatStockCheckWholeNumber(item.ApprovedBuyQty)
 		item.SuggestLineValue = item.SuggestBuyQty * linePrice
 		item.ApprovedLineValue = item.ApprovedBuyQty * linePrice
@@ -612,9 +637,58 @@ func (r *StockCheckSessionRepository) GetLatestSubmittedItemsBySupplier(supplier
 	items := make([]StockCheckLatestSubmittedItem, 0)
 	for rows.Next() {
 		var (
-			item           StockCheckLatestSubmittedItem
+			item             StockCheckLatestSubmittedItem
 			suggestBuyCarton sql.NullInt64
-			approvedBuyQty sql.NullFloat64
+			approvedBuyQty   sql.NullFloat64
+		)
+
+		if err := rows.Scan(
+			&item.SessionID,
+			&item.ItemID,
+			&suggestBuyCarton,
+			&approvedBuyQty,
+			&item.BuyerNotes,
+		); err != nil {
+			return nil, err
+		}
+
+		if suggestBuyCarton.Valid {
+			item.SuggestBuyCarton = int(suggestBuyCarton.Int64)
+		}
+		if approvedBuyQty.Valid {
+			item.ApprovedBuyQty = approvedBuyQty.Float64
+		}
+
+		items = append(items, item)
+	}
+
+	return items, rows.Err()
+}
+
+func (r *StockCheckSessionRepository) GetSubmittedItemsBySession(sessionID int) ([]StockCheckLatestSubmittedItem, error) {
+	rows, err := r.DB.Query(`
+		SELECT
+			si.stock_check_session_id,
+			si.id,
+			COALESCE(si.suggest_buy_carton, 0) AS suggest_buy_carton,
+			COALESCE(si.approved_buy_qty, 0) AS approved_buy_qty,
+			COALESCE(si.buyer_notes, '') AS buyer_notes
+		FROM stock_check_session_items si
+		WHERE si.stock_check_session_id = ?
+			AND si.status = 'submitted'
+		ORDER BY si.id ASC
+	`, sessionID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	items := make([]StockCheckLatestSubmittedItem, 0)
+	for rows.Next() {
+		var (
+			item             StockCheckLatestSubmittedItem
+			suggestBuyCarton sql.NullInt64
+			approvedBuyQty   sql.NullFloat64
 		)
 
 		if err := rows.Scan(
@@ -1240,6 +1314,10 @@ func formatStockCheckUnitBreakdown(carton int, box int, pcs int) string {
 		return "0 pcs"
 	}
 	return strings.Join(parts, " ")
+}
+
+func formatStockCheckUnitBreakdownShort(carton int, box int, pcs int) string {
+	return fmt.Sprintf("%dc - %db - %dp", carton, box, pcs)
 }
 
 func formatStockCheckConversion(pcsPerBox int, boxPerCarton int, pcsPerCarton int) string {

@@ -386,6 +386,20 @@
                 color: #18315f;
             }
 
+            .qty-box small,
+            .unit-breakdown-text {
+                display: block;
+                margin-top: 0.28rem;
+                font-size: 0.78rem;
+                font-weight: 800;
+                color: #2a3f69;
+                line-height: 1.35;
+            }
+
+            .unit-breakdown-text.orange {
+                color: var(--orange);
+            }
+
             .qty-hint {
                 margin-top: 0.65rem;
                 font-size: 0.7rem;
@@ -1072,10 +1086,13 @@
                             </div>
 
                             <div class="toolbar-group">
-                                <button type="button" class="tool-button emphasis">
-                                    <i class="bx bx-check-circle"></i>
-                                    Approve All
-                                </button>
+                                <form method="post" action="/stock-check-sessions/{{ .Session.ID }}/apply-all-submitted" onsubmit="return confirm('Apply semua item submitted di sesi ini dengan nilai suggest checker?');">
+                                    <input type="hidden" name="redirect_to" value="/stock-check-sessions/{{ .Session.ID }}{{ if gt .Pagination.CurrentPage 1 }}?page={{ .Pagination.CurrentPage }}{{ end }}">
+                                    <button type="submit" class="tool-button emphasis">
+                                        <i class="bx bx-check-circle"></i>
+                                        Approve All
+                                    </button>
+                                </form>
                             </div>
                         </section>
 
@@ -1085,10 +1102,9 @@
                                     <thead>
                                         <tr>
                                             <th>Item Details</th>
-                                            <th>Checker Qty<br>(Shop / Wh / Total)</th>
+                                            <th>Checker Qty<br>(Shop / Wh)</th>
                                             <th>Suggested</th>
                                             <th>Final Approve</th>
-                                            <th>Notes</th>
                                             <th>Status</th>
                                             <th>Aksi</th>
                                         </tr>
@@ -1098,7 +1114,7 @@
                                         <tr>
                                             <td>
                                                 <div class="item-cell">
-                                                    <span class="item-avatar" style="background: {{ .ProductAvatarClass }};">{{ .ProductInitials }}</span>
+                                                    <!-- <span class="item-avatar" style="background: {{ .ProductAvatarClass }};">{{ .ProductInitials }}</span> -->
                                                     <div class="min-w-0">
                                                         <p class="item-title">{{ .ProductName }}</p>
                                                         <p class="item-subtitle">
@@ -1111,37 +1127,23 @@
                                                 <div class="qty-grid">
                                                     <div class="qty-box">
                                                         <span>Shop</span>
-                                                        <strong>{{ .QtyStoreDisplay }}</strong>
+                                                        <small>{{ .QtyStoreBreakdownDisplay }}</small>
                                                     </div>
                                                     <div class="qty-box">
                                                         <span>Wh</span>
-                                                        <strong>{{ .QtyWarehouseDisplay }}</strong>
+                                                        <small>{{ .QtyWarehouseBreakdownDisplay }}</small>
                                                     </div>
-                                                    <div class="qty-box">
+                                                    <!-- <div class="qty-box">
                                                         <span>Total</span>
-                                                        <strong>{{ .TotalQtyDisplay }}</strong>
-                                                    </div>
+                                                        <small>{{ .TotalQtyBreakdownDisplay }}</small>
+                                                    </div> -->
                                                 </div>
                                             </td>
                                             <td>
-                                                <p class="focus-number orange">{{ .SuggestBuyQtyDisplay }}</p>
+                                                <small class="unit-breakdown-text orange">{{ .SuggestBuyBreakdownDisplay }}</small>
                                             </td>
                                             <td>
                                                 <span class="approve-pill {{ if eq .Status "rejected" }}rejected{{ end }}">{{ .ApprovedBuyQtyDisplay }}</span>
-                                            </td>
-                                            <td>
-                                                <div class="note-block">
-                                                    <p class="note-label">Checker</p>
-                                                    <span class="condition-pill {{ .ConditionBadgeClass }}">{{ .ConditionLabel }}</span>
-                                                    <p class="checker-copy">"{{ .CheckerNotes }}"</p>
-                                                    <div class="buyer-note {{ .BuyerNoteAccentClass }}">
-                                                        {{ if .BuyerNotes }}
-                                                            {{ .BuyerNotes }}
-                                                        {{ else }}
-                                                            No buyer note yet.
-                                                        {{ end }}
-                                                    </div>
-                                                </div>
                                             </td>
                                             <td>
                                                 <span class="status-pill {{ .StatusBadgeClass }}">{{ .StatusLabel }}</span>
@@ -1164,7 +1166,7 @@
                                         </tr>
                                         {{ else }}
                                         <tr>
-                                            <td colspan="7" class="px-5 py-12 text-center">
+                                            <td colspan="6" class="px-5 py-12 text-center">
                                                 <div class="mx-auto max-w-md">
                                                     <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 text-slate-400">
                                                         <i class="bx bx-clipboard text-3xl"></i>

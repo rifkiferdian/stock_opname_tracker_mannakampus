@@ -372,6 +372,40 @@ func (s *StockCheckSessionService) ApplyAllSubmittedLatestBySupplier(supplierID 
 	return appliedCount, nil
 }
 
+func (s *StockCheckSessionService) ApplyAllSubmittedBySession(sessionID int, reviewedBy int) (int, error) {
+	if sessionID <= 0 {
+		return 0, errors.New("session id tidak valid")
+	}
+	if reviewedBy <= 0 {
+		return 0, errors.New("user login tidak valid")
+	}
+
+	items, err := s.Repo.GetSubmittedItemsBySession(sessionID)
+	if err != nil {
+		return 0, err
+	}
+
+	appliedCount := 0
+	for _, item := range items {
+		approvedQty := float64(item.SuggestBuyCarton)
+
+		if err := s.UpdateReviewItem(models.StockCheckSessionReviewItemUpdateInput{
+			SessionID:      sessionID,
+			ItemID:         item.ItemID,
+			ApprovedBuyQty: approvedQty,
+			BuyerNotes:     item.BuyerNotes,
+			ReviewedBy:     reviewedBy,
+			UpdatedBy:      reviewedBy,
+		}); err != nil {
+			return appliedCount, err
+		}
+
+		appliedCount++
+	}
+
+	return appliedCount, nil
+}
+
 func (s *StockCheckSessionService) RecordCheckerScan(input models.StockCheckSessionCheckerScanInput) (int, error) {
 	input.Location = sanitizeStockCheckCheckerLocation(input.Location)
 	input.Barcode = strings.TrimSpace(input.Barcode)

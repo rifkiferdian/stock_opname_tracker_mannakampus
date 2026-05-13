@@ -487,6 +487,53 @@ func StockCheckSessionReviewItemUpdate(c *gin.Context) {
 	c.Redirect(http.StatusSeeOther, buildStockCheckSessionDetailPageURL(sessionID, parsePositiveInt(c.Query("page"), 1), "Item review berhasil diperbarui"))
 }
 
+func StockCheckSessionApplyAllSubmitted(c *gin.Context) {
+	sessionID, err := strconv.Atoi(c.Param("id"))
+	if err != nil || sessionID <= 0 {
+		c.String(http.StatusBadRequest, "invalid stock check session id")
+		return
+	}
+
+	service := buildStockCheckSessionService()
+	session, err := service.Repo.GetByID(sessionID)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			c.String(http.StatusNotFound, "stock check session tidak ditemukan")
+			return
+		}
+		c.String(http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	redirectTo := sanitizeRedirectTarget(c.PostForm("redirect_to"))
+	if redirectTo == "" {
+		redirectTo = buildStockCheckSessionDetailPageURL(sessionID, parsePositiveInt(c.Query("page"), 1), "")
+	}
+
+	hasStoreAccess, err := currentUserCanAccessStockCheckStore(c, service, session.StoreID)
+	if err != nil {
+		c.String(http.StatusInternalServerError, err.Error())
+		return
+	}
+	if !hasStoreAccess {
+		c.Redirect(http.StatusSeeOther, appendRedirectMessage(redirectTo, "error", "Anda Tidak punya Akses di Halaman ini"))
+		return
+	}
+
+	appliedCount, err := service.ApplyAllSubmittedBySession(sessionID, extractCurrentUserID(c))
+	if err != nil {
+		c.Redirect(http.StatusSeeOther, appendRedirectMessage(redirectTo, "error", err.Error()))
+		return
+	}
+
+	if appliedCount == 0 {
+		c.Redirect(http.StatusSeeOther, appendRedirectMessage(redirectTo, "success", "Tidak ada item submitted yang perlu di-apply"))
+		return
+	}
+
+	c.Redirect(http.StatusSeeOther, appendRedirectMessage(redirectTo, "success", fmt.Sprintf("%d item submitted berhasil di-apply", appliedCount)))
+}
+
 func StockCheckSessionStore(c *gin.Context) {
 	type stockCheckSessionForm struct {
 		SessionDate    string `form:"session_date" binding:"required"`
@@ -1078,21 +1125,21 @@ func renderStockCheckCheckerDetailPage(c *gin.Context, supplierService *services
 	currentURL := buildStockCheckCheckerDetailPageURL(supplierID, filter, filter.Page)
 
 	Render(c, "stock_check_checker_detail.html", gin.H{
-		"Title":       supplier.SupplierName,
-		"Page":        "stock_check_checker",
-		"Supplier":    supplier,
-		"Sessions":    sessions,
-		"Filters":     filter,
-		"Pagination":  pagination,
-		"TotalItems":  totalItems,
-		"Stores":      stores,
-		"Error":       errorMessage,
-		"Success":     successMessage,
-		"FormMode":    formMode,
-		"FormSession": formSession,
-		"CurrentPath": c.Request.URL.Path,
-		"CurrentURL":  currentURL,
-		"CreateURL":   buildStockCheckCheckerSessionCreatePageURL(supplierID, currentURL),
+		"Title":           supplier.SupplierName,
+		"Page":            "stock_check_checker",
+		"Supplier":        supplier,
+		"Sessions":        sessions,
+		"Filters":         filter,
+		"Pagination":      pagination,
+		"TotalItems":      totalItems,
+		"Stores":          stores,
+		"Error":           errorMessage,
+		"Success":         successMessage,
+		"FormMode":        formMode,
+		"FormSession":     formSession,
+		"CurrentPath":     c.Request.URL.Path,
+		"CurrentURL":      currentURL,
+		"CreateURL":       buildStockCheckCheckerSessionCreatePageURL(supplierID, currentURL),
 		"HasTodaySession": hasTodaySession,
 	})
 }
