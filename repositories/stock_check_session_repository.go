@@ -966,34 +966,6 @@ func (r *StockCheckSessionRepository) UpdateCheckerItemSuggest(sessionID int, it
 		}
 	}()
 
-	var (
-		pcsPerBox    int
-		pcsPerCarton int
-	)
-	err = tx.QueryRow(`
-		SELECT
-			COALESCE(p.pcs_per_box, 0) AS pcs_per_box,
-			COALESCE(p.pcs_per_carton, 0) AS pcs_per_carton
-		FROM stock_check_session_items si
-		INNER JOIN products p ON p.id = si.product_id
-		WHERE si.stock_check_session_id = ? AND si.id = ?
-		LIMIT 1
-	`, sessionID, itemID).Scan(&pcsPerBox, &pcsPerCarton)
-	if err != nil {
-		return err
-	}
-
-	if suggestCarton > 0 && pcsPerCarton <= 0 {
-		return fmt.Errorf("produk ini belum memiliki konversi pcs per carton")
-	}
-	if suggestBox > 0 && pcsPerBox <= 0 {
-		return fmt.Errorf("produk ini belum memiliki konversi pcs per box")
-	}
-
-	_, err = computeStockCheckQtyInPcs(suggestCarton, suggestBox, suggestPcs, pcsPerBox, pcsPerCarton)
-	if err != nil {
-		return err
-	}
 	_, err = tx.Exec(`
 		UPDATE stock_check_session_items
 		SET
@@ -1241,11 +1213,12 @@ func formatStockCheckCurrency(value float64) string {
 }
 
 func computeStockCheckQtyInPcs(carton int, box int, pcs int, pcsPerBox int, pcsPerCarton int) (float64, error) {
-	if carton > 0 && pcsPerCarton <= 0 {
-		return 0, fmt.Errorf("produk ini belum memiliki konversi pcs per carton")
+	// Allow input even when conversion is missing by falling back to 1:1 units.
+	if pcsPerCarton <= 0 {
+		pcsPerCarton = 1
 	}
-	if box > 0 && pcsPerBox <= 0 {
-		return 0, fmt.Errorf("produk ini belum memiliki konversi pcs per box")
+	if pcsPerBox <= 0 {
+		pcsPerBox = 1
 	}
 
 	total := (carton * pcsPerCarton) + (box * pcsPerBox) + pcs
@@ -1292,7 +1265,7 @@ func formatStockCheckSuggestCarton(suggestQty float64, pcsPerCarton int) (int, s
 		return 0, "0 carton"
 	}
 	if pcsPerCarton <= 0 {
-		return 0, "Konversi carton belum diatur"
+		return int(math.Ceil(suggestQty)), formatStockCheckWholeNumber(suggestQty)
 	}
 
 	carton := int(math.Ceil(suggestQty / float64(pcsPerCarton)))
