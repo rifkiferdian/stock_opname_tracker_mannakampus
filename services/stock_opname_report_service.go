@@ -290,6 +290,7 @@ func buildStockOpnameReportRows(records []repositories.StockOpnameReportRecord, 
 			CurrentItemID:           current.ItemID,
 			CurrentSuggestQty:       reportFormatSnapshotWholeNumber(current.ItemID > 0, current.SuggestQty),
 			CurrentSuggestBreakdown: currentSuggestBreakdown,
+			CurrentSuggestCartonRaw: current.SuggestCarton,
 			CurrentSuggestCarton:    currentSuggestCarton,
 			CurrentSuggestBox:       currentSuggestBox,
 			CurrentSuggestPcs:       currentSuggestPcs,
@@ -536,13 +537,7 @@ func buildStockOpnameReportTrendBars(anchorDate time.Time, counts map[string]flo
 }
 
 func stockOpnamePurchaseQty(record repositories.StockOpnameReportRecord) float64 {
-	if record.ApprovedBuyQty > 0 {
-		return record.ApprovedBuyQty
-	}
-	if record.Status == "rejected" {
-		return 0
-	}
-	return record.SuggestBuyQty
+	return record.ApprovedBuyQty
 }
 
 func stockOpnameIsPending(status string) bool {
@@ -704,13 +699,7 @@ func reportFormatWholeNumber(value float64) string {
 }
 
 func stockOpnameReportApproveSeed(snapshot stockOpnameReportSnapshot) string {
-	value := snapshot.SuggestQty
-	if snapshot.Status == "rejected" {
-		value = 0
-	} else if snapshot.ApprovedQty > 0 {
-		value = snapshot.ApprovedQty
-	}
-	return strconv.FormatFloat(value, 'f', -1, 64)
+	return strconv.FormatFloat(snapshot.ApprovedQty, 'f', -1, 64)
 }
 
 func reportFormatSnapshotWholeNumber(exists bool, value float64) string {

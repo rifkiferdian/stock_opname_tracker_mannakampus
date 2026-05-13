@@ -90,6 +90,7 @@ type StockOpnameReportRow struct {
 	CurrentItemID           int
 	CurrentSuggestQty       string
 	CurrentSuggestBreakdown string
+	CurrentSuggestCartonRaw int
 	CurrentSuggestCarton    int
 	CurrentSuggestBox       int
 	CurrentSuggestPcs       int

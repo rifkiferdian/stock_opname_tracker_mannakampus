@@ -918,7 +918,6 @@
                                 </div>
 
                                 <div class="report-toolbar">
-                                    {{ if gt .Report.ApplyAllSubmittedCount 0 }}
                                     <form method="post" action="/reports/stock-opname/{{ .Supplier.ID }}/apply-all-submitted" class="filter-form" onsubmit="return confirm('Apply semua item submitted di SO terbaru dengan nilai suggest checker?');">
                                         <input type="hidden" name="redirect_to" value="" data-report-redirect>
                                         <button type="submit" class="toolbar-button success">
@@ -926,7 +925,6 @@
                                             <span>Apply All Submitted ({{ .Report.ApplyAllSubmittedCount }})</span>
                                         </button>
                                     </form>
-                                    {{ end }}
 
                                     <form method="get" action="/reports/stock-opname/{{ .Supplier.ID }}" class="filter-form">
                                         <select name="status" class="filter-select">
@@ -941,10 +939,6 @@
                                         </button>
                                     </form>
 
-                                    <a href="{{ .Report.ExportURL }}" class="link-button">
-                                        <i class="bx bx-export"></i>
-                                        <span>Ekspor CSV</span>
-                                    </a>
                                 </div>
                             </div>
 
@@ -979,7 +973,6 @@
                                                 <center>
                                                     <span class="status-pill {{ .StatusTone }}">{{ .CurrentStatus }}</span>
                                                     <br><br>
-                                                    {{ if .CanInlineApprove }}
                                                     <button
                                                         type="button"
                                                         class="history-pill history-pill-action btn-edit-review"
@@ -989,17 +982,10 @@
                                                         data-approved-buy-qty="{{ .CurrentApproveSeed }}"
                                                         data-buyer-notes="{{ .CurrentBuyerNotes }}"
                                                         data-checker-notes="{{ .CurrentCheckerNote }}"
-                                                        data-suggest-buy-qty="{{ .CurrentSuggestQty }}"
+                                                        data-suggest-buy-carton="{{ .CurrentSuggestCartonRaw }}"
                                                     >
-                                                        PO : {{ .CurrentPO }}
+                                                        PO : {{ .CurrentApproveSeed }}
                                                     </button>
-                                                    {{ else if .ActionURL }}
-                                                    <a href="{{ .ActionURL }}" class="history-pill history-pill-action">
-                                                        PO : {{ .CurrentPO }}
-                                                    </a>
-                                                    {{ else }}
-                                                    <span class="history-pill">PO : {{ .CurrentPO }}</span>
-                                                    {{ end }}
                                                 </center>
                                             </td>
                                             <td>
@@ -1251,19 +1237,6 @@
                     });
                 });
 
-                document.querySelectorAll('[data-modal]').forEach(function (modal) {
-                    modal.addEventListener('click', function (event) {
-                        if (event.target === modal) {
-                            closeModal(modal);
-                        }
-                    });
-                });
-
-                document.addEventListener('keydown', function (event) {
-                    if (event.key !== 'Escape') return;
-                    document.querySelectorAll('[data-modal]').forEach(closeModal);
-                });
-
                 document.querySelectorAll('.btn-edit-review').forEach(function (button) {
                     button.addEventListener('click', function () {
                         if (!reviewModalEl || !reviewForm) return;
@@ -1274,13 +1247,13 @@
                         var approvedQty = button.getAttribute('data-approved-buy-qty') || '0';
                         var buyerNotes = button.getAttribute('data-buyer-notes') || '';
                         var checkerNotes = button.getAttribute('data-checker-notes') || '-';
-                        var suggestBuyQty = button.getAttribute('data-suggest-buy-qty') || '-';
+                        var suggestBuyCarton = button.getAttribute('data-suggest-buy-carton') || '0';
 
                         reviewForm.setAttribute('action', '/stock-check-sessions/' + sessionId + '/items/review');
                         reviewModalEl.querySelector('#report_review_item_id').value = itemId;
                         reviewModalEl.querySelector('#report_review_redirect_to').value = window.location.pathname + window.location.search;
                         reviewModalEl.querySelector('#report_review_product_name').value = productName;
-                        reviewModalEl.querySelector('#report_review_checker_info').value = 'Suggest ' + suggestBuyQty;
+                        reviewModalEl.querySelector('#report_review_checker_info').value = 'Suggest ' + suggestBuyCarton;
                         reviewModalEl.querySelector('#report_review_checker_note').textContent = checkerNotes;
                         reviewModalEl.querySelector('#report_review_approved_buy_qty').value = approvedQty;
                         reviewModalEl.querySelector('#report_review_buyer_notes').value = buyerNotes;

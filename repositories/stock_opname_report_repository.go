@@ -305,11 +305,7 @@ func (r *StockOpnameReportRepository) GetMonthlyApprovalCounts(supplierID int, f
 			DATE_FORMAT(scs.session_date, '%Y-%m') AS month_key,
 			COALESCE(SUM(
 				CASE
-					WHEN si.status IN ('approved', 'po_created') THEN
-						CASE
-							WHEN COALESCE(si.approved_buy_qty, 0) > 0 THEN COALESCE(si.approved_buy_qty, 0)
-							ELSE COALESCE(si.suggest_buy_qty, 0)
-						END
+					WHEN si.status IN ('approved', 'po_created') THEN COALESCE(si.approved_buy_qty, 0)
 					ELSE 0
 				END
 			), 0) AS approval_qty
@@ -349,19 +345,19 @@ func (r *StockOpnameReportRepository) GetMonthlyApprovalCounts(supplierID int, f
 func (r *StockOpnameReportRepository) GetProductMonthlyPORecords(supplierID int, status string, currentDate time.Time, fromDate time.Time) ([]StockOpnameProductMonthlyPORecord, error) {
 	query := `
 		SELECT
-			si.product_id,
-			DATE_FORMAT(scs.session_date, '%Y-%m') AS month_key,
-			COALESCE(SUM(
-				CASE
-					WHEN si.status = 'rejected' THEN 0
-					WHEN COALESCE(si.approved_buy_qty, 0) > 0 THEN si.approved_buy_qty
-					ELSE COALESCE(si.suggest_buy_qty, 0)
-				END
-			), 0) AS po_qty
-		FROM stock_check_sessions scs
-		INNER JOIN stock_check_session_items si ON si.stock_check_session_id = scs.id
-		WHERE scs.supplier_id = ?
-			AND scs.session_date >= ?
+			base.product_id,
+			base.month_key,
+			COALESCE(SUM(base.session_po_qty), 0) AS po_qty
+		FROM (
+			SELECT
+				si.product_id,
+				scs.id AS session_id,
+				DATE_FORMAT(scs.session_date, '%Y-%m') AS month_key,
+				COALESCE(SUM(COALESCE(si.approved_buy_qty, 0)), 0) AS session_po_qty
+			FROM stock_check_sessions scs
+			INNER JOIN stock_check_session_items si ON si.stock_check_session_id = scs.id
+			WHERE scs.supplier_id = ?
+				AND scs.session_date >= ?
 	`
 	args := []interface{}{supplierID, fromDate.Format("2006-01-02")}
 
@@ -389,8 +385,10 @@ func (r *StockOpnameReportRepository) GetProductMonthlyPORecords(supplierID int,
 	}
 
 	query += `
-		GROUP BY si.product_id, DATE_FORMAT(scs.session_date, '%Y-%m')
-		ORDER BY month_key ASC, si.product_id ASC
+			GROUP BY si.product_id, scs.id, DATE_FORMAT(scs.session_date, '%Y-%m')
+		) base
+		GROUP BY base.product_id, base.month_key
+		ORDER BY base.month_key ASC, base.product_id ASC
 	`
 
 	rows, err := r.DB.Query(query, args...)
