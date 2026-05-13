@@ -794,6 +794,18 @@
                 var locationStorageKey = 'stock-checker-location:{{ .Session.ID }}';
                 var suggestModalEl = document.getElementById('suggestCheckerModal');
                 var suggestOpenButton = document.getElementById('openSuggestModalButton');
+                var dbQtyByLocation = {
+                    store: {
+                        carton: '{{ .Item.QtyStoreCarton }}',
+                        box: '{{ .Item.QtyStoreBox }}',
+                        pcs: '{{ .Item.QtyStorePcs }}'
+                    },
+                    warehouse: {
+                        carton: '{{ .Item.QtyWarehouseCarton }}',
+                        box: '{{ .Item.QtyWarehouseBox }}',
+                        pcs: '{{ .Item.QtyWarehousePcs }}'
+                    }
+                };
 
                 function closeSidebar() {
                     if (!sidebar) return;
@@ -879,6 +891,14 @@
                     }
                 }
 
+                function applyLocationQtyFromDatabase(location) {
+                    location = normalizeLocation(location);
+                    var source = dbQtyByLocation[location] || dbQtyByLocation.store;
+                    if (qtyCartonInput) qtyCartonInput.value = source.carton || '0';
+                    if (qtyBoxInput) qtyBoxInput.value = source.box || '0';
+                    if (qtyPcsInput) qtyPcsInput.value = source.pcs || '0';
+                }
+
                 toggleButtons.forEach(function (button) {
                     button.addEventListener('click', function () {
                         if (!sidebar) return;
@@ -896,7 +916,9 @@
 
                 locationButtons.forEach(function (button) {
                     button.addEventListener('click', function () {
-                        persistLocation(button.getAttribute('data-location-button') || 'store');
+                        var selectedLocation = button.getAttribute('data-location-button') || 'store';
+                        persistLocation(selectedLocation);
+                        applyLocationQtyFromDatabase(selectedLocation);
                         updateLocationUI();
                     });
                 });
@@ -958,6 +980,7 @@
                 }
 
                 persistLocation(locationInput.value);
+                applyLocationQtyFromDatabase(locationInput.value);
                 updateLocationUI();
 
                 if (submitButton) {
