@@ -247,7 +247,7 @@
                 position: sticky;
                 left: 0;
                 z-index: 3;
-                min-width: 18rem;
+                min-width: 12rem;
                 background: #ffffff;
             }
 
@@ -928,6 +928,13 @@
                                     </form>
 
                                     <form method="get" action="/reports/stock-opname/{{ .Supplier.ID }}" class="filter-form">
+                                        <input
+                                            type="text"
+                                            name="item_name"
+                                            value="{{ .Report.Filter.ItemName }}"
+                                            class="filter-select"
+                                            placeholder="Cari nama item..."
+                                        >
                                         <select name="status" class="filter-select">
                                             <option value="">Semua status</option>
                                             {{ range .Report.StatusOptions }}

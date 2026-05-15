@@ -1,9 +1,10 @@
 package models
 
 type StockOpnameReportFilter struct {
-	Status string
-	Page   int
-	Limit  int
+	Status   string
+	ItemName string
+	Page     int
+	Limit    int
 }
 
 type StockOpnameReportPage struct {

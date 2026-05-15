@@ -113,6 +113,7 @@ func (s *StockOpnameReportService) GetDetailPage(supplierID int, filter models.S
 	}
 	statusOptions := buildStockOpnameReportStatusOptions(statuses)
 	filter.Status = normalizeStockOpnameReportStatusFilter(filter.Status, statusOptions)
+	filter.ItemName = strings.TrimSpace(filter.ItemName)
 	page.Filter = filter
 	page.StatusOptions = statusOptions
 	page.CurrentStatusLabel = stockOpnameReportStatusFilterLabel(filter.Status)
@@ -130,13 +131,13 @@ func (s *StockOpnameReportService) GetDetailPage(supplierID int, filter models.S
 		page.HistoryDateLabels = append(page.HistoryDateLabels, sessionDates[index].Format("02 Jan 2006"))
 	}
 
-	records, err := s.Repo.GetReportRecords(supplierID, filter.Status, currentDate, sessionDates)
+	records, err := s.Repo.GetReportRecords(supplierID, filter.Status, filter.ItemName, currentDate, sessionDates)
 	if err != nil {
 		return models.StockOpnameReportPage{}, err
 	}
 
 	poTrendStart := time.Date(currentDate.Year(), currentDate.Month(), 1, 0, 0, 0, 0, currentDate.Location()).AddDate(0, -12, 0)
-	poMonthlyRecords, err := s.Repo.GetProductMonthlyPORecords(supplierID, filter.Status, currentDate, poTrendStart)
+	poMonthlyRecords, err := s.Repo.GetProductMonthlyPORecords(supplierID, filter.Status, filter.ItemName, currentDate, poTrendStart)
 	if err != nil {
 		return models.StockOpnameReportPage{}, err
 	}

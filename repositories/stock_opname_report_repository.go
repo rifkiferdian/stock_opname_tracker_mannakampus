@@ -129,7 +129,7 @@ func (r *StockOpnameReportRepository) CountSessions(supplierID int) (int, error)
 	return total, err
 }
 
-func (r *StockOpnameReportRepository) GetReportRecords(supplierID int, status string, currentDate time.Time, dates []time.Time) ([]StockOpnameReportRecord, error) {
+func (r *StockOpnameReportRepository) GetReportRecords(supplierID int, status string, itemName string, currentDate time.Time, dates []time.Time) ([]StockOpnameReportRecord, error) {
 	if len(dates) == 0 {
 		return []StockOpnameReportRecord{}, nil
 	}
@@ -187,6 +187,13 @@ func (r *StockOpnameReportRepository) GetReportRecords(supplierID int, status st
 		WHERE scs.supplier_id = ?
 			AND scs.session_date IN (%s)
 	`, strings.Join(placeholders, ","))
+
+	if strings.TrimSpace(itemName) != "" {
+		query += `
+			AND LOWER(p.product_name) LIKE LOWER(?)
+		`
+		args = append(args, "%"+strings.TrimSpace(itemName)+"%")
+	}
 
 	if strings.TrimSpace(status) != "" {
 		query += `
@@ -346,7 +353,7 @@ func (r *StockOpnameReportRepository) GetMonthlyApprovalCounts(supplierID int, f
 	return counts, rows.Err()
 }
 
-func (r *StockOpnameReportRepository) GetProductMonthlyPORecords(supplierID int, status string, currentDate time.Time, fromDate time.Time) ([]StockOpnameProductMonthlyPORecord, error) {
+func (r *StockOpnameReportRepository) GetProductMonthlyPORecords(supplierID int, status string, itemName string, currentDate time.Time, fromDate time.Time) ([]StockOpnameProductMonthlyPORecord, error) {
 	query := `
 		SELECT
 			base.product_id,
@@ -360,10 +367,18 @@ func (r *StockOpnameReportRepository) GetProductMonthlyPORecords(supplierID int,
 				COALESCE(SUM(COALESCE(si.approved_buy_qty, 0)), 0) AS session_po_qty
 			FROM stock_check_sessions scs
 			INNER JOIN stock_check_session_items si ON si.stock_check_session_id = scs.id
+			INNER JOIN products p ON p.id = si.product_id
 			WHERE scs.supplier_id = ?
 				AND scs.session_date >= ?
 	`
 	args := []interface{}{supplierID, fromDate.Format("2006-01-02")}
+
+	if strings.TrimSpace(itemName) != "" {
+		query += `
+			AND LOWER(COALESCE(p.product_name, '')) LIKE LOWER(?)
+		`
+		args = append(args, "%"+strings.TrimSpace(itemName)+"%")
+	}
 
 	if strings.TrimSpace(status) != "" {
 		query += `
