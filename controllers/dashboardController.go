@@ -17,6 +17,10 @@ func DashboardIndex(c *gin.Context) {
 		c.Redirect(http.StatusFound, "/checker/dashboard")
 		return
 	}
+	if currentUserHasRole(c, "po-buyer") {
+		c.Redirect(http.StatusFound, "/po-buyer/dashboard")
+		return
+	}
 
 	dashboardService := buildDashboardService()
 	currentUserID := extractCurrentUserID(c)
@@ -92,6 +96,9 @@ func resolveDashboardPathByRole(roleRaw string) string {
 		if normalizeRoleToken(role) == "checker" {
 			return "/checker/dashboard"
 		}
+		if normalizeRoleToken(role) == "pobuyer" {
+			return "/po-buyer/dashboard"
+		}
 	}
 
 	return "/dashboard"
@@ -153,5 +160,9 @@ func parseRoleList(roleRaw string) []string {
 }
 
 func normalizeRoleToken(value string) string {
-	return strings.ToLower(strings.TrimSpace(value))
+	token := strings.ToLower(strings.TrimSpace(value))
+	token = strings.ReplaceAll(token, "-", "")
+	token = strings.ReplaceAll(token, "_", "")
+	token = strings.ReplaceAll(token, " ", "")
+	return token
 }
