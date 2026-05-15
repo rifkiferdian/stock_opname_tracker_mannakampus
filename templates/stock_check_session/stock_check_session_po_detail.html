@@ -15,6 +15,7 @@
         <link rel="stylesheet" href="/assets/fonts/google/manrope-space-grotesk.css">
         <link rel="stylesheet" href="/assets/css/tailwind.css">
         <link href="/assets/vendor/boxicons/css/boxicons.min.css" rel="stylesheet" />
+        <link href="/assets/vendor/sweetalert2/sweetalert2.min.css" rel="stylesheet" />
 
         <style>
             body {
@@ -62,7 +63,24 @@
             .po-top-actions-buttons {
                 display: flex;
                 align-items: center;
+                flex-wrap: wrap;
                 gap: 0.65rem;
+            }
+
+            .po-status-edit-form {
+                display: inline-flex;
+                align-items: center;
+                gap: 0.45rem;
+            }
+
+            .po-action-button.status {
+                border: 1px solid #ede9fe;
+                background: #f5f3ff;
+                color: #6d28d9;
+            }
+
+            .po-action-button.status:hover {
+                background: #ede9fe;
             }
 
             .po-action-button {
@@ -422,6 +440,14 @@
                             </div>
 
                             <div class="flex flex-wrap items-center gap-3">
+                                <form method="post" action="/stock-checker/po-recap/{{ .Session.ID }}/status" class="po-status-edit-form" data-po-status-form>
+                                    <input type="hidden" name="redirect_to" value="{{ .CurrentDetailURL }}">
+                                    <input type="hidden" name="status" value="po">
+                                    <button type="submit" class="po-action-button status">
+                                        <i class="bx bx-save text-base"></i>
+                                        {{ if eq .Session.Status "po" }}Status Sudah PO{{ else }}Tandai Sudah PO{{ end }}
+                                    </button>
+                                </form>
                                 <button type="button" onclick="window.print()" class="inline-flex items-center justify-center gap-2 rounded-md border border-[#001e62] bg-white px-5 py-3 text-sm font-extrabold text-[#001e62] transition hover:bg-slate-50">
                                     <i class="bx bx-printer text-base"></i>
                                     Print to PDF
@@ -432,6 +458,17 @@
                                 </a>
                             </div>
                         </section>
+
+                        {{ if .Success }}
+                            <section class="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700">
+                                {{ .Success }}
+                            </section>
+                        {{ end }}
+                        {{ if .Error }}
+                            <section class="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-700">
+                                {{ .Error }}
+                            </section>
+                        {{ end }}
 
                         <section class="po-sheet">
                             <div class="po-head">
@@ -556,7 +593,29 @@
                 if (overlay) {
                     overlay.addEventListener('click', closeSidebar);
                 }
+
+                var poStatusForm = document.querySelector('[data-po-status-form]');
+                if (poStatusForm) {
+                    poStatusForm.addEventListener('submit', function (event) {
+                        event.preventDefault();
+                        Swal.fire({
+                            title: 'Ubah status jadi PO?',
+                            text: 'Status sesi akan ditandai sebagai PO.',
+                            icon: 'question',
+                            showCancelButton: true,
+                            confirmButtonText: 'Ya, ubah sekarang',
+                            cancelButtonText: 'Batal',
+                            confirmButtonColor: '#0f3b86',
+                            cancelButtonColor: '#64748b'
+                        }).then(function (result) {
+                            if (result.isConfirmed) {
+                                poStatusForm.submit();
+                            }
+                        });
+                    });
+                }
             });
         </script>
+        <script src="/assets/vendor/sweetalert2/sweetalert2.all.min.js"></script>
     </body>
 </html>

@@ -28,7 +28,7 @@ func RegisterWebRoutes(r *gin.Engine) {
 		auth.GET("/stock-checker", middleware.RequirePermission("checker_so_input_access"), controllers.StockCheckCheckerSupplierIndex)
 		auth.GET("/stock-checker/recap", middleware.RequirePermission("checker_so_recap_access"), controllers.StockCheckCheckerRecapIndex)
 		auth.GET("/stock-checker/po-recap", middleware.RequirePermission("menu_ready_for_po"), controllers.StockCheckPORecapIndex)
-		auth.POST("/stock-checker/po-recap/:id/status", middleware.RequirePermission("menu_ready_for_po"), controllers.StockCheckPORecapUpdateStatus)
+		auth.POST("/stock-checker/po-recap/:id/status", middleware.RequireAnyPermission("menu_ready_for_po", "menu_stock_check_session_access"), controllers.StockCheckPORecapUpdateStatus)
 		auth.GET("/stock-checker/sessions/:id/input", middleware.RequirePermission("checker_so_input_access"), controllers.StockCheckCheckerSessionInput)
 		auth.GET("/stock-checker/sessions/:id/scan", middleware.RequirePermission("checker_so_input_access"), controllers.StockCheckCheckerSessionScanPage)
 		auth.POST("/stock-checker/sessions/:id/input", middleware.RequirePermission("checker_so_input_access"), controllers.StockCheckCheckerSessionScan)
