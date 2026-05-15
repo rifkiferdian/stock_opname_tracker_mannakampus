@@ -15,6 +15,7 @@
         <link rel="stylesheet" href="/assets/fonts/google/manrope-space-grotesk.css">
         <link rel="stylesheet" href="/assets/css/tailwind.css">
         <link href="/assets/vendor/boxicons/css/boxicons.min.css" rel="stylesheet" />
+        <link href="/assets/vendor/sweetalert2/sweetalert2.min.css" rel="stylesheet" />
 
         <style>
             :root {
@@ -1237,9 +1238,13 @@
                                     <strong>{{ .Session.FinalApprovedValueDisplay }}</strong>
                                 </div> -->
 
-                                <button type="button" class="summary-cta">Finalize &amp; Issue PO</button>
+                                <form method="post" action="/stock-checker/po-recap/{{ .Session.ID }}/status" data-close-session-form>
+                                    <input type="hidden" name="status" value="closed">
+                                    <input type="hidden" name="redirect_to" value="{{ .CurrentPath }}">
+                                    <button type="submit" class="summary-cta">Selesai &amp; Pindah ke PO Buyer</button>
+                                </form>
                                 <p class="summary-caption">
-                                    By clicking finalize, digital PO will be generated and dispatched to verified suppliers.
+                                    Dengan mengeklik tombol ini, status sesi akan diubah menjadi "Closed". Pastikan semua item sudah benar sebelum melanjutkan ke tahap PO Buyer.
                                 </p>
                             </article>
                         </section>
@@ -1303,12 +1308,14 @@
             </div>
         </div>
 
+        <script src="/assets/vendor/sweetalert2/sweetalert2.all.min.js"></script>
         <script>
             document.addEventListener('DOMContentLoaded', function () {
                 var sidebar = document.getElementById('app-sidebar');
                 var overlay = document.getElementById('sidebar-overlay');
                 var toggleButtons = document.querySelectorAll('[data-sidebar-toggle]');
                 var reviewModalEl = document.getElementById('reviewItemEditModal');
+                var closeSessionForm = document.querySelector('[data-close-session-form]');
 
                 function closeSidebar() {
                     if (!sidebar) return;
@@ -1409,6 +1416,26 @@
                     openModal(reviewModalEl);
                 })();
                 {{ end }}
+
+                if (closeSessionForm) {
+                    closeSessionForm.addEventListener('submit', function (event) {
+                        event.preventDefault();
+                        Swal.fire({
+                            title: 'Selesai sesi ini?',
+                            text: 'Status sesi akan diubah menjadi Selesai dan Akan muncul di PO Buyer.',
+                            icon: 'warning',
+                            showCancelButton: true,
+                            confirmButtonText: 'Ya, Selesai sesi',
+                            cancelButtonText: 'Batal',
+                            confirmButtonColor: '#143d8f',
+                            cancelButtonColor: '#64748b'
+                        }).then(function (result) {
+                            if (result.isConfirmed) {
+                                closeSessionForm.submit();
+                            }
+                        });
+                    });
+                }
             });
         </script>
     </body>

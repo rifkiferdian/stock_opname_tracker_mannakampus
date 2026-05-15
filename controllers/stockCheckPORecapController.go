@@ -122,8 +122,8 @@ func StockCheckPORecapUpdateStatus(c *gin.Context) {
 		return
 	}
 
-	if !isPORecapStatus(session.Status) {
-		c.Redirect(http.StatusSeeOther, appendRedirectMessage(redirectTo, "error", "Status session tidak dapat diubah dari halaman ini"))
+	if status == "po" && !isPORecapStatus(session.Status) {
+		c.Redirect(http.StatusSeeOther, appendRedirectMessage(redirectTo, "error", "Status session harus Closed sebelum diubah ke PO"))
 		return
 	}
 
