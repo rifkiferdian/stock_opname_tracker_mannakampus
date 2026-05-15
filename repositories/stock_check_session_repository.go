@@ -482,6 +482,16 @@ func (r *StockCheckSessionRepository) Update(input models.StockCheckSessionUpdat
 	return err
 }
 
+func (r *StockCheckSessionRepository) UpdateStatus(sessionID int, status string) error {
+	_, err := r.DB.Exec(`
+		UPDATE stock_check_sessions
+		SET status = ?
+		WHERE id = ?
+	`, status, sessionID)
+
+	return err
+}
+
 func (r *StockCheckSessionRepository) UpdateReviewItem(input models.StockCheckSessionReviewItemUpdateInput) error {
 	tx, err := r.DB.Begin()
 	if err != nil {
@@ -1237,6 +1247,8 @@ func stockCheckSessionStatusMeta(value string) (string, string, string) {
 		return "Reviewed", "session-status-text-reviewed", "session-status-dot-reviewed"
 	case "closed":
 		return "Closed", "session-status-text-closed", "session-status-dot-closed"
+	case "po":
+		return "PO", "session-status-text-po", "session-status-dot-po"
 	case "cancelled":
 		return "Cancelled", "session-status-text-cancelled", "session-status-dot-cancelled"
 	default:

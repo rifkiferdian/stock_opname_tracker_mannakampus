@@ -312,6 +312,14 @@
                 background: #10b981;
             }
 
+            .session-status-text-po {
+                color: #7c3aed;
+            }
+
+            .session-status-dot-po {
+                background: #8b5cf6;
+            }
+
             .session-status-text-cancelled {
                 color: #e11d48;
             }
@@ -340,6 +348,39 @@
 
             .session-action-button.view:hover {
                 background: #dbeafe;
+            }
+
+            .status-edit-form {
+                display: inline-flex;
+                align-items: center;
+                gap: 0.4rem;
+            }
+
+            .status-edit-select {
+                min-height: 2rem;
+                border: 1px solid #dbe2ef;
+                border-radius: 0.6rem;
+                background: #ffffff;
+                padding: 0.35rem 0.6rem;
+                font-size: 0.76rem;
+                font-weight: 700;
+                color: #334155;
+                outline: none;
+            }
+
+            .status-edit-select:focus {
+                border-color: #153e8a;
+                box-shadow: 0 0 0 3px rgba(21, 62, 138, 0.1);
+            }
+
+            .session-action-button.save {
+                border: 1px solid #ede9fe;
+                background: #f5f3ff;
+                color: #6d28d9;
+            }
+
+            .session-action-button.save:hover {
+                background: #ede9fe;
             }
 
             .session-pagination {
@@ -408,9 +449,20 @@
                         <section class="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
                             <div>
                                 <h1 class="text-[1.8rem] font-extrabold tracking-tight text-[#153e8a]">Ready For PO</h1>
-                                <p class="mt-1 text-[13px] font-medium text-slate-500">List sesi stock check yang sudah closed.</p>
+                                <p class="mt-1 text-[13px] font-medium text-slate-500">List sesi stock check yang siap diproses PO dan yang sudah ditandai PO.</p>
                             </div>
                         </section>
+
+                        {{ if .Success }}
+                            <section class="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700">
+                                {{ .Success }}
+                            </section>
+                        {{ end }}
+                        {{ if .Error }}
+                            <section class="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-700">
+                                {{ .Error }}
+                            </section>
+                        {{ end }}
 
                         <section class="session-toolbar">
                             <form method="get" action="{{ baseURL "/stock-checker/po-recap" }}" class="toolbar-grid">
@@ -467,7 +519,6 @@
                                             <th>Store</th>
                                             <th>Supplier</th>
                                             <th>Status</th>
-                                            <th>Created By</th>
                                             <th>Actions</th>
                                         </tr>
                                     </thead>
@@ -497,13 +548,6 @@
                                                     </span>
                                                 </td>
                                                 <td>
-                                                    <div class="flex items-start gap-2.5">
-                                                        <div>
-                                                            <p class="text-[13px] font-semibold leading-5 text-slate-700">{{ .CreatedByName }}</p>
-                                                        </div>
-                                                    </div>
-                                                </td>
-                                                <td>
                                                     <div class="flex flex-wrap items-center gap-2">
                                                         <a
                                                             href="/stock-check-sessions/{{ .ID }}/po-detail"
@@ -511,17 +555,28 @@
                                                             <i class="bx bx-show text-sm"></i>
                                                             PO Detail
                                                         </a>
+                                                        <form method="post" action="/stock-checker/po-recap/{{ .ID }}/status" class="status-edit-form">
+                                                            <input type="hidden" name="redirect_to" value="{{ $.CurrentURL }}">
+                                                            <select name="status" class="status-edit-select" aria-label="Ubah status sesi">
+                                                                <option value="closed" {{ if eq .Status "closed" }}selected{{ end }}>Closed</option>
+                                                                <option value="po" {{ if eq .Status "po" }}selected{{ end }}>PO</option>
+                                                            </select>
+                                                            <button type="submit" class="session-action-button save">
+                                                                <i class="bx bx-save text-sm"></i>
+                                                                Update
+                                                            </button>
+                                                        </form>
                                                     </div>
                                                 </td>
                                             </tr>
                                         {{ else }}
                                             <tr>
-                                                <td colspan="7" class="px-5 py-12 text-center">
+                                                <td colspan="6" class="px-5 py-12 text-center">
                                                     <div class="mx-auto max-w-md">
                                                         <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 text-slate-400">
                                                             <i class="bx bx-folder-open text-3xl"></i>
                                                         </div>
-                                                        <p class="mt-4 text-[15px] font-bold text-slate-700">Belum ada session closed yang cocok dengan filter saat ini.</p>
+                                                        <p class="mt-4 text-[15px] font-bold text-slate-700">Belum ada session Ready For PO yang cocok dengan filter saat ini.</p>
                                                         <p class="mt-1 text-[13px] font-medium text-slate-400">Coba ubah rentang tanggal atau nama supplier.</p>
                                                     </div>
                                                 </td>

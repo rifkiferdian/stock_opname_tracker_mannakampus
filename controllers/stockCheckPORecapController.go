@@ -1,9 +1,12 @@
 package controllers
 
 import (
+	"database/sql"
+	"errors"
 	"net/http"
 	"net/url"
 	"strconv"
+	"strings"
 	"time"
 
 	"gobase-app/models"
@@ -27,9 +30,9 @@ func StockCheckPORecapIndex(c *gin.Context) {
 		DateFrom:     dateFrom,
 		DateTo:       dateTo,
 		SupplierName: c.Query("supplier_name"),
-		Status:       "closed",
+		Status:       "",
 		Page:         parsePositiveInt(c.Query("page"), 1),
-		Limit:        15,
+		Limit:        100,
 	}
 	if filter.DateFrom != "" && filter.DateTo != "" && filter.DateFrom > filter.DateTo {
 		filter.DateFrom, filter.DateTo = filter.DateTo, filter.DateFrom
@@ -47,7 +50,12 @@ func StockCheckPORecapIndex(c *gin.Context) {
 
 	filtered := make([]models.StockCheckSession, 0, len(sessions))
 	if currentUserHasRole(c, "super-admin") {
-		filtered = sessions
+		for _, session := range sessions {
+			if !isPORecapStatus(session.Status) {
+				continue
+			}
+			filtered = append(filtered, session)
+		}
 	} else {
 		stores, err := service.GetStoreOptionsByUserID(currentUserID)
 		if err != nil {
@@ -56,6 +64,9 @@ func StockCheckPORecapIndex(c *gin.Context) {
 		}
 		allowedStoreSet := buildStoreAccessSet(stores)
 		for _, session := range sessions {
+			if !isPORecapStatus(session.Status) {
+				continue
+			}
 			if !isStoreAccessible(allowedStoreSet, session.StoreID) {
 				continue
 			}
@@ -72,10 +83,60 @@ func StockCheckPORecapIndex(c *gin.Context) {
 		"Page":        "stock_check_po_recap",
 		"CurrentRole": extractCurrentUserRole(c),
 		"TodayKey":    todayKey,
+		"Success":     strings.TrimSpace(c.Query("success")),
+		"Error":       strings.TrimSpace(c.Query("error")),
+		"CurrentURL":  buildStockCheckPORecapPageURL(filter, pagination.CurrentPage),
 		"Filters":     filter,
 		"Sessions":    pagedSessions,
 		"Pagination":  pagination,
 	})
+}
+
+func StockCheckPORecapUpdateStatus(c *gin.Context) {
+	sessionID := parsePositiveInt(c.Param("id"), 0)
+	status := strings.TrimSpace(c.PostForm("status"))
+
+	redirectTo := sanitizeRedirectTarget(c.PostForm("redirect_to"))
+	if redirectTo == "" {
+		redirectTo = "/stock-checker/po-recap"
+	}
+
+	service := buildStockCheckSessionService()
+	session, err := service.Repo.GetByID(sessionID)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			c.Redirect(http.StatusSeeOther, appendRedirectMessage(redirectTo, "error", "Session tidak ditemukan"))
+			return
+		}
+		c.Redirect(http.StatusSeeOther, appendRedirectMessage(redirectTo, "error", err.Error()))
+		return
+	}
+
+	hasAccess, err := currentUserCanAccessStockCheckStore(c, service, session.StoreID)
+	if err != nil {
+		c.Redirect(http.StatusSeeOther, appendRedirectMessage(redirectTo, "error", err.Error()))
+		return
+	}
+	if !hasAccess {
+		c.Redirect(http.StatusSeeOther, appendRedirectMessage(redirectTo, "error", "Anda Tidak punya Akses di Halaman ini"))
+		return
+	}
+
+	if !isPORecapStatus(session.Status) {
+		c.Redirect(http.StatusSeeOther, appendRedirectMessage(redirectTo, "error", "Status session tidak dapat diubah dari halaman ini"))
+		return
+	}
+
+	if err := service.UpdateSessionStatusForPORecap(sessionID, status); err != nil {
+		c.Redirect(http.StatusSeeOther, appendRedirectMessage(redirectTo, "error", err.Error()))
+		return
+	}
+
+	label := "Closed"
+	if status == "po" {
+		label = "PO"
+	}
+	c.Redirect(http.StatusSeeOther, appendRedirectMessage(redirectTo, "success", "Status session berhasil diubah ke "+label))
 }
 
 func paginateStockCheckPORecapSessions(items []models.StockCheckSession, pagination models.Pagination) []models.StockCheckSession {
@@ -105,7 +166,7 @@ func buildStockCheckPORecapPagination(filter models.StockCheckSessionListFilter,
 		pagination.CurrentPage = 1
 	}
 	if pagination.PageSize <= 0 {
-		pagination.PageSize = 15
+		pagination.PageSize = 100
 	}
 	if totalItems == 0 {
 		return pagination
@@ -177,4 +238,13 @@ func buildStockCheckPORecapPageURL(filter models.StockCheckSessionListFilter, pa
 		return "/stock-checker/po-recap"
 	}
 	return "/stock-checker/po-recap?" + encoded
+}
+
+func isPORecapStatus(status string) bool {
+	switch strings.TrimSpace(status) {
+	case "closed", "po":
+		return true
+	default:
+		return false
+	}
 }

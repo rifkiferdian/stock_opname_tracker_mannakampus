@@ -534,6 +534,27 @@ func (s *StockCheckSessionService) DeleteSession(id int) error {
 	return nil
 }
 
+func (s *StockCheckSessionService) UpdateSessionStatusForPORecap(sessionID int, status string) error {
+	if sessionID <= 0 {
+		return errors.New("session id tidak valid")
+	}
+
+	status = sanitizeStockCheckSessionStatus(status)
+	if status != "closed" && status != "po" {
+		return errors.New("status harus closed atau po")
+	}
+
+	exists, err := s.Repo.ExistsByID(sessionID)
+	if err != nil {
+		return err
+	}
+	if !exists {
+		return fmt.Errorf("session id %d tidak ditemukan", sessionID)
+	}
+
+	return s.Repo.UpdateStatus(sessionID, status)
+}
+
 func sanitizeStockCheckSessionDate(value string) string {
 	value = strings.TrimSpace(value)
 	if value == "" {
@@ -547,7 +568,7 @@ func sanitizeStockCheckSessionDate(value string) string {
 
 func sanitizeStockCheckSessionStatus(value string) string {
 	switch strings.TrimSpace(value) {
-	case "draft", "in_progress", "submitted", "reviewed", "closed", "cancelled":
+	case "draft", "in_progress", "submitted", "reviewed", "closed", "po", "cancelled":
 		return value
 	default:
 		return ""
@@ -641,6 +662,8 @@ func stockCheckSessionStageLabel(status string) string {
 		return "Currently Reviewing"
 	case "closed":
 		return "Finalized Session"
+	case "po":
+		return "PO Completed"
 	case "cancelled":
 		return "Cancelled Session"
 	default:
@@ -651,6 +674,8 @@ func stockCheckSessionStageLabel(status string) string {
 func stockCheckSessionDetailStatusBadgeClass(status string) string {
 	switch status {
 	case "closed":
+		return "session-badge-success"
+	case "po":
 		return "session-badge-success"
 	case "cancelled":
 		return "session-badge-danger"
