@@ -419,7 +419,7 @@
                                     <div class="date-range-combo">
                                         <div class="toolbar-input-wrap">
                                             <i class="bx bx-calendar toolbar-leading-icon"></i>
-                                            <input id="po-date-from-filter" type="date" name="date_from" value="{{ .Filters.DateFrom }}" class="toolbar-control">
+                                            <input id="po-date-from-filter" type="date" name="date_from" value="{{ if .Filters.DateFrom }}{{ .Filters.DateFrom }}{{ else }}{{ .TodayKey }}{{ end }}" class="toolbar-control">
                                             <button type="button" class="toolbar-date-trigger" data-date-picker-target="po-date-from-filter" aria-label="Pilih tanggal mulai">
                                                 <i class="bx bx-chevron-down text-base"></i>
                                             </button>
@@ -427,7 +427,7 @@
                                         <span class="date-range-separator">-</span>
                                         <div class="toolbar-input-wrap">
                                             <i class="bx bx-calendar toolbar-leading-icon"></i>
-                                            <input id="po-date-to-filter" type="date" name="date_to" value="{{ .Filters.DateTo }}" class="toolbar-control">
+                                            <input id="po-date-to-filter" type="date" name="date_to" value="{{ if .Filters.DateTo }}{{ .Filters.DateTo }}{{ else }}{{ .TodayKey }}{{ end }}" class="toolbar-control">
                                             <button type="button" class="toolbar-date-trigger" data-date-picker-target="po-date-to-filter" aria-label="Pilih tanggal akhir">
                                                 <i class="bx bx-chevron-down text-base"></i>
                                             </button>

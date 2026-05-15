@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"net/url"
 	"strconv"
+	"time"
 
 	"gobase-app/models"
 
@@ -18,9 +19,13 @@ func StockCheckPORecapIndex(c *gin.Context) {
 	}
 
 	service := buildStockCheckSessionService()
+	dateFrom := sanitizeQueryDate(c.Query("date_from"))
+	dateTo := sanitizeQueryDate(c.Query("date_to"))
+	todayKey := time.Now().Format("2006-01-02")
+
 	filter := models.StockCheckSessionListFilter{
-		DateFrom:     sanitizeQueryDate(c.Query("date_from")),
-		DateTo:       sanitizeQueryDate(c.Query("date_to")),
+		DateFrom:     dateFrom,
+		DateTo:       dateTo,
 		SupplierName: c.Query("supplier_name"),
 		Status:       "closed",
 		Page:         parsePositiveInt(c.Query("page"), 1),
@@ -66,6 +71,7 @@ func StockCheckPORecapIndex(c *gin.Context) {
 		"Title":       "Rekap PO Supplier",
 		"Page":        "stock_check_po_recap",
 		"CurrentRole": extractCurrentUserRole(c),
+		"TodayKey":    todayKey,
 		"Filters":     filter,
 		"Sessions":    pagedSessions,
 		"Pagination":  pagination,
