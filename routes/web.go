@@ -25,6 +25,7 @@ func RegisterWebRoutes(r *gin.Engine) {
 		auth.GET("/reports/stock-opname", middleware.RequirePermission("menu_report_access"), controllers.StockOpnameReportIndex)
 		auth.GET("/reports/stock-opname/:id", middleware.RequirePermission("menu_report_access"), controllers.StockOpnameReportDetail)
 		auth.POST("/reports/stock-opname/:id/apply-all-submitted", middleware.RequirePermission("menu_report_access"), controllers.StockOpnameReportApplyAllSubmitted)
+		auth.POST("/reports/stock-opname/:id/complete-to-po-buyer", middleware.RequirePermission("menu_report_access"), controllers.StockOpnameReportCompleteToPOBuyer)
 		auth.GET("/stock-checker", middleware.RequirePermission("checker_so_input_access"), controllers.StockCheckCheckerSupplierIndex)
 		auth.GET("/stock-checker/recap", middleware.RequirePermission("checker_so_recap_access"), controllers.StockCheckCheckerRecapIndex)
 		auth.GET("/stock-checker/po-recap", middleware.RequirePermission("menu_ready_for_po"), controllers.StockCheckPORecapIndex)

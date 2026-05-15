@@ -15,6 +15,7 @@
         <link rel="stylesheet" href="/assets/fonts/google/plus-jakarta-sans.css">
         <link rel="stylesheet" href="/assets/css/tailwind.css">
         <link href="/assets/vendor/boxicons/css/boxicons.min.css" rel="stylesheet" />
+        <link href="/assets/vendor/sweetalert2/sweetalert2.min.css" rel="stylesheet" />
 
         <style>
             :root {
@@ -927,6 +928,14 @@
                                         </button>
                                     </form>
 
+                                    <form method="post" action="/reports/stock-opname/{{ .Supplier.ID }}/complete-to-po-buyer" class="filter-form" data-complete-po-form>
+                                        <input type="hidden" name="redirect_to" value="/stock-checker/po-recap">
+                                        <button type="submit" class="toolbar-button">
+                                            <i class="bx bx-send"></i>
+                                            <span>Selesai &amp; Kirim ke PO Buyer</span>
+                                        </button>
+                                    </form>
+
                                     <form method="get" action="/reports/stock-opname/{{ .Supplier.ID }}" class="filter-form">
                                         <input
                                             type="text"
@@ -956,7 +965,11 @@
                                         <tr>
                                             <th>Produk</th>
                                             <th>Status</th>
-                                            <th>SO Terbaru <br>({{ .Report.CurrentDateLabel }})</th>
+                                            <th>
+                                                SO Terbaru <br>({{ .Report.CurrentDateLabel }})<br>
+                                                <span style="font-size: 0.52rem; letter-spacing: 0.08em; color: #5f7293;">Session:</span>
+                                                <span style="font-size: 0.52rem; letter-spacing: 0.08em; {{ if eq .Report.CurrentSessionStatus "Closed" }}color: #16a34a;{{ else }}color: #f59e0b;{{ end }}">{{ .Report.CurrentSessionStatus }}</span>
+                                            </th>
                                             <th>PO / Bulan</th>
                                             {{ range .Report.HistoryDateLabels }}
                                             <th>SO Sebelumnya <br>({{ . }})</th>
@@ -1184,6 +1197,7 @@
             </div>
         </div>
 
+        <script src="/assets/vendor/sweetalert2/sweetalert2.all.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
         <script>
             document.addEventListener('DOMContentLoaded', function () {
@@ -1192,6 +1206,7 @@
                 var toggleButtons = document.querySelectorAll('[data-sidebar-toggle]');
                 var reviewModalEl = document.getElementById('reportReviewItemEditModal');
                 var reviewForm = document.getElementById('reportReviewItemEditForm');
+                var completePOForm = document.querySelector('[data-complete-po-form]');
 
                 function closeSidebar() {
                     if (!sidebar) return;
@@ -1273,6 +1288,26 @@
                 document.querySelectorAll('[data-report-redirect]').forEach(function (input) {
                     input.value = window.location.pathname + window.location.search;
                 });
+
+                if (completePOForm) {
+                    completePOForm.addEventListener('submit', function (event) {
+                        event.preventDefault();
+                        Swal.fire({
+                            title: 'Selesai PO terbaru?',
+                            text: 'Status session terbaru akan diubah menjadi Closed dan dikirim ke PO Buyer.',
+                            icon: 'warning',
+                            showCancelButton: true,
+                            confirmButtonText: 'Ya, lanjutkan',
+                            cancelButtonText: 'Batal',
+                            confirmButtonColor: '#173f92',
+                            cancelButtonColor: '#64748b'
+                        }).then(function (result) {
+                            if (result.isConfirmed) {
+                                completePOForm.submit();
+                            }
+                        });
+                    });
+                }
 
                 document.querySelectorAll('[data-po-trend]').forEach(function (element) {
                     var series = [];

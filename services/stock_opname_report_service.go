@@ -92,6 +92,7 @@ func (s *StockOpnameReportService) GetDetailPage(supplierID int, filter models.S
 		CurrentStatusLabel:     stockOpnameReportStatusFilterLabel(filter.Status),
 		ReviewListURL:          fmt.Sprintf("/stock-check-sessions?supplier_id=%d", supplierID),
 		CurrentDateLabel:       "-",
+		CurrentSessionStatus:   "-",
 		HistoryDateLabels:      []string{},
 		SummaryCards:           buildStockOpnameReportSummaryCards(stockOpnameReportSummaryMetrics{}, time.Time{}),
 		TrendBars:              buildStockOpnameReportTrendBars(time.Now(), map[string]float64{}),
@@ -107,6 +108,12 @@ func (s *StockOpnameReportService) GetDetailPage(supplierID int, filter models.S
 	}
 
 	currentDate := sessionDates[0]
+	latestSessionStatus, err := s.Repo.GetLatestSessionStatus(supplierID)
+	if err != nil {
+		return models.StockOpnameReportPage{}, err
+	}
+	page.CurrentSessionStatus = stockOpnameReportSessionStatusLabel(latestSessionStatus)
+
 	statuses, err := s.Repo.GetStatusOptions(supplierID, currentDate)
 	if err != nil {
 		return models.StockOpnameReportPage{}, err
@@ -577,6 +584,27 @@ func stockOpnameReportStatusTone(status string) string {
 		return "low"
 	default:
 		return "input"
+	}
+}
+
+func stockOpnameReportSessionStatusLabel(status string) string {
+	switch strings.TrimSpace(status) {
+	case "draft":
+		return "Draft"
+	case "in_progress":
+		return "In Progress"
+	case "submitted":
+		return "Submitted"
+	case "reviewed":
+		return "Reviewed"
+	case "closed":
+		return "Closed"
+	case "po":
+		return "PO"
+	case "cancelled":
+		return "Cancelled"
+	default:
+		return "Unknown"
 	}
 }
 

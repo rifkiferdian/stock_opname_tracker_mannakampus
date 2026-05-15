@@ -156,6 +156,60 @@ func StockOpnameReportApplyAllSubmitted(c *gin.Context) {
 	c.Redirect(http.StatusSeeOther, appendRedirectMessage(redirectTo, "success", fmt.Sprintf("%d item submitted pada SO terbaru berhasil di-apply", appliedCount)))
 }
 
+func StockOpnameReportCompleteToPOBuyer(c *gin.Context) {
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil || id <= 0 {
+		c.String(http.StatusBadRequest, "invalid supplier id")
+		return
+	}
+
+	redirectTo := sanitizeRedirectTarget(c.PostForm("redirect_to"))
+	if redirectTo == "" {
+		redirectTo = "/stock-checker/po-recap"
+	}
+
+	supplier, err := buildSupplierService().GetSupplierByID(id)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			c.String(http.StatusNotFound, "supplier tidak ditemukan")
+			return
+		}
+		c.String(http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	hasStoreAccess, err := currentUserHasStoreAccess(c, supplier.StoreID)
+	if err != nil {
+		c.String(http.StatusInternalServerError, err.Error())
+		return
+	}
+	if !hasStoreAccess {
+		c.HTML(http.StatusForbidden, "error.html", gin.H{
+			"code_error": 3,
+			"error":      "Anda Tidak punya Akses di Halaman ini",
+		})
+		return
+	}
+
+	sessionService := buildStockCheckSessionService()
+	sessionID, err := sessionService.Repo.GetLatestSessionIDBySupplier(id)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			c.Redirect(http.StatusSeeOther, appendRedirectMessage(redirectTo, "error", "Belum ada session untuk supplier ini"))
+			return
+		}
+		c.Redirect(http.StatusSeeOther, appendRedirectMessage(redirectTo, "error", err.Error()))
+		return
+	}
+
+	if err := sessionService.UpdateSessionStatusForPORecap(sessionID, "closed"); err != nil {
+		c.Redirect(http.StatusSeeOther, appendRedirectMessage(redirectTo, "error", err.Error()))
+		return
+	}
+
+	c.Redirect(http.StatusSeeOther, appendRedirectMessage(redirectTo, "success", "Session terbaru berhasil ditutup dan siap diproses PO Buyer"))
+}
+
 func buildStockOpnameReportService() *services.StockOpnameReportService {
 	repo := &repositories.StockOpnameReportRepository{DB: config.DB}
 	return &services.StockOpnameReportService{Repo: repo}

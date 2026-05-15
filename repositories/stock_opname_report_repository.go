@@ -129,6 +129,21 @@ func (r *StockOpnameReportRepository) CountSessions(supplierID int) (int, error)
 	return total, err
 }
 
+func (r *StockOpnameReportRepository) GetLatestSessionStatus(supplierID int) (string, error) {
+	var status string
+	err := r.DB.QueryRow(`
+		SELECT COALESCE(scs.status, '')
+		FROM stock_check_sessions scs
+		WHERE scs.supplier_id = ?
+		ORDER BY scs.session_date DESC, scs.id DESC
+		LIMIT 1
+	`, supplierID).Scan(&status)
+	if err != nil {
+		return "", err
+	}
+	return strings.TrimSpace(status), nil
+}
+
 func (r *StockOpnameReportRepository) GetReportRecords(supplierID int, status string, itemName string, currentDate time.Time, dates []time.Time) ([]StockOpnameReportRecord, error) {
 	if len(dates) == 0 {
 		return []StockOpnameReportRecord{}, nil

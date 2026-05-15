@@ -12,6 +12,7 @@ type StockOpnameReportPage struct {
 	StatusOptions          []StockOpnameReportStatusOption
 	CurrentStatusLabel     string
 	CurrentDateLabel       string
+	CurrentSessionStatus   string
 	HistoryDateLabels      []string
 	SummaryCards           []StockOpnameReportSummaryCard
 	ReportRows             []StockOpnameReportRow

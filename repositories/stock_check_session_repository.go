@@ -398,6 +398,26 @@ func (r *StockCheckSessionRepository) ExistsByID(id int) (bool, error) {
 	return count > 0, err
 }
 
+func (r *StockCheckSessionRepository) GetLatestSessionIDBySupplier(supplierID int) (int, error) {
+	if supplierID <= 0 {
+		return 0, sql.ErrNoRows
+	}
+
+	var sessionID int
+	err := r.DB.QueryRow(`
+		SELECT scs.id
+		FROM stock_check_sessions scs
+		WHERE scs.supplier_id = ?
+		ORDER BY scs.session_date DESC, scs.id DESC
+		LIMIT 1
+	`, supplierID).Scan(&sessionID)
+	if err != nil {
+		return 0, err
+	}
+
+	return sessionID, nil
+}
+
 func (r *StockCheckSessionRepository) ExistsBySessionNumber(sessionNumber string, ignoreID int) (bool, error) {
 	var (
 		count int
