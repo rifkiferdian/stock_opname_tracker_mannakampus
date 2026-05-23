@@ -39,6 +39,9 @@ type StockOpnameReportRecord struct {
 	SuggestBuyBox       int
 	SuggestBuyPcs       int
 	SuggestBuyQty       float64
+	ApprovedBuyCarton   int
+	ApprovedBuyBox      int
+	ApprovedBuyPcs      int
 	ApprovedBuyQty      float64
 	Status              string
 	ConditionStatus     string
@@ -198,6 +201,9 @@ func (r *StockOpnameReportRepository) GetReportRecords(supplierID int, status st
 				COALESCE(si.suggest_buy_box, 0) * COALESCE(p.pcs_per_box, 0) +
 				COALESCE(si.suggest_buy_pcs, 0)
 			) AS suggest_qty,
+			COALESCE(si.approved_buy_carton, 0) AS approved_buy_carton,
+			COALESCE(si.approved_buy_box, 0) AS approved_buy_box,
+			COALESCE(si.approved_buy_pcs, 0) AS approved_buy_pcs,
 			(
 				COALESCE(si.approved_buy_carton, 0) * COALESCE(p.pcs_per_carton, 0) +
 				COALESCE(si.approved_buy_box, 0) * COALESCE(p.pcs_per_box, 0) +
@@ -300,6 +306,9 @@ func (r *StockOpnameReportRepository) GetReportRecords(supplierID int, status st
 			&record.SuggestBuyBox,
 			&record.SuggestBuyPcs,
 			&suggestBuyQty,
+			&record.ApprovedBuyCarton,
+			&record.ApprovedBuyBox,
+			&record.ApprovedBuyPcs,
 			&approvedBuyQty,
 			&record.Status,
 			&record.ConditionStatus,

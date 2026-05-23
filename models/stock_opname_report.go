@@ -96,6 +96,10 @@ type StockOpnameReportRow struct {
 	CurrentSuggestCarton    int
 	CurrentSuggestBox       int
 	CurrentSuggestPcs       int
+	CurrentApproveCarton    int
+	CurrentApproveBox       int
+	CurrentApprovePcs       int
+	CurrentApproveBreakdown string
 	CurrentCheckerNote      string
 	CurrentBuyerNotes       string
 	CurrentApproveSeed      string

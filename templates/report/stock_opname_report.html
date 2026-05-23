@@ -521,6 +521,19 @@
                 text-decoration: none;
             }
 
+            .history-pill-caption {
+                display: block;
+                margin-top: 0.35rem;
+                font-size: 0.66rem;
+                font-weight: 700;
+                color: #f59e0b;
+                letter-spacing: 0.02em;
+            }
+
+            .history-pill-caption-number {
+                color: #111827;
+            }
+
             .po-trend-cell {
                 min-width: 11rem;
             }
@@ -1000,13 +1013,22 @@
                                                         data-session-id="{{ .CurrentSessionID }}"
                                                         data-item-id="{{ .CurrentItemID }}"
                                                         data-product-name="{{ .Name }}"
-                                                        data-approved-buy-qty="{{ .CurrentApproveSeed }}"
+                                                        data-approved-buy-carton="{{ .CurrentApproveCarton }}"
+                                                        data-approved-buy-box="{{ .CurrentApproveBox }}"
+                                                        data-approved-buy-pcs="{{ .CurrentApprovePcs }}"
                                                         data-buyer-notes="{{ .CurrentBuyerNotes }}"
                                                         data-checker-notes="{{ .CurrentCheckerNote }}"
-                                                        data-suggest-buy-carton="{{ .CurrentSuggestCartonRaw }}"
+                                                        data-suggest-buy-box="{{ .CurrentSuggestBox }}"
+                                                        data-suggest-buy-pcs="{{ .CurrentSuggestPcs }}"
+                                                        data-suggest-buy-breakdown="{{ .CurrentSuggestBreakdown }}"
                                                     >
-                                                        PO : {{ .CurrentApproveSeed }}
+                                                        Approve PO
                                                     </button>
+                                                    <small class="history-pill-caption">
+                                                        <span class="history-pill-caption-number">{{ .CurrentApproveCarton }}</span> ctn
+                                                        <span class="history-pill-caption-number">{{ .CurrentApproveBox }}</span> box
+                                                        <span class="history-pill-caption-number">{{ .CurrentApprovePcs }}</span> pcs
+                                                    </small>
                                                 </center>
                                             </td>
                                             <td>
@@ -1168,18 +1190,19 @@
                         </div>
 
                         <div>
-                            <label for="report_review_approved_buy_qty" class="field-label">Final Approve</label>
-                            <input
-                                type="number"
-                                step="0.01"
-                                min="0"
-                                id="report_review_approved_buy_qty"
-                                name="approved_buy_qty"
-                                class="field-input"
-                                value=""
-                                required
-                            >
-                            <p class="field-hint">Isi `0` jika item harus ditolak.</p>
+                            <label for="report_review_approved_buy_carton" class="field-label">Final Approve Carton</label>
+                            <input type="number" step="1" min="0" id="report_review_approved_buy_carton" name="approved_buy_carton" class="field-input" value="">
+                        </div>
+
+                        <div>
+                            <label for="report_review_approved_buy_box" class="field-label">Final Approve Box</label>
+                            <input type="number" step="1" min="0" id="report_review_approved_buy_box" name="approved_buy_box" class="field-input" value="">
+                        </div>
+
+                        <div>
+                            <label for="report_review_approved_buy_pcs" class="field-label">Final Approve Pcs</label>
+                            <input type="number" step="1" min="0" id="report_review_approved_buy_pcs" name="approved_buy_pcs" class="field-input" value="">
+                            <p class="field-hint">Isi `0` di semua field jika item harus ditolak.</p>
                         </div>
 
                         <div>
@@ -1267,18 +1290,22 @@
                         var sessionId = button.getAttribute('data-session-id') || '';
                         var itemId = button.getAttribute('data-item-id') || '';
                         var productName = button.getAttribute('data-product-name') || '';
-                        var approvedQty = button.getAttribute('data-approved-buy-qty') || '0';
+                        var approvedBuyCarton = button.getAttribute('data-approved-buy-carton') || '0';
+                        var approvedBuyBox = button.getAttribute('data-approved-buy-box') || '0';
+                        var approvedBuyPcs = button.getAttribute('data-approved-buy-pcs') || '0';
                         var buyerNotes = button.getAttribute('data-buyer-notes') || '';
                         var checkerNotes = button.getAttribute('data-checker-notes') || '-';
-                        var suggestBuyCarton = button.getAttribute('data-suggest-buy-carton') || '0';
+                        var suggestBuyBreakdown = button.getAttribute('data-suggest-buy-breakdown') || '0 ctn 0 box 0 pcs';
 
                         reviewForm.setAttribute('action', '/stock-check-sessions/' + sessionId + '/items/review');
                         reviewModalEl.querySelector('#report_review_item_id').value = itemId;
                         reviewModalEl.querySelector('#report_review_redirect_to').value = window.location.pathname + window.location.search;
                         reviewModalEl.querySelector('#report_review_product_name').value = productName;
-                        reviewModalEl.querySelector('#report_review_checker_info').value = 'Suggest ' + suggestBuyCarton;
+                        reviewModalEl.querySelector('#report_review_checker_info').value = 'Suggest ' + suggestBuyBreakdown;
                         reviewModalEl.querySelector('#report_review_checker_note').textContent = checkerNotes;
-                        reviewModalEl.querySelector('#report_review_approved_buy_qty').value = approvedQty;
+                        reviewModalEl.querySelector('#report_review_approved_buy_carton').value = approvedBuyCarton;
+                        reviewModalEl.querySelector('#report_review_approved_buy_box').value = approvedBuyBox;
+                        reviewModalEl.querySelector('#report_review_approved_buy_pcs').value = approvedBuyPcs;
                         reviewModalEl.querySelector('#report_review_buyer_notes').value = buyerNotes;
 
                         openModal(reviewModalEl);

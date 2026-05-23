@@ -32,6 +32,9 @@ type stockOpnameReportSnapshot struct {
 	SuggestCarton      int
 	SuggestBox         int
 	SuggestPcs         int
+	ApprovedCarton     int
+	ApprovedBox        int
+	ApprovedPcs        int
 	PurchaseQty        float64
 	SuggestQty         float64
 	ApprovedQty        float64
@@ -132,7 +135,7 @@ func (s *StockOpnameReportService) GetDetailPage(supplierID int, filter models.S
 		historyDates = sessionDates[1:]
 	}
 
-	page.CurrentDateLabel = currentDate.Format("02 Jan 2006")
+	page.CurrentDateLabel = stockOpnameReportFormatDateWithDayID(currentDate)
 	page.HistoryDateLabels = make([]string, 0, historyDepth)
 	for index := 1; index < len(sessionDates); index++ {
 		page.HistoryDateLabels = append(page.HistoryDateLabels, sessionDates[index].Format("02 Jan 2006"))
@@ -222,6 +225,9 @@ func buildStockOpnameReportRows(records []repositories.StockOpnameReportRecord, 
 		snapshot.QtyWarehouse += record.QtyWarehouse
 		snapshot.SystemQtyStore += record.SystemQtyStore
 		snapshot.SystemQtyWarehouse += record.SystemQtyWarehouse
+		snapshot.ApprovedCarton += record.ApprovedBuyCarton
+		snapshot.ApprovedBox += record.ApprovedBuyBox
+		snapshot.ApprovedPcs += record.ApprovedBuyPcs
 		snapshot.PurchaseQty += stockOpnamePurchaseQty(record)
 		if snapshot.Status == "" {
 			snapshot.Status = record.Status
@@ -262,7 +268,10 @@ func buildStockOpnameReportRows(records []repositories.StockOpnameReportRecord, 
 			aggregate.PcsPerBox,
 			aggregate.PcsPerCarton,
 		)
-		currentPOCarton, currentPOBox, currentPOPcs, currentPOBreakdown := reportFormatSuggestBreakdown(current.PurchaseQty, aggregate.PcsPerBox, aggregate.PcsPerCarton)
+		currentPOCarton := current.ApprovedCarton
+		currentPOBox := current.ApprovedBox
+		currentPOPcs := current.ApprovedPcs
+		currentPOBreakdown := reportFormatUnitBreakdown(currentPOCarton, currentPOBox, currentPOPcs)
 
 		if current.QtyStore > 0 || current.QtyWarehouse > 0 || current.PurchaseQty > 0 || current.LatestSessionID > 0 {
 			metrics.CurrentProductCount++
@@ -302,6 +311,10 @@ func buildStockOpnameReportRows(records []repositories.StockOpnameReportRecord, 
 			CurrentSuggestCarton:    currentSuggestCarton,
 			CurrentSuggestBox:       currentSuggestBox,
 			CurrentSuggestPcs:       currentSuggestPcs,
+			CurrentApproveCarton:    currentPOCarton,
+			CurrentApproveBox:       currentPOBox,
+			CurrentApprovePcs:       currentPOPcs,
+			CurrentApproveBreakdown: currentPOBreakdown,
 			CurrentCheckerNote:      reportDefaultText(current.CheckerNotes, "-"),
 			CurrentBuyerNotes:       current.BuyerNotes,
 			CurrentApproveSeed:      stockOpnameReportApproveSeed(current),
@@ -721,6 +734,16 @@ func stockOpnameReportAvatarClass(name string) string {
 	default:
 		return "tone-slate"
 	}
+}
+
+func stockOpnameReportFormatDateWithDayID(value time.Time) string {
+	dayNames := []string{"Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"}
+	monthNames := []string{"Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"}
+
+	dayName := dayNames[int(value.Weekday())]
+	monthName := monthNames[int(value.Month())-1]
+
+	return fmt.Sprintf("%s, %02d %s %d", dayName, value.Day(), monthName, value.Year())
 }
 
 func reportFormatWholeNumber(value float64) string {
