@@ -119,6 +119,11 @@
                 cursor: pointer;
             }
 
+            .toolbar-button[disabled] {
+                cursor: not-allowed;
+                opacity: 0.55;
+            }
+
             .toolbar-button.success {
                 border-color: #c9e8d5;
                 background: #edf9f1;
@@ -943,7 +948,7 @@
 
                                     <form method="post" action="/reports/stock-opname/{{ .Supplier.ID }}/complete-to-po-buyer" class="filter-form" data-complete-po-form>
                                         <input type="hidden" name="redirect_to" value="/stock-checker/po-recap">
-                                        <button type="submit" class="toolbar-button">
+                                        <button type="submit" class="toolbar-button" {{ if eq .Report.CurrentSessionStatus "PO" }}disabled aria-disabled="true"{{ end }}>
                                             <i class="bx bx-send"></i>
                                             <span>Selesai &amp; Kirim ke PO Buyer</span>
                                         </button>
@@ -1140,8 +1145,8 @@
 
                         <section class="bottom-grid">
                             <article class="panel-card trend-card">
-                                <h2 class="section-title">Approval per Bulan</h2>
-                                <p class="section-copy">Total qty PO dari item berstatus approved/PO created selama 13 bulan terakhir.</p>
+                                <h2 class="section-title">Jumlah SO per Bulan</h2>
+                                <p class="section-copy">Jumlah sesi stock opname yang dilakukan selama 13 bulan terakhir.</p>
 
                                 <div class="trend-chart">
                                     {{ range .Report.TrendBars }}
@@ -1321,7 +1326,7 @@
                         event.preventDefault();
                         Swal.fire({
                             title: 'Selesai PO terbaru?',
-                            text: 'Status session terbaru akan diubah menjadi Closed dan dikirim ke PO Buyer.',
+                            text: 'Status session terbaru akan diubah menjadi Reviewed dan dikirim ke PO Buyer.',
                             icon: 'warning',
                             showCancelButton: true,
                             confirmButtonText: 'Ya, lanjutkan',

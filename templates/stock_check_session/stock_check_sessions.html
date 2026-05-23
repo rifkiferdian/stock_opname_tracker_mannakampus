@@ -401,6 +401,14 @@
                 background: #10b981;
             }
 
+            .session-status-text-po {
+                color: #7c3aed;
+            }
+
+            .session-status-dot-po {
+                background: #8b5cf6;
+            }
+
             .session-status-text-cancelled {
                 color: #e11d48;
             }
@@ -597,6 +605,7 @@
                                             <option value="submitted" {{ if eq .Filters.Status "submitted" }}selected{{ end }}>Submitted</option>
                                             <option value="reviewed" {{ if eq .Filters.Status "reviewed" }}selected{{ end }}>Reviewed</option>
                                             <option value="closed" {{ if eq .Filters.Status "closed" }}selected{{ end }}>Closed</option>
+                                            <option value="po" {{ if eq .Filters.Status "po" }}selected{{ end }}>PO</option>
                                             <option value="cancelled" {{ if eq .Filters.Status "cancelled" }}selected{{ end }}>Cancelled</option>
                                         </select>
                                         <i class="bx bx-chevron-down toolbar-trailing-icon"></i>
@@ -832,6 +841,7 @@
                                     <option value="submitted" {{ if and (eq .FormMode "create") (eq .FormSession.Status "submitted") }}selected{{ end }}>Submitted</option>
                                     <option value="reviewed" {{ if and (eq .FormMode "create") (eq .FormSession.Status "reviewed") }}selected{{ end }}>Reviewed</option>
                                     <option value="closed" {{ if and (eq .FormMode "create") (eq .FormSession.Status "closed") }}selected{{ end }}>Closed</option>
+                                    <option value="po" {{ if and (eq .FormMode "create") (eq .FormSession.Status "po") }}selected{{ end }}>PO</option>
                                     <option value="cancelled" {{ if and (eq .FormMode "create") (eq .FormSession.Status "cancelled") }}selected{{ end }}>Cancelled</option>
                                 </select>
                             </div>
@@ -925,6 +935,7 @@
                                     <option value="submitted" {{ if and (eq .FormMode "edit") (eq .FormSession.Status "submitted") }}selected{{ end }}>Submitted</option>
                                     <option value="reviewed" {{ if and (eq .FormMode "edit") (eq .FormSession.Status "reviewed") }}selected{{ end }}>Reviewed</option>
                                     <option value="closed" {{ if and (eq .FormMode "edit") (eq .FormSession.Status "closed") }}selected{{ end }}>Closed</option>
+                                    <option value="po" {{ if and (eq .FormMode "edit") (eq .FormSession.Status "po") }}selected{{ end }}>PO</option>
                                     <option value="cancelled" {{ if and (eq .FormMode "edit") (eq .FormSession.Status "cancelled") }}selected{{ end }}>Cancelled</option>
                                 </select>
                             </div>

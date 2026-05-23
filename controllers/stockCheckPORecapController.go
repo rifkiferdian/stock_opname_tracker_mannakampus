@@ -123,7 +123,7 @@ func StockCheckPORecapUpdateStatus(c *gin.Context) {
 	}
 
 	if status == "po" && !isPORecapStatus(session.Status) {
-		c.Redirect(http.StatusSeeOther, appendRedirectMessage(redirectTo, "error", "Status session harus Closed sebelum diubah ke PO"))
+		c.Redirect(http.StatusSeeOther, appendRedirectMessage(redirectTo, "error", "Status session harus Reviewed atau Closed sebelum diubah ke PO"))
 		return
 	}
 
@@ -133,6 +133,9 @@ func StockCheckPORecapUpdateStatus(c *gin.Context) {
 	}
 
 	label := "Closed"
+	if status == "reviewed" {
+		label = "Reviewed"
+	}
 	if status == "po" {
 		label = "PO"
 	}
@@ -242,7 +245,7 @@ func buildStockCheckPORecapPageURL(filter models.StockCheckSessionListFilter, pa
 
 func isPORecapStatus(status string) bool {
 	switch strings.TrimSpace(status) {
-	case "closed", "po":
+	case "reviewed", "closed", "po":
 		return true
 	default:
 		return false

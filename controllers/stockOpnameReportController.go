@@ -202,12 +202,12 @@ func StockOpnameReportCompleteToPOBuyer(c *gin.Context) {
 		return
 	}
 
-	if err := sessionService.UpdateSessionStatusForPORecap(sessionID, "closed"); err != nil {
+	if err := sessionService.UpdateSessionStatusForPORecap(sessionID, "reviewed"); err != nil {
 		c.Redirect(http.StatusSeeOther, appendRedirectMessage(redirectTo, "error", err.Error()))
 		return
 	}
 
-	c.Redirect(http.StatusSeeOther, appendRedirectMessage(redirectTo, "success", "Session terbaru berhasil ditutup dan siap diproses PO Buyer"))
+	c.Redirect(http.StatusSeeOther, appendRedirectMessage(redirectTo, "success", "Session terbaru berhasil diubah ke Reviewed dan siap diproses PO Buyer"))
 }
 
 func buildStockOpnameReportService() *services.StockOpnameReportService {

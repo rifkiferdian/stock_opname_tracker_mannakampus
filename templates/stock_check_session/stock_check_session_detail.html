@@ -120,6 +120,88 @@
                 text-transform: uppercase;
             }
 
+            .session-status {
+                display: inline-flex;
+                align-items: center;
+                gap: 0.7rem;
+                font-size: 0.88rem;
+                font-weight: 800;
+                line-height: 1.25;
+            }
+
+            .session-status-dot {
+                display: inline-block;
+                height: 0.7rem;
+                width: 0.7rem;
+                flex: none;
+                border-radius: 9999px;
+                vertical-align: middle;
+            }
+
+            .session-status-label {
+                display: inline-block;
+            }
+
+            .session-status-label.break {
+                max-width: 4.75rem;
+            }
+
+            .session-status-text-draft {
+                color: #64748b;
+            }
+
+            .session-status-dot-draft {
+                background: #94a3b8;
+            }
+
+            .session-status-text-in-progress {
+                color: #f28b53;
+            }
+
+            .session-status-dot-in-progress {
+                background: #f28b53;
+            }
+
+            .session-status-text-submitted {
+                color: #2563eb;
+            }
+
+            .session-status-dot-submitted {
+                background: #2563eb;
+            }
+
+            .session-status-text-reviewed {
+                color: #64748b;
+            }
+
+            .session-status-dot-reviewed {
+                background: #64748b;
+            }
+
+            .session-status-text-closed {
+                color: #059669;
+            }
+
+            .session-status-dot-closed {
+                background: #10b981;
+            }
+
+            .session-status-text-po {
+                color: #7c3aed;
+            }
+
+            .session-status-dot-po {
+                background: #8b5cf6;
+            }
+
+            .session-status-text-cancelled {
+                color: #e11d48;
+            }
+
+            .session-status-dot-cancelled {
+                background: #f43f5e;
+            }
+
             .session-badge-muted {
                 background: #eef2f7;
                 color: #5d6b83;
@@ -826,6 +908,11 @@
                 color: #123d8f;
             }
 
+            .summary-cta[disabled] {
+                cursor: not-allowed;
+                opacity: 0.55;
+            }
+
             .summary-caption {
                 margin-top: 0.8rem;
                 font-size: 0.65rem;
@@ -1059,7 +1146,12 @@
                                     </div>
 
                                     <div class="shrink-0">
-                                        <span class="headline-badge {{ .Session.StatusBadgeClass }}">{{ .Session.StatusLabel }}</span><br><br>
+                                        <span class="session-status {{ .Session.StatusTextClass }}">
+                                            <span class="session-status-dot {{ .Session.StatusDotClass }}"></span>
+                                            <span class="session-status-label {{ if eq .Session.Status "in_progress" }}break{{ end }}">
+                                                {{ .Session.StatusLabel }}
+                                            </span>
+                                        </span><br><br>
                                         <p class="headline-time">
                                             Opened:
                                             <strong>{{ .Session.CreatedAtDisplay }}</strong>
@@ -1240,12 +1332,16 @@
                                 </div> -->
 
                                 <form method="post" action="/stock-checker/po-recap/{{ .Session.ID }}/status" data-close-session-form>
-                                    <input type="hidden" name="status" value="closed">
+                                    <input type="hidden" name="status" value="reviewed">
                                     <input type="hidden" name="redirect_to" value="{{ .CurrentPath }}">
-                                    <button type="submit" class="summary-cta">Selesai &amp; Pindah ke PO Buyer</button>
+                                    <button type="submit" class="summary-cta" {{ if eq .Session.Status "po" }}disabled aria-disabled="true"{{ end }}>Selesai &amp; Pindah ke PO Buyer</button>
                                 </form>
                                 <p class="summary-caption">
-                                    Dengan mengeklik tombol ini, status sesi akan diubah menjadi "Closed". Pastikan semua item sudah benar sebelum melanjutkan ke tahap PO Buyer.
+                                    {{ if eq .Session.Status "po" }}
+                                    Status sesi sudah "PO" dan tidak bisa diubah lagi.
+                                    {{ else }}
+                                    Dengan mengeklik tombol ini, status sesi akan diubah menjadi "Reviewed". Pastikan semua item sudah benar sebelum melanjutkan ke tahap PO Buyer.
+                                    {{ end }}
                                 </p>
                             </article>
                         </section>
@@ -1415,7 +1511,7 @@
                         event.preventDefault();
                         Swal.fire({
                             title: 'Selesai sesi ini?',
-                            text: 'Status sesi akan diubah menjadi Selesai dan Akan muncul di PO Buyer.',
+                            text: 'Status sesi akan diubah menjadi Reviewed dan akan muncul di PO Buyer.',
                             icon: 'warning',
                             showCancelButton: true,
                             confirmButtonText: 'Ya, Selesai sesi',

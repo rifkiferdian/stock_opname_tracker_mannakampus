@@ -540,8 +540,8 @@ func (s *StockCheckSessionService) UpdateSessionStatusForPORecap(sessionID int, 
 	}
 
 	status = sanitizeStockCheckSessionStatus(status)
-	if status != "closed" && status != "po" {
-		return errors.New("status harus closed atau po")
+	if status != "closed" && status != "po" && status != "reviewed" {
+		return errors.New("status harus reviewed, closed, atau po")
 	}
 
 	exists, err := s.Repo.ExistsByID(sessionID)

@@ -346,23 +346,12 @@ func (r *StockOpnameReportRepository) GetReportRecords(supplierID int, status st
 	return records, rows.Err()
 }
 
-func (r *StockOpnameReportRepository) GetMonthlyApprovalCounts(supplierID int, fromDate time.Time) (map[string]float64, error) {
+func (r *StockOpnameReportRepository) GetMonthlySessionCounts(supplierID int, fromDate time.Time) (map[string]float64, error) {
 	query := `
 		SELECT
 			DATE_FORMAT(scs.session_date, '%Y-%m') AS month_key,
-			COALESCE(SUM(
-				CASE
-					WHEN si.status IN ('approved', 'po_created') THEN (
-						COALESCE(si.approved_buy_carton, 0) * COALESCE(p.pcs_per_carton, 0) +
-						COALESCE(si.approved_buy_box, 0) * COALESCE(p.pcs_per_box, 0) +
-						COALESCE(si.approved_buy_pcs, 0)
-					)
-					ELSE 0
-				END
-			), 0) AS approval_qty
+			COUNT(DISTINCT scs.id) AS session_count
 		FROM stock_check_sessions scs
-		LEFT JOIN stock_check_session_items si ON si.stock_check_session_id = scs.id
-		LEFT JOIN products p ON p.id = si.product_id
 		WHERE scs.supplier_id = ?
 			AND scs.session_date >= ?
 	`
@@ -380,12 +369,12 @@ func (r *StockOpnameReportRepository) GetMonthlyApprovalCounts(supplierID int, f
 	counts := make(map[string]float64)
 	for rows.Next() {
 		var monthKey string
-		var approvalQty sql.NullFloat64
-		if err := rows.Scan(&monthKey, &approvalQty); err != nil {
+		var sessionCount sql.NullFloat64
+		if err := rows.Scan(&monthKey, &sessionCount); err != nil {
 			return nil, err
 		}
-		if approvalQty.Valid {
-			counts[monthKey] = approvalQty.Float64
+		if sessionCount.Valid {
+			counts[monthKey] = sessionCount.Float64
 		} else {
 			counts[monthKey] = 0
 		}

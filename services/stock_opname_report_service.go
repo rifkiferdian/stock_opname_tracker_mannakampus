@@ -161,7 +161,7 @@ func (s *StockOpnameReportService) GetDetailPage(supplierID int, filter models.S
 	page.ApplyAllSubmittedCount = summaryMetrics.SubmittedItems
 
 	anchorDate := currentDate
-	monthlyCounts, err := s.Repo.GetMonthlyApprovalCounts(supplierID, time.Date(anchorDate.Year(), anchorDate.Month(), 1, 0, 0, 0, 0, anchorDate.Location()).AddDate(0, -12, 0))
+	monthlyCounts, err := s.Repo.GetMonthlySessionCounts(supplierID, time.Date(anchorDate.Year(), anchorDate.Month(), 1, 0, 0, 0, 0, anchorDate.Location()).AddDate(0, -12, 0))
 	if err != nil {
 		return models.StockOpnameReportPage{}, err
 	}
