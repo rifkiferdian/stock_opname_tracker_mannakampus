@@ -49,10 +49,12 @@ type StockOpnameReportRecord struct {
 	BuyerNotes          string
 }
 
-type StockOpnameProductMonthlyPORecord struct {
-	ProductID int
-	MonthKey  string
-	POQty     float64
+type StockOpnameProductMonthlySOTrendRecord struct {
+	ProductID    int
+	MonthKey     string
+	TotalCarton  int
+	TotalBox     int
+	TotalPcs     int
 }
 
 func (r *StockOpnameReportRepository) GetDistinctSessionDates(supplierID int, limit int) ([]time.Time, error) {
@@ -383,27 +385,31 @@ func (r *StockOpnameReportRepository) GetMonthlySessionCounts(supplierID int, fr
 	return counts, rows.Err()
 }
 
-func (r *StockOpnameReportRepository) GetProductMonthlyPORecords(supplierID int, status string, itemName string, currentDate time.Time, fromDate time.Time) ([]StockOpnameProductMonthlyPORecord, error) {
+func (r *StockOpnameReportRepository) GetProductMonthlySOTrendRecords(supplierID int, status string, itemName string, currentDate time.Time, fromDate time.Time) ([]StockOpnameProductMonthlySOTrendRecord, error) {
 	query := `
 		SELECT
-			base.product_id,
-			base.month_key,
-			COALESCE(SUM(base.session_po_qty), 0) AS po_qty
-		FROM (
-			SELECT
-				si.product_id,
-				scs.id AS session_id,
-				DATE_FORMAT(scs.session_date, '%Y-%m') AS month_key,
-				COALESCE(SUM(
-					COALESCE(si.approved_buy_carton, 0) * COALESCE(p.pcs_per_carton, 0) +
-					COALESCE(si.approved_buy_box, 0) * COALESCE(p.pcs_per_box, 0) +
-					COALESCE(si.approved_buy_pcs, 0)
-				), 0) AS session_po_qty
-			FROM stock_check_sessions scs
-			INNER JOIN stock_check_session_items si ON si.stock_check_session_id = scs.id
-			INNER JOIN products p ON p.id = si.product_id
-			WHERE scs.supplier_id = ?
-				AND scs.session_date >= ?
+			si.product_id,
+			DATE_FORMAT(scs.session_date, '%Y-%m') AS month_key,
+			COALESCE(SUM(
+				COALESCE(si.qty_store_carton, 0) +
+				COALESCE(si.qty_warehouse_carton, 0) +
+				COALESCE(si.approved_buy_carton, 0)
+			), 0) AS total_carton,
+			COALESCE(SUM(
+				COALESCE(si.qty_store_box, 0) +
+				COALESCE(si.qty_warehouse_box, 0) +
+				COALESCE(si.approved_buy_box, 0)
+			), 0) AS total_box,
+			COALESCE(SUM(
+				COALESCE(si.qty_store_pcs, 0) +
+				COALESCE(si.qty_warehouse_pcs, 0) +
+				COALESCE(si.approved_buy_pcs, 0)
+			), 0) AS total_pcs
+		FROM stock_check_sessions scs
+		INNER JOIN stock_check_session_items si ON si.stock_check_session_id = scs.id
+		INNER JOIN products p ON p.id = si.product_id
+		WHERE scs.supplier_id = ?
+			AND scs.session_date >= ?
 	`
 	args := []interface{}{supplierID, fromDate.Format("2006-01-02")}
 
@@ -438,10 +444,8 @@ func (r *StockOpnameReportRepository) GetProductMonthlyPORecords(supplierID int,
 	}
 
 	query += `
-			GROUP BY si.product_id, scs.id, DATE_FORMAT(scs.session_date, '%Y-%m')
-		) base
-		GROUP BY base.product_id, base.month_key
-		ORDER BY base.month_key ASC, base.product_id ASC
+		GROUP BY si.product_id, DATE_FORMAT(scs.session_date, '%Y-%m')
+		ORDER BY month_key ASC, si.product_id ASC
 	`
 
 	rows, err := r.DB.Query(query, args...)
@@ -450,18 +454,26 @@ func (r *StockOpnameReportRepository) GetProductMonthlyPORecords(supplierID int,
 	}
 	defer rows.Close()
 
-	records := make([]StockOpnameProductMonthlyPORecord, 0)
+	records := make([]StockOpnameProductMonthlySOTrendRecord, 0)
 	for rows.Next() {
 		var (
-			record StockOpnameProductMonthlyPORecord
-			poQty  sql.NullFloat64
+			record      StockOpnameProductMonthlySOTrendRecord
+			totalCarton sql.NullInt64
+			totalBox    sql.NullInt64
+			totalPcs    sql.NullInt64
 		)
 
-		if err := rows.Scan(&record.ProductID, &record.MonthKey, &poQty); err != nil {
+		if err := rows.Scan(&record.ProductID, &record.MonthKey, &totalCarton, &totalBox, &totalPcs); err != nil {
 			return nil, err
 		}
-		if poQty.Valid {
-			record.POQty = poQty.Float64
+		if totalCarton.Valid {
+			record.TotalCarton = int(totalCarton.Int64)
+		}
+		if totalBox.Valid {
+			record.TotalBox = int(totalBox.Int64)
+		}
+		if totalPcs.Valid {
+			record.TotalPcs = int(totalPcs.Int64)
 		}
 
 		records = append(records, record)

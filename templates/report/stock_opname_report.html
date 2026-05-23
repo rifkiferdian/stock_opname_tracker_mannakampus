@@ -566,9 +566,11 @@
             }
 
             .po-trend-total {
-                font-size: 0.82rem;
+                font-size: 0.62rem;
                 font-weight: 800;
                 color: #173f92;
+                line-height: 1.2;
+                text-align: right;
             }
 
             .po-trend-chart {
@@ -988,7 +990,7 @@
                                                 <span style="font-size: 0.52rem; letter-spacing: 0.08em; color: #5f7293;">Session:</span>
                                                 <span style="font-size: 0.52rem; letter-spacing: 0.08em; {{ if eq .Report.CurrentSessionStatus "Closed" }}color: #16a34a;{{ else }}color: #f59e0b;{{ end }}">{{ .Report.CurrentSessionStatus }}</span>
                                             </th>
-                                            <th>PO / Bulan</th>
+                                            <th>SO / Bulan</th>
                                             {{ range .Report.HistoryDateLabels }}
                                             <th>SO Sebelumnya <br>({{ . }})</th>
                                             {{ end }}
@@ -1073,14 +1075,16 @@
                                             <td class="po-trend-cell">
                                                 <div class="po-trend-card">
                                                     <div class="po-trend-head">
-                                                        <span class="po-trend-label">Trend PO 13 Bulan</span>
-                                                        <span class="po-trend-total">{{ .POTrendTotalLabel }}</span>
+                                                        <span class="po-trend-label">Trend SO 13 Bulan</span>
+                                                        <span class="po-trend-total">{{ .SOTrendTotalLabel }}</span>
                                                     </div>
                                                     <div
                                                         class="po-trend-chart"
                                                         data-po-trend
-                                                        data-series='{{ .POTrendSeriesJSON }}'
-                                                        data-labels='{{ .POTrendLabelsJSON }}'
+                                                        data-carton-series='{{ .SOTrendCartonSeriesJSON }}'
+                                                        data-box-series='{{ .SOTrendBoxSeriesJSON }}'
+                                                        data-pcs-series='{{ .SOTrendPcsSeriesJSON }}'
+                                                        data-labels='{{ .SOTrendLabelsJSON }}'
                                                     ></div>
                                                 </div>
                                             </td>
@@ -1342,14 +1346,20 @@
                 }
 
                 document.querySelectorAll('[data-po-trend]').forEach(function (element) {
-                    var series = [];
+                    var cartonSeries = [];
+                    var boxSeries = [];
+                    var pcsSeries = [];
                     var labels = [];
 
                     try {
-                        series = JSON.parse(element.getAttribute('data-series') || '[]');
+                        cartonSeries = JSON.parse(element.getAttribute('data-carton-series') || '[]');
+                        boxSeries = JSON.parse(element.getAttribute('data-box-series') || '[]');
+                        pcsSeries = JSON.parse(element.getAttribute('data-pcs-series') || '[]');
                         labels = JSON.parse(element.getAttribute('data-labels') || '[]');
                     } catch (error) {
-                        series = [];
+                        cartonSeries = [];
+                        boxSeries = [];
+                        pcsSeries = [];
                         labels = [];
                     }
 
@@ -1363,10 +1373,11 @@
                             toolbar: { show: false },
                             animations: { enabled: false }
                         },
-                        series: [{
-                            name: 'PO',
-                            data: series
-                        }],
+                        series: [
+                            { name: 'Carton', data: cartonSeries },
+                            { name: 'Box', data: boxSeries },
+                            { name: 'Pcs', data: pcsSeries }
+                        ],
                         xaxis: {
                             categories: labels
                         },
@@ -1374,7 +1385,7 @@
                             curve: 'smooth',
                             width: 2
                         },
-                        colors: ['#173f92'],
+                        colors: ['#ea580c', '#16a34a', '#2563eb'],
                         grid: {
                             show: false
                         },
@@ -1390,8 +1401,12 @@
                                 show: true
                             },
                             y: {
-                                formatter: function (value) {
-                                    return 'PO ' + value;
+                                formatter: function (value, context) {
+                                    var unit = 'qty';
+                                    if (context && context.seriesIndex === 0) unit = 'ctn';
+                                    if (context && context.seriesIndex === 1) unit = 'box';
+                                    if (context && context.seriesIndex === 2) unit = 'pcs';
+                                    return value + ' ' + unit;
                                 }
                             }
                         }

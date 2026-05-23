@@ -109,9 +109,11 @@ type StockOpnameReportRow struct {
 	ActionURL               string
 	LatestSessionID         int
 	LatestSessionDate       string
-	POTrendSeriesJSON       string
-	POTrendLabelsJSON       string
-	POTrendTotalLabel       string
+	SOTrendCartonSeriesJSON string
+	SOTrendBoxSeriesJSON    string
+	SOTrendPcsSeriesJSON    string
+	SOTrendLabelsJSON       string
+	SOTrendTotalLabel       string
 }
 
 type StockOpnameReportTrendBar struct {
