@@ -81,19 +81,25 @@ type StockCheckSessionUpdateInput struct {
 }
 
 type StockCheckSessionReviewItemUpdateInput struct {
-	SessionID      int
-	ItemID         int
-	ApprovedBuyQty float64
-	BuyerNotes     string
-	Status         string
-	ReviewedBy     int
-	UpdatedBy      int
+	SessionID         int
+	ItemID            int
+	ApprovedBuyCarton int
+	ApprovedBuyBox    int
+	ApprovedBuyPcs    int
+	ApprovedBuyQty    float64
+	BuyerNotes        string
+	Status            string
+	ReviewedBy        int
+	UpdatedBy         int
 }
 
 type StockCheckSessionReviewItemEditForm struct {
-	ItemID         int
-	ApprovedBuyQty string
-	BuyerNotes     string
+	ItemID            int
+	ApprovedBuyCarton string
+	ApprovedBuyBox    string
+	ApprovedBuyPcs    string
+	ApprovedBuyQty    string
+	BuyerNotes        string
 }
 
 type StockCheckSessionCheckerScanForm struct {
@@ -178,6 +184,10 @@ type StockCheckSessionReviewItem struct {
 	SuggestBuyBox                int
 	SuggestBuyPcs                int
 	SuggestBuyBreakdownDisplay   string
+	ApprovedBuyCarton            int
+	ApprovedBuyBox               int
+	ApprovedBuyPcs               int
+	ApprovedBuyBreakdownDisplay  string
 	ApprovedBuyQty               float64
 	ApprovedBuyQtyDisplay        string
 	SelectedSupplierName         string

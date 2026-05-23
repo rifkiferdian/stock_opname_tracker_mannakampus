@@ -8,6 +8,7 @@ import (
 	"gobase-app/models"
 	"gobase-app/repositories"
 	"gobase-app/services"
+	"math"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -520,10 +521,13 @@ func StockCheckSessionPODetail(c *gin.Context) {
 
 func StockCheckSessionReviewItemUpdate(c *gin.Context) {
 	type stockCheckSessionReviewItemForm struct {
-		ItemID         int    `form:"item_id" binding:"required"`
-		ApprovedBuyQty string `form:"approved_buy_qty" binding:"required"`
-		BuyerNotes     string `form:"buyer_notes"`
-		RedirectTo     string `form:"redirect_to"`
+		ItemID            int    `form:"item_id" binding:"required"`
+		ApprovedBuyCarton string `form:"approved_buy_carton"`
+		ApprovedBuyBox    string `form:"approved_buy_box"`
+		ApprovedBuyPcs    string `form:"approved_buy_pcs"`
+		ApprovedBuyQty    string `form:"approved_buy_qty"`
+		BuyerNotes        string `form:"buyer_notes"`
+		RedirectTo        string `form:"redirect_to"`
 	}
 
 	sessionID, err := strconv.Atoi(c.Param("id"))
@@ -567,34 +571,103 @@ func StockCheckSessionReviewItemUpdate(c *gin.Context) {
 			return
 		}
 		renderStockCheckSessionDetailPage(c, service, sessionID, "", "Form edit item tidak lengkap", models.StockCheckSessionReviewItemEditForm{
-			ItemID:         form.ItemID,
-			ApprovedBuyQty: form.ApprovedBuyQty,
-			BuyerNotes:     form.BuyerNotes,
+			ItemID:            form.ItemID,
+			ApprovedBuyCarton: form.ApprovedBuyCarton,
+			ApprovedBuyBox:    form.ApprovedBuyBox,
+			ApprovedBuyPcs:    form.ApprovedBuyPcs,
+			ApprovedBuyQty:    form.ApprovedBuyQty,
+			BuyerNotes:        form.BuyerNotes,
 		})
 		return
 	}
 
-	approvedBuyQty, err := strconv.ParseFloat(strings.TrimSpace(form.ApprovedBuyQty), 64)
+	approvedBuyCarton, err := parseStockCheckNonNegativeInt(form.ApprovedBuyCarton)
 	if err != nil {
 		if redirectTo := sanitizeRedirectTarget(form.RedirectTo); redirectTo != "" {
-			c.Redirect(http.StatusSeeOther, appendRedirectMessage(redirectTo, "error", "Final approve harus berupa angka yang valid"))
+			c.Redirect(http.StatusSeeOther, appendRedirectMessage(redirectTo, "error", "Final approve carton harus berupa angka bulat yang valid"))
 			return
 		}
-		renderStockCheckSessionDetailPage(c, service, sessionID, "", "Final approve harus berupa angka yang valid", models.StockCheckSessionReviewItemEditForm{
-			ItemID:         form.ItemID,
-			ApprovedBuyQty: form.ApprovedBuyQty,
-			BuyerNotes:     form.BuyerNotes,
+		renderStockCheckSessionDetailPage(c, service, sessionID, "", "Final approve carton harus berupa angka bulat yang valid", models.StockCheckSessionReviewItemEditForm{
+			ItemID:            form.ItemID,
+			ApprovedBuyCarton: form.ApprovedBuyCarton,
+			ApprovedBuyBox:    form.ApprovedBuyBox,
+			ApprovedBuyPcs:    form.ApprovedBuyPcs,
+			ApprovedBuyQty:    form.ApprovedBuyQty,
+			BuyerNotes:        form.BuyerNotes,
 		})
 		return
+	}
+
+	approvedBuyBox, err := parseStockCheckNonNegativeInt(form.ApprovedBuyBox)
+	if err != nil {
+		if redirectTo := sanitizeRedirectTarget(form.RedirectTo); redirectTo != "" {
+			c.Redirect(http.StatusSeeOther, appendRedirectMessage(redirectTo, "error", "Final approve box harus berupa angka bulat yang valid"))
+			return
+		}
+		renderStockCheckSessionDetailPage(c, service, sessionID, "", "Final approve box harus berupa angka bulat yang valid", models.StockCheckSessionReviewItemEditForm{
+			ItemID:            form.ItemID,
+			ApprovedBuyCarton: form.ApprovedBuyCarton,
+			ApprovedBuyBox:    form.ApprovedBuyBox,
+			ApprovedBuyPcs:    form.ApprovedBuyPcs,
+			ApprovedBuyQty:    form.ApprovedBuyQty,
+			BuyerNotes:        form.BuyerNotes,
+		})
+		return
+	}
+
+	approvedBuyPcs, err := parseStockCheckNonNegativeInt(form.ApprovedBuyPcs)
+	if err != nil {
+		if redirectTo := sanitizeRedirectTarget(form.RedirectTo); redirectTo != "" {
+			c.Redirect(http.StatusSeeOther, appendRedirectMessage(redirectTo, "error", "Final approve pcs harus berupa angka bulat yang valid"))
+			return
+		}
+		renderStockCheckSessionDetailPage(c, service, sessionID, "", "Final approve pcs harus berupa angka bulat yang valid", models.StockCheckSessionReviewItemEditForm{
+			ItemID:            form.ItemID,
+			ApprovedBuyCarton: form.ApprovedBuyCarton,
+			ApprovedBuyBox:    form.ApprovedBuyBox,
+			ApprovedBuyPcs:    form.ApprovedBuyPcs,
+			ApprovedBuyQty:    form.ApprovedBuyQty,
+			BuyerNotes:        form.BuyerNotes,
+		})
+		return
+	}
+
+	// Backward compatibility for pages/forms still sending a single approved_buy_qty field.
+	if strings.TrimSpace(form.ApprovedBuyCarton) == "" &&
+		strings.TrimSpace(form.ApprovedBuyBox) == "" &&
+		strings.TrimSpace(form.ApprovedBuyPcs) == "" &&
+		strings.TrimSpace(form.ApprovedBuyQty) != "" {
+		legacyApprovedQty, legacyErr := strconv.ParseFloat(strings.TrimSpace(form.ApprovedBuyQty), 64)
+		if legacyErr != nil {
+			if redirectTo := sanitizeRedirectTarget(form.RedirectTo); redirectTo != "" {
+				c.Redirect(http.StatusSeeOther, appendRedirectMessage(redirectTo, "error", "Final approve harus berupa angka yang valid"))
+				return
+			}
+			renderStockCheckSessionDetailPage(c, service, sessionID, "", "Final approve harus berupa angka yang valid", models.StockCheckSessionReviewItemEditForm{
+				ItemID:            form.ItemID,
+				ApprovedBuyQty:    form.ApprovedBuyQty,
+				ApprovedBuyCarton: form.ApprovedBuyCarton,
+				ApprovedBuyBox:    form.ApprovedBuyBox,
+				ApprovedBuyPcs:    form.ApprovedBuyPcs,
+				BuyerNotes:        form.BuyerNotes,
+			})
+			return
+		}
+		approvedBuyPcs = int(math.Round(legacyApprovedQty))
+		if approvedBuyPcs < 0 {
+			approvedBuyPcs = 0
+		}
 	}
 
 	err = service.UpdateReviewItem(models.StockCheckSessionReviewItemUpdateInput{
-		SessionID:      sessionID,
-		ItemID:         form.ItemID,
-		ApprovedBuyQty: approvedBuyQty,
-		BuyerNotes:     form.BuyerNotes,
-		ReviewedBy:     extractCurrentUserID(c),
-		UpdatedBy:      extractCurrentUserID(c),
+		SessionID:         sessionID,
+		ItemID:            form.ItemID,
+		ApprovedBuyCarton: approvedBuyCarton,
+		ApprovedBuyBox:    approvedBuyBox,
+		ApprovedBuyPcs:    approvedBuyPcs,
+		BuyerNotes:        form.BuyerNotes,
+		ReviewedBy:        extractCurrentUserID(c),
+		UpdatedBy:         extractCurrentUserID(c),
 	})
 	if err != nil {
 		if redirectTo := sanitizeRedirectTarget(form.RedirectTo); redirectTo != "" {
@@ -602,9 +675,12 @@ func StockCheckSessionReviewItemUpdate(c *gin.Context) {
 			return
 		}
 		renderStockCheckSessionDetailPage(c, service, sessionID, "", err.Error(), models.StockCheckSessionReviewItemEditForm{
-			ItemID:         form.ItemID,
-			ApprovedBuyQty: form.ApprovedBuyQty,
-			BuyerNotes:     form.BuyerNotes,
+			ItemID:            form.ItemID,
+			ApprovedBuyCarton: form.ApprovedBuyCarton,
+			ApprovedBuyBox:    form.ApprovedBuyBox,
+			ApprovedBuyPcs:    form.ApprovedBuyPcs,
+			ApprovedBuyQty:    form.ApprovedBuyQty,
+			BuyerNotes:        form.BuyerNotes,
 		})
 		return
 	}

@@ -920,7 +920,7 @@
                                 </div>
 
                                 <div class="report-toolbar">
-                                    <form method="post" action="/reports/stock-opname/{{ .Supplier.ID }}/apply-all-submitted" class="filter-form" onsubmit="return confirm('Apply semua item submitted di SO terbaru dengan nilai suggest checker?');">
+                                    <form method="post" action="/reports/stock-opname/{{ .Supplier.ID }}/apply-all-submitted" class="filter-form" onsubmit="return confirm('Apply semua item submitted di SO terbaru? Nilai Suggest (carton/box/pcs) akan dipindah ke Final Approve.');">
                                         <input type="hidden" name="redirect_to" value="" data-report-redirect>
                                         <button type="submit" class="toolbar-button success">
                                             <i class="bx bx-check-double"></i>

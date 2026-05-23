@@ -130,6 +130,9 @@ func (r *StockCheckSessionRepository) GetReviewItems(sessionID int) ([]models.St
 			COALESCE(si.suggest_buy_carton, 0) AS suggest_buy_carton,
 			COALESCE(si.suggest_buy_box, 0) AS suggest_buy_box,
 			COALESCE(si.suggest_buy_pcs, 0) AS suggest_buy_pcs,
+			COALESCE(si.approved_buy_carton, 0) AS approved_buy_carton,
+			COALESCE(si.approved_buy_box, 0) AS approved_buy_box,
+			COALESCE(si.approved_buy_pcs, 0) AS approved_buy_pcs,
 			(
 				COALESCE(si.approved_buy_carton, 0) * COALESCE(p.pcs_per_carton, 0) +
 				COALESCE(si.approved_buy_box, 0) * COALESCE(p.pcs_per_box, 0) +
@@ -216,6 +219,9 @@ func (r *StockCheckSessionRepository) GetReviewItems(sessionID int) ([]models.St
 			&item.SuggestBuyCarton,
 			&item.SuggestBuyBox,
 			&item.SuggestBuyPcs,
+			&item.ApprovedBuyCarton,
+			&item.ApprovedBuyBox,
+			&item.ApprovedBuyPcs,
 			&approvedQty,
 			&item.SelectedSupplierName,
 			&item.CheckerNotes,
@@ -275,6 +281,7 @@ func (r *StockCheckSessionRepository) GetReviewItems(sessionID int) ([]models.St
 		item.SystemTotalQtyDisplay = formatStockCheckWholeNumber(item.SystemTotalQty)
 		item.SuggestBuyQtyDisplay = formatStockCheckWholeNumber(item.SuggestBuyQty)
 		item.SuggestBuyBreakdownDisplay = formatStockCheckUnitBreakdownShort(item.SuggestBuyCarton, item.SuggestBuyBox, item.SuggestBuyPcs)
+		item.ApprovedBuyBreakdownDisplay = formatStockCheckUnitBreakdownShort(item.ApprovedBuyCarton, item.ApprovedBuyBox, item.ApprovedBuyPcs)
 		item.ApprovedBuyQtyDisplay = formatStockCheckWholeNumber(item.ApprovedBuyQty)
 		item.SuggestLineValue = item.SuggestBuyQty * linePrice
 		item.ApprovedLineValue = item.ApprovedBuyQty * linePrice
@@ -550,15 +557,25 @@ func (r *StockCheckSessionRepository) UpdateReviewItem(input models.StockCheckSe
 	}()
 
 	var existing struct {
-		ProductID      int
-		ApprovedBuyQty sql.NullFloat64
-		BuyerNotes     sql.NullString
-		Status         string
+		ProductID         int
+		PcsPerBox         int
+		PcsPerCarton      int
+		ApprovedBuyCarton int
+		ApprovedBuyBox    int
+		ApprovedBuyPcs    int
+		ApprovedBuyQty    sql.NullFloat64
+		BuyerNotes        sql.NullString
+		Status            string
 	}
 
 	err = tx.QueryRow(`
 		SELECT
 			si.product_id,
+			COALESCE(p.pcs_per_box, 0) AS pcs_per_box,
+			COALESCE(p.pcs_per_carton, 0) AS pcs_per_carton,
+			COALESCE(si.approved_buy_carton, 0) AS approved_buy_carton,
+			COALESCE(si.approved_buy_box, 0) AS approved_buy_box,
+			COALESCE(si.approved_buy_pcs, 0) AS approved_buy_pcs,
 			(
 				COALESCE(si.approved_buy_carton, 0) * COALESCE(p.pcs_per_carton, 0) +
 				COALESCE(si.approved_buy_box, 0) * COALESCE(p.pcs_per_box, 0) +
@@ -575,6 +592,11 @@ func (r *StockCheckSessionRepository) UpdateReviewItem(input models.StockCheckSe
 		input.ItemID,
 	).Scan(
 		&existing.ProductID,
+		&existing.PcsPerBox,
+		&existing.PcsPerCarton,
+		&existing.ApprovedBuyCarton,
+		&existing.ApprovedBuyBox,
+		&existing.ApprovedBuyPcs,
 		&existing.ApprovedBuyQty,
 		&existing.BuyerNotes,
 		&existing.Status,
@@ -583,10 +605,7 @@ func (r *StockCheckSessionRepository) UpdateReviewItem(input models.StockCheckSe
 		return err
 	}
 
-	approvedBuyPcs := int(math.Round(input.ApprovedBuyQty))
-	if approvedBuyPcs < 0 {
-		approvedBuyPcs = 0
-	}
+	input.ApprovedBuyQty = float64(input.ApprovedBuyCarton*existing.PcsPerCarton + input.ApprovedBuyBox*existing.PcsPerBox + input.ApprovedBuyPcs)
 
 	_, err = tx.Exec(`
 		UPDATE stock_check_session_items
@@ -601,9 +620,9 @@ func (r *StockCheckSessionRepository) UpdateReviewItem(input models.StockCheckSe
 			updated_by = ?
 		WHERE stock_check_session_id = ? AND id = ?
 	`,
-		0,
-		0,
-		approvedBuyPcs,
+		input.ApprovedBuyCarton,
+		input.ApprovedBuyBox,
+		input.ApprovedBuyPcs,
 		nullableText(input.BuyerNotes),
 		input.Status,
 		input.ReviewedBy,
@@ -623,11 +642,25 @@ func (r *StockCheckSessionRepository) UpdateReviewItem(input models.StockCheckSe
 		Notes        string
 	}{
 		{
-			FieldName:    "approved_buy_pcs",
-			OldValue:     formatHistoryFloat(existing.ApprovedBuyQty),
-			NewValue:     formatHistoryDecimal(input.ApprovedBuyQty),
+			FieldName:    "approved_buy_carton",
+			OldValue:     strconv.Itoa(existing.ApprovedBuyCarton),
+			NewValue:     strconv.Itoa(input.ApprovedBuyCarton),
 			ChangeReason: "review item updated",
-			Notes:        "Perubahan final approve dari halaman detail stock check session.",
+			Notes:        "Perubahan final approve carton dari halaman detail stock check session.",
+		},
+		{
+			FieldName:    "approved_buy_box",
+			OldValue:     strconv.Itoa(existing.ApprovedBuyBox),
+			NewValue:     strconv.Itoa(input.ApprovedBuyBox),
+			ChangeReason: "review item updated",
+			Notes:        "Perubahan final approve box dari halaman detail stock check session.",
+		},
+		{
+			FieldName:    "approved_buy_pcs",
+			OldValue:     strconv.Itoa(existing.ApprovedBuyPcs),
+			NewValue:     strconv.Itoa(input.ApprovedBuyPcs),
+			ChangeReason: "review item updated",
+			Notes:        "Perubahan final approve pcs dari halaman detail stock check session.",
 		},
 		{
 			FieldName:    "buyer_notes",

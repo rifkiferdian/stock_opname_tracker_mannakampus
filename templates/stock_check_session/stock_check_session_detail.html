@@ -414,6 +414,10 @@
                 color: var(--orange);
             }
 
+            .unit-breakdown-text.approved {
+                color: #059669;
+            }
+
             .qty-hint {
                 margin-top: 0.65rem;
                 font-size: 0.7rem;
@@ -1096,7 +1100,7 @@
                             </div>
 
                             <div class="toolbar-group">
-                                <form method="post" action="/stock-check-sessions/{{ .Session.ID }}/apply-all-submitted" onsubmit="return confirm('Apply semua item submitted di sesi ini dengan nilai suggest checker?');">
+                                <form method="post" action="/stock-check-sessions/{{ .Session.ID }}/apply-all-submitted" onsubmit="return confirm('Apply semua item submitted di sesi ini? Nilai Suggest (carton/box/pcs) akan dipindah ke Final Approve.');">
                                     <input type="hidden" name="redirect_to" value="/stock-check-sessions/{{ .Session.ID }}{{ if gt .Pagination.CurrentPage 1 }}?page={{ .Pagination.CurrentPage }}{{ end }}">
                                     <button type="submit" class="tool-button emphasis">
                                         <i class="bx bx-check-circle"></i>
@@ -1112,7 +1116,9 @@
                                     <thead>
                                         <tr>
                                             <th>Item Details</th>
-                                            <th>Checker Qty<br>(Shop / Wh)</th>
+                                            <th>Shop Qty</th>
+                                            <th>Warehouse Qty</th>
+                                            <th>Total Qty</th>
                                             <th>Suggested</th>
                                             <th>Final Approve</th>
                                             <th>Status</th>
@@ -1130,7 +1136,9 @@
                                                             class="item-title item-title-button btn-edit-review"
                                                             data-item-id="{{ .ID }}"
                                                             data-product-name="{{ .ProductName }}"
-                                                            data-approved-buy-qty="{{ if eq .Status "rejected" }}0{{ else if gt .ApprovedBuyQty 0.0 }}{{ .ApprovedBuyQty }}{{ else }}{{ .SuggestBuyQty }}{{ end }}"
+                                                            data-approved-buy-carton="{{ if eq .Status "rejected" }}0{{ else if or (gt .ApprovedBuyCarton 0) (gt .ApprovedBuyBox 0) (gt .ApprovedBuyPcs 0) }}{{ .ApprovedBuyCarton }}{{ else }}{{ .SuggestBuyCarton }}{{ end }}"
+                                                            data-approved-buy-box="{{ if eq .Status "rejected" }}0{{ else if or (gt .ApprovedBuyCarton 0) (gt .ApprovedBuyBox 0) (gt .ApprovedBuyPcs 0) }}{{ .ApprovedBuyBox }}{{ else }}{{ .SuggestBuyBox }}{{ end }}"
+                                                            data-approved-buy-pcs="{{ if eq .Status "rejected" }}0{{ else if or (gt .ApprovedBuyCarton 0) (gt .ApprovedBuyBox 0) (gt .ApprovedBuyPcs 0) }}{{ .ApprovedBuyPcs }}{{ else }}{{ .SuggestBuyPcs }}{{ end }}"
                                                             data-buyer-notes="{{ .BuyerNotes }}"
                                                         >
                                                             {{ .ProductName }}
@@ -1142,26 +1150,19 @@
                                                 </div>
                                             </td>
                                             <td>
-                                                <div class="qty-grid">
-                                                    <div class="qty-box">
-                                                        <span>Shop</span>
-                                                        <small>{{ .QtyStoreBreakdownDisplay }}</small>
-                                                    </div>
-                                                    <div class="qty-box">
-                                                        <span>Wh</span>
-                                                        <small>{{ .QtyWarehouseBreakdownDisplay }}</small>
-                                                    </div>
-                                                    <!-- <div class="qty-box">
-                                                        <span>Total</span>
-                                                        <small>{{ .TotalQtyBreakdownDisplay }}</small>
-                                                    </div> -->
-                                                </div>
+                                                <small class="unit-breakdown-text">{{ .QtyStoreBreakdownDisplay }}</small>
+                                            </td>
+                                            <td>
+                                                <small class="unit-breakdown-text">{{ .QtyWarehouseBreakdownDisplay }}</small>
+                                            </td>
+                                            <td>
+                                                <small class="unit-breakdown-text">{{ .TotalQtyBreakdownDisplay }}</small>
                                             </td>
                                             <td>
                                                 <small class="unit-breakdown-text orange">{{ .SuggestBuyBreakdownDisplay }}</small>
                                             </td>
                                             <td>
-                                                <span class="approve-pill {{ if eq .Status "rejected" }}rejected{{ end }}">{{ .ApprovedBuyQtyDisplay }}</span>
+                                                <small class="unit-breakdown-text approved">{{ .ApprovedBuyBreakdownDisplay }}</small>
                                             </td>
                                             <td>
                                                 <span class="status-pill {{ .StatusBadgeClass }}">{{ .StatusLabel }}</span>
@@ -1169,7 +1170,7 @@
                                         </tr>
                                         {{ else }}
                                         <tr>
-                                            <td colspan="5" class="px-5 py-12 text-center">
+                                            <td colspan="7" class="px-5 py-12 text-center">
                                                 <div class="mx-auto max-w-md">
                                                     <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 text-slate-400">
                                                         <i class="bx bx-clipboard text-3xl"></i>
@@ -1279,18 +1280,19 @@
                         </div>
 
                         <div>
-                            <label for="review_approved_buy_qty" class="field-label">Final Approve</label>
-                            <input
-                                type="number"
-                                step="0.01"
-                                min="0"
-                                id="review_approved_buy_qty"
-                                name="approved_buy_qty"
-                                class="field-input"
-                                value="{{ .ReviewForm.ApprovedBuyQty }}"
-                                required
-                            >
-                            <p class="field-hint">Isi `0` jika item harus ditolak.</p>
+                            <label for="review_approved_buy_carton" class="field-label">Final Approve Carton</label>
+                            <input type="number" step="1" min="0" id="review_approved_buy_carton" name="approved_buy_carton" class="field-input" value="{{ .ReviewForm.ApprovedBuyCarton }}">
+                        </div>
+
+                        <div>
+                            <label for="review_approved_buy_box" class="field-label">Final Approve Box</label>
+                            <input type="number" step="1" min="0" id="review_approved_buy_box" name="approved_buy_box" class="field-input" value="{{ .ReviewForm.ApprovedBuyBox }}">
+                        </div>
+
+                        <div>
+                            <label for="review_approved_buy_pcs" class="field-label">Final Approve Pcs</label>
+                            <input type="number" step="1" min="0" id="review_approved_buy_pcs" name="approved_buy_pcs" class="field-input" value="{{ .ReviewForm.ApprovedBuyPcs }}">
+                            <p class="field-hint">Isi `0` di semua field jika item harus ditolak.</p>
                         </div>
 
                         <div>
@@ -1371,31 +1373,22 @@
                     });
                 });
 
-                document.querySelectorAll('[data-modal]').forEach(function (modal) {
-                    modal.addEventListener('click', function (event) {
-                        if (event.target === modal) {
-                            closeModal(modal);
-                        }
-                    });
-                });
-
-                document.addEventListener('keydown', function (event) {
-                    if (event.key !== 'Escape') return;
-                    document.querySelectorAll('[data-modal].flex').forEach(closeModal);
-                });
-
                 document.querySelectorAll('.btn-edit-review').forEach(function (button) {
                     button.addEventListener('click', function () {
                         if (!reviewModalEl) return;
 
                         var itemIdInput = reviewModalEl.querySelector('#review_item_id');
                         var productNameInput = reviewModalEl.querySelector('#review_product_name');
-                        var approvedQtyInput = reviewModalEl.querySelector('#review_approved_buy_qty');
+                        var approvedBuyCartonInput = reviewModalEl.querySelector('#review_approved_buy_carton');
+                        var approvedBuyBoxInput = reviewModalEl.querySelector('#review_approved_buy_box');
+                        var approvedBuyPcsInput = reviewModalEl.querySelector('#review_approved_buy_pcs');
                         var buyerNotesInput = reviewModalEl.querySelector('#review_buyer_notes');
 
                         if (itemIdInput) itemIdInput.value = button.getAttribute('data-item-id') || '';
                         if (productNameInput) productNameInput.value = button.getAttribute('data-product-name') || '';
-                        if (approvedQtyInput) approvedQtyInput.value = button.getAttribute('data-approved-buy-qty') || '0';
+                        if (approvedBuyCartonInput) approvedBuyCartonInput.value = button.getAttribute('data-approved-buy-carton') || '0';
+                        if (approvedBuyBoxInput) approvedBuyBoxInput.value = button.getAttribute('data-approved-buy-box') || '0';
+                        if (approvedBuyPcsInput) approvedBuyPcsInput.value = button.getAttribute('data-approved-buy-pcs') || '0';
                         if (buyerNotesInput) buyerNotesInput.value = button.getAttribute('data-buyer-notes') || '';
 
                         openModal(reviewModalEl);

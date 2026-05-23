@@ -304,7 +304,7 @@ func (s *StockCheckSessionService) UpdateReviewItem(input models.StockCheckSessi
 	if input.ItemID <= 0 {
 		return errors.New("item id tidak valid")
 	}
-	if input.ApprovedBuyQty < 0 {
+	if input.ApprovedBuyCarton < 0 || input.ApprovedBuyBox < 0 || input.ApprovedBuyPcs < 0 {
 		return errors.New("final approve tidak boleh kurang dari 0")
 	}
 	if len(input.BuyerNotes) > 255 {
@@ -334,7 +334,7 @@ func (s *StockCheckSessionService) UpdateReviewItem(input models.StockCheckSessi
 	}
 
 	input.Status = "approved"
-	if input.ApprovedBuyQty == 0 {
+	if input.ApprovedBuyCarton == 0 && input.ApprovedBuyBox == 0 && input.ApprovedBuyPcs == 0 {
 		input.Status = "rejected"
 	}
 
@@ -356,15 +356,15 @@ func (s *StockCheckSessionService) ApplyAllSubmittedLatestBySupplier(supplierID 
 
 	appliedCount := 0
 	for _, item := range items {
-		approvedQty := item.SuggestBuyQty
-
 		if err := s.UpdateReviewItem(models.StockCheckSessionReviewItemUpdateInput{
-			SessionID:      item.SessionID,
-			ItemID:         item.ItemID,
-			ApprovedBuyQty: approvedQty,
-			BuyerNotes:     item.BuyerNotes,
-			ReviewedBy:     reviewedBy,
-			UpdatedBy:      reviewedBy,
+			SessionID:         item.SessionID,
+			ItemID:            item.ItemID,
+			ApprovedBuyCarton: item.SuggestBuyCarton,
+			ApprovedBuyBox:    item.SuggestBuyBox,
+			ApprovedBuyPcs:    item.SuggestBuyPcs,
+			BuyerNotes:        item.BuyerNotes,
+			ReviewedBy:        reviewedBy,
+			UpdatedBy:         reviewedBy,
 		}); err != nil {
 			return appliedCount, err
 		}
@@ -390,15 +390,15 @@ func (s *StockCheckSessionService) ApplyAllSubmittedBySession(sessionID int, rev
 
 	appliedCount := 0
 	for _, item := range items {
-		approvedQty := item.SuggestBuyQty
-
 		if err := s.UpdateReviewItem(models.StockCheckSessionReviewItemUpdateInput{
-			SessionID:      sessionID,
-			ItemID:         item.ItemID,
-			ApprovedBuyQty: approvedQty,
-			BuyerNotes:     item.BuyerNotes,
-			ReviewedBy:     reviewedBy,
-			UpdatedBy:      reviewedBy,
+			SessionID:         sessionID,
+			ItemID:            item.ItemID,
+			ApprovedBuyCarton: item.SuggestBuyCarton,
+			ApprovedBuyBox:    item.SuggestBuyBox,
+			ApprovedBuyPcs:    item.SuggestBuyPcs,
+			BuyerNotes:        item.BuyerNotes,
+			ReviewedBy:        reviewedBy,
+			UpdatedBy:         reviewedBy,
 		}); err != nil {
 			return appliedCount, err
 		}
