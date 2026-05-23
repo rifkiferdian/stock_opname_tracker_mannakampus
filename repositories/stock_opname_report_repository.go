@@ -175,13 +175,21 @@ func (r *StockOpnameReportRepository) GetReportRecords(supplierID int, status st
 			COALESCE(si.qty_store_carton, 0) AS qty_store_carton,
 			COALESCE(si.qty_store_box, 0) AS qty_store_box,
 			COALESCE(si.qty_store_pcs, 0) AS qty_store_pcs,
-			COALESCE(si.qty_store, 0) AS qty_store,
+			(
+				COALESCE(si.qty_store_carton, 0) * COALESCE(p.pcs_per_carton, 0) +
+				COALESCE(si.qty_store_box, 0) * COALESCE(p.pcs_per_box, 0) +
+				COALESCE(si.qty_store_pcs, 0)
+			) AS qty_store,
 			COALESCE(si.qty_warehouse_carton, 0) AS qty_warehouse_carton,
 			COALESCE(si.qty_warehouse_box, 0) AS qty_warehouse_box,
 			COALESCE(si.qty_warehouse_pcs, 0) AS qty_warehouse_pcs,
-			COALESCE(si.qty_warehouse, 0) AS qty_warehouse,
-			COALESCE(si.system_qty_store, 0) AS system_qty_store,
-			COALESCE(si.system_qty_warehouse, 0) AS system_qty_warehouse,
+			(
+				COALESCE(si.qty_warehouse_carton, 0) * COALESCE(p.pcs_per_carton, 0) +
+				COALESCE(si.qty_warehouse_box, 0) * COALESCE(p.pcs_per_box, 0) +
+				COALESCE(si.qty_warehouse_pcs, 0)
+			) AS qty_warehouse,
+			0 AS system_store_qty,
+			0 AS system_warehouse_qty,
 			COALESCE(si.suggest_buy_carton, 0) AS suggest_buy_carton,
 			COALESCE(si.suggest_buy_box, 0) AS suggest_buy_box,
 			COALESCE(si.suggest_buy_pcs, 0) AS suggest_buy_pcs,
@@ -190,7 +198,11 @@ func (r *StockOpnameReportRepository) GetReportRecords(supplierID int, status st
 				COALESCE(si.suggest_buy_box, 0) * COALESCE(p.pcs_per_box, 0) +
 				COALESCE(si.suggest_buy_pcs, 0)
 			) AS suggest_qty,
-			COALESCE(si.approved_buy_qty, 0) AS approved_buy_qty,
+			(
+				COALESCE(si.approved_buy_carton, 0) * COALESCE(p.pcs_per_carton, 0) +
+				COALESCE(si.approved_buy_box, 0) * COALESCE(p.pcs_per_box, 0) +
+				COALESCE(si.approved_buy_pcs, 0)
+			) AS approved_qty,
 			COALESCE(si.status, '') AS status,
 			COALESCE(si.condition_status, '') AS condition_status,
 			COALESCE(si.checker_notes, '') AS checker_notes,
@@ -331,12 +343,17 @@ func (r *StockOpnameReportRepository) GetMonthlyApprovalCounts(supplierID int, f
 			DATE_FORMAT(scs.session_date, '%Y-%m') AS month_key,
 			COALESCE(SUM(
 				CASE
-					WHEN si.status IN ('approved', 'po_created') THEN COALESCE(si.approved_buy_qty, 0)
+					WHEN si.status IN ('approved', 'po_created') THEN (
+						COALESCE(si.approved_buy_carton, 0) * COALESCE(p.pcs_per_carton, 0) +
+						COALESCE(si.approved_buy_box, 0) * COALESCE(p.pcs_per_box, 0) +
+						COALESCE(si.approved_buy_pcs, 0)
+					)
 					ELSE 0
 				END
 			), 0) AS approval_qty
 		FROM stock_check_sessions scs
 		LEFT JOIN stock_check_session_items si ON si.stock_check_session_id = scs.id
+		LEFT JOIN products p ON p.id = si.product_id
 		WHERE scs.supplier_id = ?
 			AND scs.session_date >= ?
 	`
@@ -379,7 +396,11 @@ func (r *StockOpnameReportRepository) GetProductMonthlyPORecords(supplierID int,
 				si.product_id,
 				scs.id AS session_id,
 				DATE_FORMAT(scs.session_date, '%Y-%m') AS month_key,
-				COALESCE(SUM(COALESCE(si.approved_buy_qty, 0)), 0) AS session_po_qty
+				COALESCE(SUM(
+					COALESCE(si.approved_buy_carton, 0) * COALESCE(p.pcs_per_carton, 0) +
+					COALESCE(si.approved_buy_box, 0) * COALESCE(p.pcs_per_box, 0) +
+					COALESCE(si.approved_buy_pcs, 0)
+				), 0) AS session_po_qty
 			FROM stock_check_sessions scs
 			INNER JOIN stock_check_session_items si ON si.stock_check_session_id = scs.id
 			INNER JOIN products p ON p.id = si.product_id

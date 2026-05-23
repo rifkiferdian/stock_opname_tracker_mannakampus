@@ -61,7 +61,11 @@ func (r *DashboardRepository) GetBuyerDashboardMetrics(userID int, currentDate s
 			), 0) AS pending_value,
 			COALESCE(SUM(
 				CASE
-					WHEN si.status IN ('approved', 'po_created') THEN COALESCE(si.approved_buy_qty, 0) * COALESCE(
+					WHEN si.status IN ('approved', 'po_created') THEN (
+						COALESCE(si.approved_buy_carton, 0) * COALESCE((SELECT pconv.pcs_per_carton FROM products pconv WHERE pconv.id = si.product_id LIMIT 1), 0) +
+						COALESCE(si.approved_buy_box, 0) * COALESCE((SELECT pconv.pcs_per_box FROM products pconv WHERE pconv.id = si.product_id LIMIT 1), 0) +
+						COALESCE(si.approved_buy_pcs, 0)
+					) * COALESCE(
 						(
 							SELECT ps.last_price
 							FROM product_suppliers ps
@@ -210,8 +214,15 @@ func (r *DashboardRepository) GetBuyerPriorityItems(userID int, limit int) ([]mo
 			COALESCE(si.checker_notes, '') AS checker_notes,
 			si.condition_status,
 			si.status,
-			COALESCE(si.total_qty, 0) AS physical_qty,
-			COALESCE(si.system_qty_store + si.system_qty_warehouse, 0) AS system_qty,
+			(
+				COALESCE(si.qty_store_carton, 0) * COALESCE(p.pcs_per_carton, 0) +
+				COALESCE(si.qty_store_box, 0) * COALESCE(p.pcs_per_box, 0) +
+				COALESCE(si.qty_store_pcs, 0) +
+				COALESCE(si.qty_warehouse_carton, 0) * COALESCE(p.pcs_per_carton, 0) +
+				COALESCE(si.qty_warehouse_box, 0) * COALESCE(p.pcs_per_box, 0) +
+				COALESCE(si.qty_warehouse_pcs, 0)
+			) AS physical_qty,
+			0 AS system_qty,
 			(
 				COALESCE(si.suggest_buy_carton, 0) * COALESCE(p.pcs_per_carton, 0) +
 				COALESCE(si.suggest_buy_box, 0) * COALESCE(p.pcs_per_box, 0) +

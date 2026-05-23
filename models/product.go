@@ -117,8 +117,6 @@ type ProductStockHistory struct {
 	QtyWarehouse          float64
 	QtyWarehouseDisplay   string
 	QtyWarehouseBreakdown string
-	Discrepancy           float64
-	DiscrepancyDisplay    string
 	SuggestBuyQty         float64
 	SuggestBuyQtyDisplay  string
 	ApprovedBuyQty        float64

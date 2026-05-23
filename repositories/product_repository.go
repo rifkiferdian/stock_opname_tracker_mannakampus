@@ -226,7 +226,17 @@ func (r *ProductRepository) GetByID(id int) (models.ProductDetail, error) {
 			p.created_at,
 			p.updated_at,
 			COALESCE((
-				SELECT si.total_qty
+				SELECT
+					(
+						COALESCE(si.qty_store_carton, 0) * COALESCE(p.pcs_per_carton, 0) +
+						COALESCE(si.qty_store_box, 0) * COALESCE(p.pcs_per_box, 0) +
+						COALESCE(si.qty_store_pcs, 0)
+					) +
+					(
+						COALESCE(si.qty_warehouse_carton, 0) * COALESCE(p.pcs_per_carton, 0) +
+						COALESCE(si.qty_warehouse_box, 0) * COALESCE(p.pcs_per_box, 0) +
+						COALESCE(si.qty_warehouse_pcs, 0)
+					)
 				FROM stock_check_session_items si
 				INNER JOIN stock_check_sessions scs ON scs.id = si.stock_check_session_id
 				WHERE si.product_id = p.id
@@ -258,7 +268,10 @@ func (r *ProductRepository) GetByID(id int) (models.ProductDetail, error) {
 				LIMIT 1
 			), 0) AS current_stock_pcs,
 			COALESCE((
-				SELECT COALESCE(si.approved_buy_qty, 0)
+				SELECT
+					COALESCE(si.approved_buy_carton, 0) * COALESCE(p.pcs_per_carton, 0) +
+					COALESCE(si.approved_buy_box, 0) * COALESCE(p.pcs_per_box, 0) +
+					COALESCE(si.approved_buy_pcs, 0)
 				FROM stock_check_session_items si
 				INNER JOIN stock_check_sessions scs ON scs.id = si.stock_check_session_id
 				WHERE si.product_id = p.id
@@ -529,18 +542,29 @@ func (r *ProductRepository) GetStockHistory(productID int, limit int, offset int
 			COALESCE(si.qty_store_carton, 0) AS qty_store_carton,
 			COALESCE(si.qty_store_box, 0) AS qty_store_box,
 			COALESCE(si.qty_store_pcs, 0) AS qty_store_pcs,
-			si.qty_store,
+			(
+				COALESCE(si.qty_store_carton, 0) * COALESCE(p.pcs_per_carton, 0) +
+				COALESCE(si.qty_store_box, 0) * COALESCE(p.pcs_per_box, 0) +
+				COALESCE(si.qty_store_pcs, 0)
+			) AS qty_store,
 			COALESCE(si.qty_warehouse_carton, 0) AS qty_warehouse_carton,
 			COALESCE(si.qty_warehouse_box, 0) AS qty_warehouse_box,
 			COALESCE(si.qty_warehouse_pcs, 0) AS qty_warehouse_pcs,
-			si.qty_warehouse,
-			((si.qty_store + si.qty_warehouse) - (si.system_qty_store + si.system_qty_warehouse)) AS discrepancy,
+			(
+				COALESCE(si.qty_warehouse_carton, 0) * COALESCE(p.pcs_per_carton, 0) +
+				COALESCE(si.qty_warehouse_box, 0) * COALESCE(p.pcs_per_box, 0) +
+				COALESCE(si.qty_warehouse_pcs, 0)
+			) AS qty_warehouse,
 			(
 				COALESCE(si.suggest_buy_carton, 0) * COALESCE(p.pcs_per_carton, 0) +
 				COALESCE(si.suggest_buy_box, 0) * COALESCE(p.pcs_per_box, 0) +
 				COALESCE(si.suggest_buy_pcs, 0)
 			) AS suggest_qty,
-			COALESCE(si.approved_buy_qty, 0) AS approved_buy_qty,
+			(
+				COALESCE(si.approved_buy_carton, 0) * COALESCE(p.pcs_per_carton, 0) +
+				COALESCE(si.approved_buy_box, 0) * COALESCE(p.pcs_per_box, 0) +
+				COALESCE(si.approved_buy_pcs, 0)
+			) AS approved_qty,
 			COALESCE(si.checker_notes, '') AS checker_notes,
 			si.status
 		FROM stock_check_session_items si
@@ -564,7 +588,6 @@ func (r *ProductRepository) GetStockHistory(productID int, limit int, offset int
 			sessionDate    sql.NullTime
 			qtyStore       sql.NullFloat64
 			qtyWarehouse   sql.NullFloat64
-			discrepancy    sql.NullFloat64
 			suggestBuyQty  sql.NullFloat64
 			approvedBuyQty sql.NullFloat64
 		)
@@ -584,7 +607,6 @@ func (r *ProductRepository) GetStockHistory(productID int, limit int, offset int
 			&item.QtyWarehouseBox,
 			&item.QtyWarehousePcs,
 			&qtyWarehouse,
-			&discrepancy,
 			&suggestBuyQty,
 			&approvedBuyQty,
 			&item.CheckerNotes,
@@ -599,9 +621,6 @@ func (r *ProductRepository) GetStockHistory(productID int, limit int, offset int
 		if qtyWarehouse.Valid {
 			item.QtyWarehouse = qtyWarehouse.Float64
 		}
-		if discrepancy.Valid {
-			item.Discrepancy = discrepancy.Float64
-		}
 		if suggestBuyQty.Valid {
 			item.SuggestBuyQty = suggestBuyQty.Float64
 		}
@@ -613,7 +632,6 @@ func (r *ProductRepository) GetStockHistory(productID int, limit int, offset int
 		item.QtyWarehouseDisplay = formatProductDecimal(item.QtyWarehouse)
 		item.QtyStoreBreakdown = formatProductUnitBreakdown(item.QtyStoreCarton, item.QtyStoreBox, item.QtyStorePcs)
 		item.QtyWarehouseBreakdown = formatProductUnitBreakdown(item.QtyWarehouseCarton, item.QtyWarehouseBox, item.QtyWarehousePcs)
-		item.DiscrepancyDisplay = formatSignedProductDecimal(item.Discrepancy)
 		item.SuggestBuyQtyDisplay = formatProductDecimal(item.SuggestBuyQty)
 		item.ApprovedBuyQtyDisplay = formatProductDecimal(item.ApprovedBuyQty)
 		item.StatusLabel = formatProductStatusLabel(item.Status)

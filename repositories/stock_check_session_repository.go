@@ -17,7 +17,10 @@ type StockCheckSessionRepository struct {
 type StockCheckLatestSubmittedItem struct {
 	SessionID        int
 	ItemID           int
+	SuggestBuyQty    float64
 	SuggestBuyCarton int
+	SuggestBuyBox    int
+	SuggestBuyPcs    int
 	ApprovedBuyQty   float64
 	BuyerNotes       string
 }
@@ -93,13 +96,32 @@ func (r *StockCheckSessionRepository) GetReviewItems(sessionID int) ([]models.St
 			COALESCE(si.qty_store_carton, 0) AS qty_store_carton,
 			COALESCE(si.qty_store_box, 0) AS qty_store_box,
 			COALESCE(si.qty_store_pcs, 0) AS qty_store_pcs,
-			si.qty_store,
+			(
+				COALESCE(si.qty_store_carton, 0) * COALESCE(p.pcs_per_carton, 0) +
+				COALESCE(si.qty_store_box, 0) * COALESCE(p.pcs_per_box, 0) +
+				COALESCE(si.qty_store_pcs, 0)
+			) AS qty_store,
 			COALESCE(si.qty_warehouse_carton, 0) AS qty_warehouse_carton,
 			COALESCE(si.qty_warehouse_box, 0) AS qty_warehouse_box,
 			COALESCE(si.qty_warehouse_pcs, 0) AS qty_warehouse_pcs,
-			si.qty_warehouse,
-			si.total_qty,
-			(si.system_qty_store + si.system_qty_warehouse) AS system_total_qty,
+			(
+				COALESCE(si.qty_warehouse_carton, 0) * COALESCE(p.pcs_per_carton, 0) +
+				COALESCE(si.qty_warehouse_box, 0) * COALESCE(p.pcs_per_box, 0) +
+				COALESCE(si.qty_warehouse_pcs, 0)
+			) AS qty_warehouse,
+			(
+				(
+					COALESCE(si.qty_store_carton, 0) * COALESCE(p.pcs_per_carton, 0) +
+					COALESCE(si.qty_store_box, 0) * COALESCE(p.pcs_per_box, 0) +
+					COALESCE(si.qty_store_pcs, 0)
+				) +
+				(
+					COALESCE(si.qty_warehouse_carton, 0) * COALESCE(p.pcs_per_carton, 0) +
+					COALESCE(si.qty_warehouse_box, 0) * COALESCE(p.pcs_per_box, 0) +
+					COALESCE(si.qty_warehouse_pcs, 0)
+				)
+			) AS computed_total_qty,
+			0 AS system_total_qty,
 			(
 				COALESCE(si.suggest_buy_carton, 0) * COALESCE(p.pcs_per_carton, 0) +
 				COALESCE(si.suggest_buy_box, 0) * COALESCE(p.pcs_per_box, 0) +
@@ -108,7 +130,11 @@ func (r *StockCheckSessionRepository) GetReviewItems(sessionID int) ([]models.St
 			COALESCE(si.suggest_buy_carton, 0) AS suggest_buy_carton,
 			COALESCE(si.suggest_buy_box, 0) AS suggest_buy_box,
 			COALESCE(si.suggest_buy_pcs, 0) AS suggest_buy_pcs,
-			COALESCE(si.approved_buy_qty, 0) AS approved_buy_qty,
+			(
+				COALESCE(si.approved_buy_carton, 0) * COALESCE(p.pcs_per_carton, 0) +
+				COALESCE(si.approved_buy_box, 0) * COALESCE(p.pcs_per_box, 0) +
+				COALESCE(si.approved_buy_pcs, 0)
+			) AS approved_qty,
 			COALESCE(sel.supplier_name, sessup.supplier_name, '') AS selected_supplier_name,
 			COALESCE(si.checker_notes, '') AS checker_notes,
 			COALESCE(si.buyer_notes, '') AS buyer_notes,
@@ -532,12 +558,17 @@ func (r *StockCheckSessionRepository) UpdateReviewItem(input models.StockCheckSe
 
 	err = tx.QueryRow(`
 		SELECT
-			product_id,
-			approved_buy_qty,
+			si.product_id,
+			(
+				COALESCE(si.approved_buy_carton, 0) * COALESCE(p.pcs_per_carton, 0) +
+				COALESCE(si.approved_buy_box, 0) * COALESCE(p.pcs_per_box, 0) +
+				COALESCE(si.approved_buy_pcs, 0)
+			) AS approved_qty,
 			buyer_notes,
 			status
-		FROM stock_check_session_items
-		WHERE stock_check_session_id = ? AND id = ?
+		FROM stock_check_session_items si
+		INNER JOIN products p ON p.id = si.product_id
+		WHERE si.stock_check_session_id = ? AND si.id = ?
 		LIMIT 1
 	`,
 		input.SessionID,
@@ -552,10 +583,17 @@ func (r *StockCheckSessionRepository) UpdateReviewItem(input models.StockCheckSe
 		return err
 	}
 
+	approvedBuyPcs := int(math.Round(input.ApprovedBuyQty))
+	if approvedBuyPcs < 0 {
+		approvedBuyPcs = 0
+	}
+
 	_, err = tx.Exec(`
 		UPDATE stock_check_session_items
 		SET
-			approved_buy_qty = ?,
+			approved_buy_carton = ?,
+			approved_buy_box = ?,
+			approved_buy_pcs = ?,
 			buyer_notes = ?,
 			status = ?,
 			reviewed_by = ?,
@@ -563,7 +601,9 @@ func (r *StockCheckSessionRepository) UpdateReviewItem(input models.StockCheckSe
 			updated_by = ?
 		WHERE stock_check_session_id = ? AND id = ?
 	`,
-		input.ApprovedBuyQty,
+		0,
+		0,
+		approvedBuyPcs,
 		nullableText(input.BuyerNotes),
 		input.Status,
 		input.ReviewedBy,
@@ -583,7 +623,7 @@ func (r *StockCheckSessionRepository) UpdateReviewItem(input models.StockCheckSe
 		Notes        string
 	}{
 		{
-			FieldName:    "approved_buy_qty",
+			FieldName:    "approved_buy_pcs",
 			OldValue:     formatHistoryFloat(existing.ApprovedBuyQty),
 			NewValue:     formatHistoryDecimal(input.ApprovedBuyQty),
 			ChangeReason: "review item updated",
@@ -645,11 +685,23 @@ func (r *StockCheckSessionRepository) GetLatestSubmittedItemsBySupplier(supplier
 		SELECT
 			si.stock_check_session_id,
 			si.id,
+			(
+				COALESCE(si.suggest_buy_carton, 0) * COALESCE(p.pcs_per_carton, 0) +
+				COALESCE(si.suggest_buy_box, 0) * COALESCE(p.pcs_per_box, 0) +
+				COALESCE(si.suggest_buy_pcs, 0)
+			) AS suggest_buy_qty,
 			COALESCE(si.suggest_buy_carton, 0) AS suggest_buy_carton,
-			COALESCE(si.approved_buy_qty, 0) AS approved_buy_qty,
+			COALESCE(si.suggest_buy_box, 0) AS suggest_buy_box,
+			COALESCE(si.suggest_buy_pcs, 0) AS suggest_buy_pcs,
+			(
+				COALESCE(si.approved_buy_carton, 0) * COALESCE(p.pcs_per_carton, 0) +
+				COALESCE(si.approved_buy_box, 0) * COALESCE(p.pcs_per_box, 0) +
+				COALESCE(si.approved_buy_pcs, 0)
+			) AS approved_qty,
 			COALESCE(si.buyer_notes, '') AS buyer_notes
 		FROM stock_check_session_items si
 		INNER JOIN stock_check_sessions scs ON scs.id = si.stock_check_session_id
+		INNER JOIN products p ON p.id = si.product_id
 		WHERE scs.supplier_id = ?
 			AND scs.session_date = (
 				SELECT MAX(scs_latest.session_date)
@@ -668,22 +720,37 @@ func (r *StockCheckSessionRepository) GetLatestSubmittedItemsBySupplier(supplier
 	for rows.Next() {
 		var (
 			item             StockCheckLatestSubmittedItem
+			suggestBuyQty    sql.NullFloat64
 			suggestBuyCarton sql.NullInt64
+			suggestBuyBox    sql.NullInt64
+			suggestBuyPcs    sql.NullInt64
 			approvedBuyQty   sql.NullFloat64
 		)
 
 		if err := rows.Scan(
 			&item.SessionID,
 			&item.ItemID,
+			&suggestBuyQty,
 			&suggestBuyCarton,
+			&suggestBuyBox,
+			&suggestBuyPcs,
 			&approvedBuyQty,
 			&item.BuyerNotes,
 		); err != nil {
 			return nil, err
 		}
 
+		if suggestBuyQty.Valid {
+			item.SuggestBuyQty = suggestBuyQty.Float64
+		}
 		if suggestBuyCarton.Valid {
 			item.SuggestBuyCarton = int(suggestBuyCarton.Int64)
+		}
+		if suggestBuyBox.Valid {
+			item.SuggestBuyBox = int(suggestBuyBox.Int64)
+		}
+		if suggestBuyPcs.Valid {
+			item.SuggestBuyPcs = int(suggestBuyPcs.Int64)
 		}
 		if approvedBuyQty.Valid {
 			item.ApprovedBuyQty = approvedBuyQty.Float64
@@ -700,10 +767,22 @@ func (r *StockCheckSessionRepository) GetSubmittedItemsBySession(sessionID int) 
 		SELECT
 			si.stock_check_session_id,
 			si.id,
+			(
+				COALESCE(si.suggest_buy_carton, 0) * COALESCE(p.pcs_per_carton, 0) +
+				COALESCE(si.suggest_buy_box, 0) * COALESCE(p.pcs_per_box, 0) +
+				COALESCE(si.suggest_buy_pcs, 0)
+			) AS suggest_buy_qty,
 			COALESCE(si.suggest_buy_carton, 0) AS suggest_buy_carton,
-			COALESCE(si.approved_buy_qty, 0) AS approved_buy_qty,
+			COALESCE(si.suggest_buy_box, 0) AS suggest_buy_box,
+			COALESCE(si.suggest_buy_pcs, 0) AS suggest_buy_pcs,
+			(
+				COALESCE(si.approved_buy_carton, 0) * COALESCE(p.pcs_per_carton, 0) +
+				COALESCE(si.approved_buy_box, 0) * COALESCE(p.pcs_per_box, 0) +
+				COALESCE(si.approved_buy_pcs, 0)
+			) AS approved_qty,
 			COALESCE(si.buyer_notes, '') AS buyer_notes
 		FROM stock_check_session_items si
+		INNER JOIN products p ON p.id = si.product_id
 		WHERE si.stock_check_session_id = ?
 			AND si.status = 'submitted'
 		ORDER BY si.id ASC
@@ -717,22 +796,37 @@ func (r *StockCheckSessionRepository) GetSubmittedItemsBySession(sessionID int) 
 	for rows.Next() {
 		var (
 			item             StockCheckLatestSubmittedItem
+			suggestBuyQty    sql.NullFloat64
 			suggestBuyCarton sql.NullInt64
+			suggestBuyBox    sql.NullInt64
+			suggestBuyPcs    sql.NullInt64
 			approvedBuyQty   sql.NullFloat64
 		)
 
 		if err := rows.Scan(
 			&item.SessionID,
 			&item.ItemID,
+			&suggestBuyQty,
 			&suggestBuyCarton,
+			&suggestBuyBox,
+			&suggestBuyPcs,
 			&approvedBuyQty,
 			&item.BuyerNotes,
 		); err != nil {
 			return nil, err
 		}
 
+		if suggestBuyQty.Valid {
+			item.SuggestBuyQty = suggestBuyQty.Float64
+		}
 		if suggestBuyCarton.Valid {
 			item.SuggestBuyCarton = int(suggestBuyCarton.Int64)
+		}
+		if suggestBuyBox.Valid {
+			item.SuggestBuyBox = int(suggestBuyBox.Int64)
+		}
+		if suggestBuyPcs.Valid {
+			item.SuggestBuyPcs = int(suggestBuyPcs.Int64)
 		}
 		if approvedBuyQty.Valid {
 			item.ApprovedBuyQty = approvedBuyQty.Float64
@@ -831,12 +925,31 @@ func (r *StockCheckSessionRepository) GetCheckerInputItems(sessionID int, storeI
 			COALESCE(si.qty_store_carton, 0) AS qty_store_carton,
 			COALESCE(si.qty_store_box, 0) AS qty_store_box,
 			COALESCE(si.qty_store_pcs, 0) AS qty_store_pcs,
-			COALESCE(si.qty_store, 0) AS qty_store,
+			(
+				COALESCE(si.qty_store_carton, 0) * COALESCE(p.pcs_per_carton, 0) +
+				COALESCE(si.qty_store_box, 0) * COALESCE(p.pcs_per_box, 0) +
+				COALESCE(si.qty_store_pcs, 0)
+			) AS qty_store,
 			COALESCE(si.qty_warehouse_carton, 0) AS qty_warehouse_carton,
 			COALESCE(si.qty_warehouse_box, 0) AS qty_warehouse_box,
 			COALESCE(si.qty_warehouse_pcs, 0) AS qty_warehouse_pcs,
-			COALESCE(si.qty_warehouse, 0) AS qty_warehouse,
-			COALESCE(si.total_qty, 0) AS total_qty,
+			(
+				COALESCE(si.qty_warehouse_carton, 0) * COALESCE(p.pcs_per_carton, 0) +
+				COALESCE(si.qty_warehouse_box, 0) * COALESCE(p.pcs_per_box, 0) +
+				COALESCE(si.qty_warehouse_pcs, 0)
+			) AS qty_warehouse,
+			(
+				(
+					COALESCE(si.qty_store_carton, 0) * COALESCE(p.pcs_per_carton, 0) +
+					COALESCE(si.qty_store_box, 0) * COALESCE(p.pcs_per_box, 0) +
+					COALESCE(si.qty_store_pcs, 0)
+				) +
+				(
+					COALESCE(si.qty_warehouse_carton, 0) * COALESCE(p.pcs_per_carton, 0) +
+					COALESCE(si.qty_warehouse_box, 0) * COALESCE(p.pcs_per_box, 0) +
+					COALESCE(si.qty_warehouse_pcs, 0)
+				)
+			) AS computed_total_qty,
 			COALESCE(si.suggest_buy_carton, 0) AS suggest_buy_carton,
 			COALESCE(si.suggest_buy_box, 0) AS suggest_buy_box,
 			COALESCE(si.suggest_buy_pcs, 0) AS suggest_buy_pcs,
@@ -1045,12 +1158,9 @@ func (r *StockCheckSessionRepository) UpdateCheckerItemQtyByBarcode(sessionID in
 			qty_store_carton = ?,
 			qty_store_box = ?,
 			qty_store_pcs = ?,
-			qty_store = ?,
 			qty_warehouse_carton = ?,
 			qty_warehouse_box = ?,
 			qty_warehouse_pcs = ?,
-			qty_warehouse = ?,
-			total_qty = ?,
 			status = ?,
 			updated_by = ?
 		WHERE stock_check_session_id = ? AND id = ?
@@ -1058,12 +1168,9 @@ func (r *StockCheckSessionRepository) UpdateCheckerItemQtyByBarcode(sessionID in
 		storeCarton,
 		storeBox,
 		storePcs,
-		storeQty,
 		warehouseCarton,
 		warehouseBox,
 		warehousePcs,
-		warehouseQty,
-		totalQty,
 		status,
 		updatedBy,
 		sessionID,
