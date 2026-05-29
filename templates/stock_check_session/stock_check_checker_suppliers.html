@@ -82,6 +82,14 @@
                 color: #10224a;
             }
 
+            .mobile-supplier-meta strong.status-in-progress {
+                color: #f97316;
+            }
+
+            .mobile-supplier-meta strong.status-submitted {
+                color: #2563eb;
+            }
+
             .desktop-table-wrap {
                 overflow-x: auto;
             }
@@ -98,7 +106,7 @@
 
             @media (min-width: 640px) {
                 .filter-grid {
-                    grid-template-columns: minmax(0, 1fr) minmax(11rem, 14rem) minmax(11rem, 14rem) auto;
+                    grid-template-columns: minmax(0, 1fr) minmax(11rem, 14rem) auto;
                     align-items: end;
                 }
 
@@ -140,13 +148,6 @@
                                     <input id="search_supplier" type="text" name="search" value="{{ .Filters.Search }}" class="w-full rounded-xl border border-slate-200 bg-slate-50 py-3 pl-10 pr-4 text-sm font-semibold text-slate-600 outline-none transition focus:border-[#153e8a] focus:bg-white" placeholder="Cari nama atau kode supplier">
                                 </label>
 
-                                <select id="sort_supplier" name="sort" class="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-extrabold text-[#1e2b42] outline-none transition focus:border-[#153e8a] focus:bg-white">
-                                    <option value="name" {{ if eq .Filters.Sort "name" }}selected{{ end }}>Urut Nama</option>
-                                    <option value="recent" {{ if eq .Filters.Sort "recent" }}selected{{ end }}>Terbaru</option>
-                                    <option value="products" {{ if eq .Filters.Sort "products" }}selected{{ end }}>Produk Terbanyak</option>
-                                    <option value="code" {{ if eq .Filters.Sort "code" }}selected{{ end }}>Kode Supplier</option>
-                                </select>
-
                                 <select id="day_of_week" name="day_of_week" class="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-extrabold text-[#1e2b42] outline-none transition focus:border-[#153e8a] focus:bg-white">
                                     <option value="0" {{ if eq .Filters.DayOfWeek 0 }}selected{{ end }}>Semua Jadwal</option>
                                     <option value="1" {{ if eq .Filters.DayOfWeek 1 }}selected{{ end }}>Senin</option>
@@ -163,7 +164,7 @@
                                         <i class="bx bx-search-alt text-base"></i>
                                         <span>Terapkan</span>
                                     </button>
-                                    {{ if or .Filters.Search (ne .Filters.Sort "name") (gt .Filters.DayOfWeek 0) }}
+                                    {{ if or .Filters.Search (gt .Filters.DayOfWeek 0) }}
                                     <a href="/stock-checker" class="inline-flex min-h-[48px] flex-1 items-center justify-center gap-2 rounded-xl bg-slate-50 px-5 py-3 text-sm font-extrabold text-[#566173] transition hover:bg-slate-100 sm:flex-none">
                                         <i class="bx bx-reset text-base"></i>
                                         <span>Reset</span>
@@ -221,12 +222,12 @@
 
                                     <div class="mobile-supplier-meta mt-4">
                                         <div>
-                                            <span>Produk</span>
-                                            <strong>{{ .ProductCount }} item</strong>
-                                        </div>
-                                        <div>
                                             <span>SO Terakhir</span>
                                             <strong>{{ .LastSODateDisplay }}</strong>
+                                        </div>
+                                        <div>
+                                            <span>Status</span>
+                                            <strong class="{{ if eq .LastSOStatus "in_progress" }}status-in-progress{{ else if eq .LastSOStatus "submitted" }}status-submitted{{ end }}">{{ .LastSOStatusLabel }}</strong>
                                         </div>
                                     </div>
 

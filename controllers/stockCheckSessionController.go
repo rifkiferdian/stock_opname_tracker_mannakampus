@@ -33,7 +33,7 @@ func StockCheckCheckerSupplierIndex(c *gin.Context) {
 		SearchMode: "name_code",
 		Status:     "active",
 		DayOfWeek:  dayOfWeek,
-		Sort:       c.DefaultQuery("sort", "name"),
+		Sort:       "recent",
 		Page:       page,
 		Limit:      50,
 	})
@@ -1211,7 +1211,7 @@ func renderStockCheckCheckerSupplierPage(c *gin.Context, supplierService *servic
 		filter.Limit = 50
 	}
 	if filter.Sort == "" {
-		filter.Sort = "name"
+		filter.Sort = "recent"
 	}
 	if filter.DayOfWeek < 1 || filter.DayOfWeek > 7 {
 		filter.DayOfWeek = 0
@@ -2070,9 +2070,6 @@ func buildStockCheckCheckerSupplierPageURL(filter models.SupplierListFilter, pag
 	}
 	if filter.DayOfWeek > 0 {
 		values.Set("day_of_week", strconv.Itoa(filter.DayOfWeek))
-	}
-	if filter.Sort != "" && filter.Sort != "name" {
-		values.Set("sort", filter.Sort)
 	}
 	if page > 1 {
 		values.Set("page", strconv.Itoa(page))

@@ -23,6 +23,8 @@ type Supplier struct {
 	UpdatedAtDisplay  string
 	LastSODate        string
 	LastSODateDisplay string
+	LastSOStatus      string
+	LastSOStatusLabel string
 }
 
 type SupplierGroup struct {

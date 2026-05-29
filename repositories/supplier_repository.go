@@ -71,7 +71,14 @@ func buildSupplierListQuery(filter models.SupplierListFilter, countOnly bool) (s
 			s.created_at,
 			s.updated_at,
 			COUNT(DISTINCT CASE WHEN ps.is_active = 1 THEN ps.product_id END) AS product_count,
-			MAX(scs.session_date) AS last_so_date
+			MAX(scs.session_date) AS last_so_date,
+			COALESCE((
+				SELECT scs2.status
+				FROM stock_check_sessions scs2
+				WHERE scs2.supplier_id = s.id
+				ORDER BY scs2.session_date DESC, scs2.id DESC
+				LIMIT 1
+			), '') AS last_so_status
 		FROM suppliers s
 		LEFT JOIN stores st ON st.store_id = s.store_id
 		LEFT JOIN supplier_groups sg ON sg.id = s.supplier_group_id
@@ -181,7 +188,14 @@ func (r *SupplierRepository) GetByID(id int) (models.Supplier, error) {
 			s.created_at,
 			s.updated_at,
 			COUNT(DISTINCT CASE WHEN ps.is_active = 1 THEN ps.product_id END) AS product_count,
-			MAX(scs.session_date) AS last_so_date
+			MAX(scs.session_date) AS last_so_date,
+			COALESCE((
+				SELECT scs2.status
+				FROM stock_check_sessions scs2
+				WHERE scs2.supplier_id = s.id
+				ORDER BY scs2.session_date DESC, scs2.id DESC
+				LIMIT 1
+			), '') AS last_so_status
 		FROM suppliers s
 		LEFT JOIN stores st ON st.store_id = s.store_id
 		LEFT JOIN supplier_groups sg ON sg.id = s.supplier_group_id
@@ -729,6 +743,7 @@ func scanSupplier(scanner interface {
 		createdAt  sql.NullTime
 		updatedAt  sql.NullTime
 		lastSODate sql.NullTime
+		lastStatus sql.NullString
 	)
 
 	err := scanner.Scan(
@@ -750,6 +765,7 @@ func scanSupplier(scanner interface {
 		&updatedAt,
 		&supplier.ProductCount,
 		&lastSODate,
+		&lastStatus,
 	)
 	if err != nil {
 		return supplier, err
@@ -785,8 +801,31 @@ func scanSupplier(scanner interface {
 		supplier.LastSODate = "-"
 		supplier.LastSODateDisplay = "Belum ada SO"
 	}
+	supplier.LastSOStatus = strings.TrimSpace(lastStatus.String)
+	supplier.LastSOStatusLabel = supplierSOStatusLabel(supplier.LastSOStatus)
 
 	return supplier, nil
+}
+
+func supplierSOStatusLabel(status string) string {
+	switch strings.TrimSpace(status) {
+	case "draft":
+		return "Draft"
+	case "in_progress":
+		return "In Progress"
+	case "submitted":
+		return "Submitted"
+	case "reviewed":
+		return "Reviewed"
+	case "closed":
+		return "Closed"
+	case "po":
+		return "PO"
+	case "cancelled":
+		return "Cancelled"
+	default:
+		return "Belum ada SO"
+	}
 }
 
 func nullableString(value string) interface{} {
