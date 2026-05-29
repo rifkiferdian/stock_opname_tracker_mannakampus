@@ -27,6 +27,9 @@ func (s *SupplierService) GetSuppliers(filter models.SupplierListFilter) ([]mode
 	default:
 		filter.Sort = "recent"
 	}
+	if filter.DayOfWeek < 1 || filter.DayOfWeek > 7 {
+		filter.DayOfWeek = 0
+	}
 
 	if filter.Page <= 0 {
 		filter.Page = 1

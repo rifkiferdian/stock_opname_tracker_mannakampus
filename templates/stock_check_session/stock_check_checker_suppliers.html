@@ -98,7 +98,7 @@
 
             @media (min-width: 640px) {
                 .filter-grid {
-                    grid-template-columns: minmax(0, 1fr) minmax(12rem, 15rem) auto;
+                    grid-template-columns: minmax(0, 1fr) minmax(11rem, 14rem) minmax(11rem, 14rem) auto;
                     align-items: end;
                 }
 
@@ -147,12 +147,23 @@
                                     <option value="code" {{ if eq .Filters.Sort "code" }}selected{{ end }}>Kode Supplier</option>
                                 </select>
 
+                                <select id="day_of_week" name="day_of_week" class="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-extrabold text-[#1e2b42] outline-none transition focus:border-[#153e8a] focus:bg-white">
+                                    <option value="0" {{ if eq .Filters.DayOfWeek 0 }}selected{{ end }}>Semua Jadwal</option>
+                                    <option value="1" {{ if eq .Filters.DayOfWeek 1 }}selected{{ end }}>Senin</option>
+                                    <option value="2" {{ if eq .Filters.DayOfWeek 2 }}selected{{ end }}>Selasa</option>
+                                    <option value="3" {{ if eq .Filters.DayOfWeek 3 }}selected{{ end }}>Rabu</option>
+                                    <option value="4" {{ if eq .Filters.DayOfWeek 4 }}selected{{ end }}>Kamis</option>
+                                    <option value="5" {{ if eq .Filters.DayOfWeek 5 }}selected{{ end }}>Jumat</option>
+                                    <option value="6" {{ if eq .Filters.DayOfWeek 6 }}selected{{ end }}>Sabtu</option>
+                                    <option value="7" {{ if eq .Filters.DayOfWeek 7 }}selected{{ end }}>Minggu</option>
+                                </select>
+
                                 <div class="filter-actions">
                                     <button type="submit" class="inline-flex min-h-[48px] flex-1 items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-extrabold text-white transition sm:flex-none" style="background-color: #153e8a;">
                                         <i class="bx bx-search-alt text-base"></i>
                                         <span>Terapkan</span>
                                     </button>
-                                    {{ if or .Filters.Search (ne .Filters.Sort "name") }}
+                                    {{ if or .Filters.Search (ne .Filters.Sort "name") (gt .Filters.DayOfWeek 0) }}
                                     <a href="/stock-checker" class="inline-flex min-h-[48px] flex-1 items-center justify-center gap-2 rounded-xl bg-slate-50 px-5 py-3 text-sm font-extrabold text-[#566173] transition hover:bg-slate-100 sm:flex-none">
                                         <i class="bx bx-reset text-base"></i>
                                         <span>Reset</span>

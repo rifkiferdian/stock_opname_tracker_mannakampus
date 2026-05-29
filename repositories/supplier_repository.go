@@ -105,6 +105,17 @@ func buildSupplierListQuery(filter models.SupplierListFilter, countOnly bool) (s
 		conditions = append(conditions, "LOWER(COALESCE(s.supplier_type, '')) = ?")
 		args = append(args, strings.ToLower(filter.Type))
 	}
+	if filter.DayOfWeek >= 1 && filter.DayOfWeek <= 7 {
+		conditions = append(conditions, `EXISTS (
+			SELECT 1
+			FROM supplier_so_schedules sch
+			WHERE sch.store_id = s.store_id
+			  AND sch.supplier_id = s.id
+			  AND sch.day_of_week = ?
+			  AND sch.is_active = 1
+		)`)
+		args = append(args, filter.DayOfWeek)
+	}
 
 	if len(conditions) > 0 {
 		query += " WHERE " + strings.Join(conditions, " AND ")

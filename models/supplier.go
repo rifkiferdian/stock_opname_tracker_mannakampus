@@ -90,6 +90,7 @@ type SupplierListFilter struct {
 	SearchMode string
 	Status     string
 	Type       string
+	DayOfWeek  int
 	Sort       string
 	Page       int
 	Limit      int
