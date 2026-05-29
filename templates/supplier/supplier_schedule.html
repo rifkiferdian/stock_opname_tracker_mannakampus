@@ -1,0 +1,556 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+        <title>
+            {{ if .Title }}
+                {{ .Title }}
+            {{ else }}
+                Jadwal Supplier
+            {{ end }}
+        </title>
+
+        <link rel="stylesheet" href="/assets/fonts/google/plus-jakarta-sans.css">
+        <link rel="stylesheet" href="/assets/css/tailwind.css">
+        <link href="/assets/vendor/sweetalert2/sweetalert2.min.css" rel="stylesheet" />
+        <link href="/assets/vendor/boxicons/css/boxicons.min.css" rel="stylesheet" />
+    </head>
+    <body class="bg-[#f5f7fb] font-display text-[#07142f]">
+        <div class="flex min-h-screen">
+            {{ template "sidebar" . }}
+
+            <div class="flex min-h-screen min-w-0 flex-1 flex-col">
+                {{ template "header" . }}
+
+                <main class="min-w-0 flex-1 px-4 py-5 sm:px-6 lg:px-8">
+                    <div class="mx-auto flex w-full max-w-7xl flex-col gap-5">
+                        <section class="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+                            <div>
+                                <h1 class="text-xl font-extrabold leading-tight text-[#001e62] sm:text-2xl">Jadwal Supplier</h1>
+                                <p class="mt-1 text-sm font-medium text-[#566173]">Atur jadwal stock opname supplier per hari supaya checker punya panduan harian.</p>
+                            </div>
+
+                            <div class="flex flex-wrap items-center gap-3">
+                                <button type="button" class="inline-flex items-center justify-center gap-2 rounded-md bg-[#001e62] px-5 py-3 text-sm font-extrabold text-white shadow-md shadow-[#001e62]/20 transition hover:bg-[#002f95]" data-modal-open="scheduleModal">
+                                    <i class="bx bx-calendar-plus text-base"></i>
+                                    Tambah Jadwal
+                                </button>
+                            </div>
+                        </section>
+
+                        <section class="border-b border-slate-200">
+                            <div class="flex flex-wrap items-center gap-1 sm:gap-3">
+                                <a href="/supplier-groups" class="group inline-flex items-center gap-2 border-b-[3px] px-4 py-4 text-sm font-extrabold transition {{ if eq .Page "supplierGroup" }}border-[#f26419] text-[#f26419]{{ else }}border-transparent text-[#6b7280] hover:text-[#f26419]{{ end }}">
+                                    <i class="bx bx-layer text-xl {{ if eq .Page "supplierGroup" }}text-[#f26419]{{ else }}text-[#6b7280] group-hover:text-[#f26419]{{ end }}"></i>
+                                    Supplier Group
+                                </a>
+                                <a href="/suppliers" class="group inline-flex items-center gap-2 border-b-[3px] px-4 py-4 text-sm font-extrabold transition {{ if or (eq .Page "supplier") (eq .Page "supplierDetail") }}border-[#f26419] text-[#f26419]{{ else }}border-transparent text-[#6b7280] hover:text-[#f26419]{{ end }}">
+                                    <i class="bx bxs-user text-xl {{ if or (eq .Page "supplier") (eq .Page "supplierDetail") }}text-[#f26419]{{ else }}text-[#6b7280] group-hover:text-[#f26419]{{ end }}"></i>
+                                    Supplier
+                                </a>
+                                <a href="/schedule" class="group inline-flex items-center gap-2 border-b-[3px] px-4 py-4 text-sm font-extrabold transition {{ if eq .Page "schedule" }}border-[#f26419] text-[#f26419]{{ else }}border-transparent text-[#6b7280] hover:text-[#f26419]{{ end }}">
+                                    <i class="bx bx-calendar text-xl {{ if eq .Page "schedule" }}text-[#f26419]{{ else }}text-[#6b7280] group-hover:text-[#f26419]{{ end }}"></i>
+                                    Jadwal Supplier
+                                </a>
+                            </div>
+                        </section>
+
+                        <section class="grid gap-4" style="grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));">
+                            <article class="rounded-lg bg-white p-5 shadow-sm">
+                                <p class="text-[10px] font-extrabold uppercase text-[#566173]">Total Supplier</p>
+                                <div class="mt-3 flex items-end justify-between gap-3">
+                                    <p class="text-3xl font-extrabold leading-none text-[#001e62]">{{ .Stats.TotalSuppliers }}</p>
+                                    <span class="text-[11px] font-extrabold text-[#566173]">Supplier Aktif</span>
+                                </div>
+                            </article>
+
+                            <article class="rounded-lg bg-white p-5 shadow-sm">
+                                <p class="text-[10px] font-extrabold uppercase text-[#566173]">Sudah Dijadwalkan</p>
+                                <div class="mt-3 flex items-end justify-between gap-3">
+                                    <p class="text-3xl font-extrabold leading-none text-emerald-600">{{ .Stats.ScheduledSuppliers }}</p>
+                                    <span class="text-[11px] font-extrabold text-emerald-600">Siap SO</span>
+                                </div>
+                            </article>
+
+                            <article class="rounded-lg bg-white p-5 shadow-sm">
+                                <p class="text-[10px] font-extrabold uppercase text-[#566173]">Belum Disetting</p>
+                                <div class="mt-3 flex items-end justify-between gap-3">
+                                    <p class="text-3xl font-extrabold leading-none text-rose-600">{{ .Stats.UnscheduledSuppliers }}</p>
+                                    <span class="text-[11px] font-extrabold text-rose-600">Perlu Tindakan</span>
+                                </div>
+                            </article>
+
+                            <article class="rounded-lg bg-white p-5 shadow-sm">
+                                <p class="text-[10px] font-extrabold uppercase text-[#566173]">Total Jadwal</p>
+                                <div class="mt-3 flex items-end justify-between gap-3">
+                                    <p class="text-3xl font-extrabold leading-none text-[#001e62]">{{ .Stats.TotalSchedules }}</p>
+                                    <span class="text-[11px] font-extrabold text-[#566173]">Baris Jadwal</span>
+                                </div>
+                            </article>
+                        </section>
+
+                        <form action="/schedule" method="get" class="rounded-lg bg-white p-4 shadow-sm">
+                            <div class="flex flex-col gap-3 lg:flex-row lg:items-center">
+                                <label class="relative block min-w-0 flex-1">
+                                    <i class="bx bx-search pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                                    <input type="text" name="search" value="{{ .Filters.Search }}" class="w-full rounded-md border border-slate-200 bg-slate-50 py-3 pl-10 pr-4 text-sm font-semibold text-slate-600 outline-none transition focus:border-brand-500 focus:bg-white" placeholder="Cari supplier atau catatan...">
+                                </label>
+
+                                <select name="store_id" class="rounded-md border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-extrabold text-[#1e2b42] outline-none transition focus:border-brand-500 focus:bg-white">
+                                    <option value="0">Store: Semua</option>
+                                    {{ range .Stores }}
+                                    <option value="{{ .StoreID }}" {{ if eq $.Filters.StoreID .StoreID }}selected{{ end }}>{{ .StoreName }}</option>
+                                    {{ end }}
+                                </select>
+
+                                <select name="day_of_week" class="rounded-md border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-extrabold text-[#1e2b42] outline-none transition focus:border-brand-500 focus:bg-white">
+                                    <option value="0">Hari: Semua</option>
+                                    <option value="1" {{ if eq .Filters.DayOfWeek 1 }}selected{{ end }}>Senin</option>
+                                    <option value="2" {{ if eq .Filters.DayOfWeek 2 }}selected{{ end }}>Selasa</option>
+                                    <option value="3" {{ if eq .Filters.DayOfWeek 3 }}selected{{ end }}>Rabu</option>
+                                    <option value="4" {{ if eq .Filters.DayOfWeek 4 }}selected{{ end }}>Kamis</option>
+                                    <option value="5" {{ if eq .Filters.DayOfWeek 5 }}selected{{ end }}>Jumat</option>
+                                    <option value="6" {{ if eq .Filters.DayOfWeek 6 }}selected{{ end }}>Sabtu</option>
+                                    <option value="7" {{ if eq .Filters.DayOfWeek 7 }}selected{{ end }}>Minggu</option>
+                                </select>
+
+                                <select name="status" class="rounded-md border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-extrabold text-[#1e2b42] outline-none transition focus:border-brand-500 focus:bg-white">
+                                    <option value="">Status: Semua</option>
+                                    <option value="active" {{ if eq .Filters.Status "active" }}selected{{ end }}>Aktif</option>
+                                    <option value="inactive" {{ if eq .Filters.Status "inactive" }}selected{{ end }}>Nonaktif</option>
+                                </select>
+
+                                <div class="flex flex-wrap items-center gap-2">
+                                    <button type="submit" class="inline-flex items-center justify-center gap-2 rounded-md bg-[#001e62] px-5 py-3 text-sm font-extrabold text-white transition hover:bg-[#002f95]">
+                                        <i class="bx bx-filter-alt text-base"></i>
+                                        Terapkan
+                                    </button>
+                                    {{ if or .Filters.Search (gt .Filters.StoreID 0) (gt .Filters.DayOfWeek 0) .Filters.Status }}
+                                    <a href="/schedule" class="inline-flex items-center justify-center gap-2 rounded-md bg-slate-50 px-5 py-3 text-sm font-extrabold text-[#566173] transition hover:bg-slate-100">
+                                        <i class="bx bx-reset text-base"></i>
+                                        Reset
+                                    </a>
+                                    {{ end }}
+                                </div>
+                            </div>
+                        </form>
+
+                        {{ if .Error }}
+                        <div class="rounded-lg border border-rose-200 bg-rose-50 px-5 py-4 text-sm font-semibold text-rose-600">{{ .Error }}</div>
+                        {{ end }}
+
+                        {{ if .Success }}
+                        <div class="rounded-lg border border-emerald-200 bg-emerald-50 px-5 py-4 text-sm font-semibold text-emerald-700">{{ .Success }}</div>
+                        {{ end }}
+
+                        <section class="overflow-hidden rounded-lg bg-white shadow-sm">
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-sm" style="min-width: 1050px;">
+                                    <thead class="bg-slate-50 text-[10px] font-extrabold uppercase text-[#001e62]">
+                                        <tr>
+                                            <th class="px-4 py-3 text-left">No</th>
+                                            <th class="px-4 py-3 text-left">Hari</th>
+                                            <th class="px-4 py-3 text-left">Jam</th>
+                                            <th class="px-4 py-3 text-left">Urutan</th>
+                                            <th class="px-4 py-3 text-left">Store</th>
+                                            <th class="px-4 py-3 text-left">Supplier</th>
+                                            <th class="px-4 py-3 text-left">Status</th>
+                                            <th class="px-4 py-3 text-left">Catatan</th>
+                                            <th class="px-4 py-3 text-left">Update</th>
+                                            <th class="px-4 py-3 text-left">Aksi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-slate-100">
+                                        {{ range $index, $item := .Schedules }}
+                                        <tr class="hover:bg-slate-50/70">
+                                            <td class="px-4 py-3 font-extrabold text-[#566173]">{{ no $index 1 }}</td>
+                                            <td class="px-4 py-3">
+                                                <span class="inline-flex items-center rounded-full bg-[#eef3ff] px-2.5 py-0.5 text-[10px] font-extrabold uppercase text-[#1d4ed8]">{{ $item.DayName }}</span>
+                                            </td>
+                                            <td class="px-4 py-3 font-semibold text-[#1e2b42]">
+                                                {{ if $item.SOTime }}{{ $item.SOTime }}{{ else }}-{{ end }}
+                                            </td>
+                                            <td class="px-4 py-3 font-extrabold text-[#001e62]">{{ $item.SequenceNo }}</td>
+                                            <td class="px-4 py-3 font-semibold text-[#1e2b42]">{{ if $item.StoreName }}{{ $item.StoreName }}{{ else }}-{{ end }}</td>
+                                            <td class="px-4 py-3">
+                                                <p class="font-extrabold leading-tight text-[#07142f]">{{ $item.SupplierName }}</p>
+                                                <p class="mt-0.5 text-[10px] font-extrabold uppercase leading-tight text-[#8b95a5]">{{ $item.SupplierCode }}</p>
+                                            </td>
+                                            <td class="px-4 py-3">
+                                                {{ if $item.IsActive }}
+                                                <span class="inline-flex items-center gap-1 rounded-full bg-[#dcfae7] px-2.5 py-0.5 text-[10px] font-extrabold uppercase text-[#19a856]">
+                                                    <span class="h-2 w-2 rounded-full bg-[#19a856]"></span>
+                                                    {{ $item.StatusLabel }}
+                                                </span>
+                                                {{ else }}
+                                                <span class="inline-flex items-center gap-1 rounded-full bg-rose-50 px-2.5 py-0.5 text-[10px] font-extrabold uppercase text-rose-600">
+                                                    <span class="h-2 w-2 rounded-full bg-rose-500"></span>
+                                                    {{ $item.StatusLabel }}
+                                                </span>
+                                                {{ end }}
+                                            </td>
+                                            <td class="px-4 py-3 font-semibold text-[#566173]">{{ if $item.Notes }}{{ $item.Notes }}{{ else }}-{{ end }}</td>
+                                            <td class="px-4 py-3 font-semibold text-[#566173]">{{ $item.UpdatedAtDisplay }}</td>
+                                            <td class="px-4 py-3">
+                                                <div class="flex flex-wrap items-center gap-1">
+                                                    <button
+                                                        type="button"
+                                                        class="btn-edit-schedule inline-flex rounded-md px-2.5 py-1.5 text-xs font-extrabold text-amber-700 transition hover:bg-amber-50"
+                                                        data-id="{{ $item.ID }}"
+                                                        data-store-id="{{ $item.StoreID }}"
+                                                        data-supplier-id="{{ $item.SupplierID }}"
+                                                        data-day-of-week="{{ $item.DayOfWeek }}"
+                                                        data-so-time="{{ $item.SOTime }}"
+                                                        data-sequence-no="{{ $item.SequenceNo }}"
+                                                        data-is-active="{{ if $item.IsActive }}1{{ else }}0{{ end }}"
+                                                        data-notes="{{ $item.Notes }}">
+                                                        Edit
+                                                    </button>
+                                                    <button type="button" class="btn-delete-schedule inline-flex rounded-md px-2.5 py-1.5 text-xs font-extrabold text-rose-600 transition hover:bg-rose-50" data-url="/schedule/delete/{{ $item.ID }}" data-supplier-name="{{ $item.SupplierName }}" data-day-name="{{ $item.DayName }}">
+                                                        Hapus
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        {{ else }}
+                                        <tr>
+                                            <td colspan="10" class="px-5 py-10 text-center text-sm font-semibold text-[#566173]">Belum ada jadwal supplier pada filter ini.</td>
+                                        </tr>
+                                        {{ end }}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </section>
+                    </div>
+                </main>
+            </div>
+        </div>
+
+        <div id="sidebar-overlay" class="fixed inset-0 z-40 hidden bg-slate-900/50 lg:hidden"></div>
+
+        <div data-modal class="fixed inset-0 z-50 hidden items-start justify-center overflow-y-auto p-4 sm:items-center sm:p-6" id="scheduleModal">
+            <div class="absolute inset-0 bg-slate-900/50" data-modal-close></div>
+            <div class="relative w-full max-w-3xl rounded-lg bg-white p-5 shadow-xl sm:p-6">
+                <div class="flex items-center justify-between border-b border-slate-100 pb-4">
+                    <h2 class="text-lg font-extrabold text-[#001e62]">Tambah Jadwal Supplier</h2>
+                    <button type="button" class="text-slate-400 transition hover:text-slate-600" data-modal-close>
+                        <i class="bx bx-x text-2xl"></i>
+                    </button>
+                </div>
+
+                <form action="/schedule" method="post" class="mt-6 space-y-5">
+                    <div class="grid gap-5 md:grid-cols-2">
+                        <div>
+                            <label for="store_id" class="text-[10px] font-extrabold uppercase text-[#566173]">Store</label>
+                            <select id="store_id" name="store_id" required class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500">
+                                <option value="">Pilih Store</option>
+                                {{ range .Stores }}
+                                <option value="{{ .StoreID }}">{{ .StoreName }}</option>
+                                {{ end }}
+                            </select>
+                        </div>
+
+                        <div>
+                            <label for="supplier_id" class="text-[10px] font-extrabold uppercase text-[#566173]">Supplier</label>
+                            <select id="supplier_id" name="supplier_id" required class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500">
+                                <option value="">Pilih Supplier</option>
+                                {{ range .Suppliers }}
+                                <option value="{{ .ID }}" data-store-id="{{ .StoreID }}">{{ .SupplierName }} ({{ .SupplierCode }}){{ if .StoreName }} - {{ .StoreName }}{{ end }}</option>
+                                {{ end }}
+                            </select>
+                        </div>
+
+                        <div>
+                            <label for="day_of_week" class="text-[10px] font-extrabold uppercase text-[#566173]">Hari</label>
+                            <select id="day_of_week" name="day_of_week" required class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500">
+                                <option value="">Pilih Hari</option>
+                                <option value="1">Senin</option>
+                                <option value="2">Selasa</option>
+                                <option value="3">Rabu</option>
+                                <option value="4">Kamis</option>
+                                <option value="5">Jumat</option>
+                                <option value="6">Sabtu</option>
+                                <option value="7">Minggu</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label for="so_time" class="text-[10px] font-extrabold uppercase text-[#566173]">Jam SO</label>
+                            <input type="time" id="so_time" name="so_time" class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500">
+                        </div>
+
+                        <div>
+                            <label for="sequence_no" class="text-[10px] font-extrabold uppercase text-[#566173]">Urutan</label>
+                            <input type="number" id="sequence_no" name="sequence_no" min="1" value="1" class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500">
+                        </div>
+
+                        <div>
+                            <label for="is_active" class="text-[10px] font-extrabold uppercase text-[#566173]">Status</label>
+                            <select id="is_active" name="is_active" class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500">
+                                <option value="1" selected>Aktif</option>
+                                <option value="0">Nonaktif</option>
+                            </select>
+                        </div>
+
+                        <div class="md:col-span-2">
+                            <label for="notes" class="text-[10px] font-extrabold uppercase text-[#566173]">Catatan</label>
+                            <textarea id="notes" name="notes" class="mt-2 h-24 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500" placeholder="Catatan jadwal (opsional)"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col gap-3 border-t border-slate-100 pt-4 sm:flex-row sm:justify-end">
+                        <button type="button" class="rounded-md border border-slate-200 bg-white px-5 py-3 text-sm font-extrabold text-[#1e2b42] transition hover:bg-slate-50" data-modal-close>Batal</button>
+                        <button type="submit" class="rounded-md bg-[#001e62] px-5 py-3 text-sm font-extrabold text-white transition hover:bg-[#002f95]">Simpan Jadwal</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div data-modal class="fixed inset-0 z-50 hidden items-start justify-center overflow-y-auto p-4 sm:items-center sm:p-6" id="scheduleEditModal">
+            <div class="absolute inset-0 bg-slate-900/50" data-modal-close></div>
+            <div class="relative w-full max-w-3xl rounded-lg bg-white p-5 shadow-xl sm:p-6">
+                <div class="flex items-center justify-between border-b border-slate-100 pb-4">
+                    <h2 class="text-lg font-extrabold text-[#001e62]">Edit Jadwal Supplier</h2>
+                    <button type="button" class="text-slate-400 transition hover:text-slate-600" data-modal-close>
+                        <i class="bx bx-x text-2xl"></i>
+                    </button>
+                </div>
+
+                <form action="/schedule/update" method="post" class="mt-6 space-y-5">
+                    <input type="hidden" id="edit_id" name="id">
+
+                    <div class="grid gap-5 md:grid-cols-2">
+                        <div>
+                            <label for="edit_store_id" class="text-[10px] font-extrabold uppercase text-[#566173]">Store</label>
+                            <select id="edit_store_id" name="store_id" required class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500">
+                                <option value="">Pilih Store</option>
+                                {{ range .Stores }}
+                                <option value="{{ .StoreID }}">{{ .StoreName }}</option>
+                                {{ end }}
+                            </select>
+                        </div>
+
+                        <div>
+                            <label for="edit_supplier_id" class="text-[10px] font-extrabold uppercase text-[#566173]">Supplier</label>
+                            <select id="edit_supplier_id" name="supplier_id" required class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500">
+                                <option value="">Pilih Supplier</option>
+                                {{ range .Suppliers }}
+                                <option value="{{ .ID }}" data-store-id="{{ .StoreID }}">{{ .SupplierName }} ({{ .SupplierCode }}){{ if .StoreName }} - {{ .StoreName }}{{ end }}</option>
+                                {{ end }}
+                            </select>
+                        </div>
+
+                        <div>
+                            <label for="edit_day_of_week" class="text-[10px] font-extrabold uppercase text-[#566173]">Hari</label>
+                            <select id="edit_day_of_week" name="day_of_week" required class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500">
+                                <option value="">Pilih Hari</option>
+                                <option value="1">Senin</option>
+                                <option value="2">Selasa</option>
+                                <option value="3">Rabu</option>
+                                <option value="4">Kamis</option>
+                                <option value="5">Jumat</option>
+                                <option value="6">Sabtu</option>
+                                <option value="7">Minggu</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label for="edit_so_time" class="text-[10px] font-extrabold uppercase text-[#566173]">Jam SO</label>
+                            <input type="time" id="edit_so_time" name="so_time" class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500">
+                        </div>
+
+                        <div>
+                            <label for="edit_sequence_no" class="text-[10px] font-extrabold uppercase text-[#566173]">Urutan</label>
+                            <input type="number" id="edit_sequence_no" name="sequence_no" min="1" class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500">
+                        </div>
+
+                        <div>
+                            <label for="edit_is_active" class="text-[10px] font-extrabold uppercase text-[#566173]">Status</label>
+                            <select id="edit_is_active" name="is_active" class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500">
+                                <option value="1">Aktif</option>
+                                <option value="0">Nonaktif</option>
+                            </select>
+                        </div>
+
+                        <div class="md:col-span-2">
+                            <label for="edit_notes" class="text-[10px] font-extrabold uppercase text-[#566173]">Catatan</label>
+                            <textarea id="edit_notes" name="notes" class="mt-2 h-24 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition focus:border-brand-500"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col gap-3 border-t border-slate-100 pt-4 sm:flex-row sm:justify-end">
+                        <button type="button" class="rounded-md border border-slate-200 bg-white px-5 py-3 text-sm font-extrabold text-[#1e2b42] transition hover:bg-slate-50" data-modal-close>Batal</button>
+                        <button type="submit" class="rounded-md bg-[#001e62] px-5 py-3 text-sm font-extrabold text-white transition hover:bg-[#002f95]">Perbarui Jadwal</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <script src="/assets/vendor/sweetalert2/sweetalert2.all.min.js"></script>
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                var sidebar = document.getElementById('app-sidebar');
+                var overlay = document.getElementById('sidebar-overlay');
+                var toggleButtons = document.querySelectorAll('[data-sidebar-toggle]');
+
+                function closeSidebar() {
+                    if (!sidebar) return;
+                    sidebar.classList.add('-translate-x-full');
+                    if (overlay) overlay.classList.add('hidden');
+                    if (!document.querySelector('[data-modal].flex')) {
+                        document.body.classList.remove('overflow-hidden');
+                    }
+                }
+
+                function openSidebar() {
+                    if (!sidebar) return;
+                    if (typeof window.closeHeaderInteractivePanels === 'function') {
+                        window.closeHeaderInteractivePanels();
+                    }
+                    sidebar.classList.remove('-translate-x-full');
+                    if (overlay) overlay.classList.remove('hidden');
+                    document.body.classList.add('overflow-hidden');
+                }
+
+                function openModal(modalId) {
+                    var modal = document.getElementById(modalId);
+                    if (!modal) return;
+                    modal.classList.remove('hidden');
+                    modal.classList.add('flex');
+                    document.body.classList.add('overflow-hidden');
+                }
+
+                function closeModal(modal) {
+                    if (!modal) return;
+                    modal.classList.add('hidden');
+                    modal.classList.remove('flex');
+                    if (!document.querySelector('[data-modal].flex')) {
+                        document.body.classList.remove('overflow-hidden');
+                    }
+                }
+
+                function filterSupplierOptions(selectEl, storeID, selectedValue) {
+                    if (!selectEl) return;
+                    var targetStoreID = String(storeID || '');
+
+                    Array.prototype.forEach.call(selectEl.options, function (option, index) {
+                        if (index === 0) {
+                            option.hidden = false;
+                            option.disabled = false;
+                            return;
+                        }
+
+                        var optionStoreID = option.getAttribute('data-store-id') || '';
+                        var isVisible = targetStoreID !== '' && optionStoreID === targetStoreID;
+                        option.hidden = !isVisible;
+                        option.disabled = !isVisible;
+                    });
+
+                    if (selectedValue) {
+                        selectEl.value = String(selectedValue);
+                    } else {
+                        selectEl.value = '';
+                    }
+                }
+
+                toggleButtons.forEach(function (button) {
+                    button.addEventListener('click', function () {
+                        if (!sidebar) return;
+                        if (sidebar.classList.contains('-translate-x-full')) {
+                            openSidebar();
+                        } else {
+                            closeSidebar();
+                        }
+                    });
+                });
+
+                if (overlay) {
+                    overlay.addEventListener('click', closeSidebar);
+                }
+
+                document.querySelectorAll('[data-modal-open]').forEach(function (trigger) {
+                    trigger.addEventListener('click', function () {
+                        var target = trigger.getAttribute('data-modal-open');
+                        if (target) openModal(target);
+                    });
+                });
+
+                document.querySelectorAll('[data-modal-close]').forEach(function (close) {
+                    close.addEventListener('click', function () {
+                        closeModal(close.closest('[data-modal]'));
+                    });
+                });
+
+                document.addEventListener('keydown', function (event) {
+                    if (event.key !== 'Escape') return;
+                    document.querySelectorAll('[data-modal].flex').forEach(closeModal);
+                });
+
+                var createStoreSelect = document.getElementById('store_id');
+                var createSupplierSelect = document.getElementById('supplier_id');
+                if (createStoreSelect && createSupplierSelect) {
+                    createStoreSelect.addEventListener('change', function () {
+                        filterSupplierOptions(createSupplierSelect, createStoreSelect.value, '');
+                    });
+                    filterSupplierOptions(createSupplierSelect, createStoreSelect.value, createSupplierSelect.value);
+                }
+
+                var editStoreSelect = document.getElementById('edit_store_id');
+                var editSupplierSelect = document.getElementById('edit_supplier_id');
+                if (editStoreSelect && editSupplierSelect) {
+                    editStoreSelect.addEventListener('change', function () {
+                        filterSupplierOptions(editSupplierSelect, editStoreSelect.value, '');
+                    });
+                }
+
+                document.querySelectorAll('.btn-edit-schedule').forEach(function (btn) {
+                    btn.addEventListener('click', function () {
+                        var editModalEl = document.getElementById('scheduleEditModal');
+                        if (!editModalEl) return;
+
+                        var storeID = btn.getAttribute('data-store-id') || '';
+                        var supplierID = btn.getAttribute('data-supplier-id') || '';
+
+                        editModalEl.querySelector('#edit_id').value = btn.getAttribute('data-id') || '';
+                        editModalEl.querySelector('#edit_store_id').value = storeID;
+                        filterSupplierOptions(editModalEl.querySelector('#edit_supplier_id'), storeID, supplierID);
+                        editModalEl.querySelector('#edit_day_of_week').value = btn.getAttribute('data-day-of-week') || '';
+                        editModalEl.querySelector('#edit_so_time').value = btn.getAttribute('data-so-time') || '';
+                        editModalEl.querySelector('#edit_sequence_no').value = btn.getAttribute('data-sequence-no') || '1';
+                        editModalEl.querySelector('#edit_is_active').value = btn.getAttribute('data-is-active') || '1';
+                        editModalEl.querySelector('#edit_notes').value = btn.getAttribute('data-notes') || '';
+
+                        openModal('scheduleEditModal');
+                    });
+                });
+
+                document.querySelectorAll('.btn-delete-schedule').forEach(function (btn) {
+                    btn.addEventListener('click', function (event) {
+                        event.preventDefault();
+
+                        var supplierName = btn.getAttribute('data-supplier-name') || 'supplier';
+                        var dayName = btn.getAttribute('data-day-name') || 'hari';
+                        var targetUrl = btn.getAttribute('data-url');
+
+                        Swal.fire({
+                            title: 'Hapus jadwal ini?',
+                            text: 'Jadwal ' + supplierName + ' pada ' + dayName + ' akan dihapus.',
+                            icon: 'warning',
+                            showCancelButton: true,
+                            confirmButtonColor: '#d33',
+                            cancelButtonColor: '#6c757d',
+                            confirmButtonText: 'Ya, hapus',
+                            cancelButtonText: 'Batal'
+                        }).then(function (result) {
+                            if (result.isConfirmed && targetUrl) {
+                                window.location.href = targetUrl;
+                            }
+                        });
+                    });
+                });
+            });
+        </script>
+    </body>
+</html>

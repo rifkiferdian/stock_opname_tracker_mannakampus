@@ -51,6 +51,10 @@
                                     <i class="bx bxs-user text-xl {{ if or (eq .Page "supplier") (eq .Page "supplierDetail") }}text-[#f26419]{{ else }}text-[#6b7280] group-hover:text-[#f26419]{{ end }}"></i>
                                     Supplier
                                 </a>
+                                <a href="/schedule" class="group inline-flex items-center gap-2 border-b-[3px] px-4 py-4 text-sm font-extrabold transition {{ if eq .Page "schedule" }}border-[#f26419] text-[#f26419]{{ else }}border-transparent text-[#6b7280] hover:text-[#f26419]{{ end }}">
+                                    <i class="bx bx-calendar text-xl {{ if eq .Page "schedule" }}text-[#f26419]{{ else }}text-[#6b7280] group-hover:text-[#f26419]{{ end }}"></i>
+                                    Jadwal Supplier
+                                </a>
                             </div>
                         </section>
 
