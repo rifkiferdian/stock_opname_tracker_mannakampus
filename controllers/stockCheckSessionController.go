@@ -35,7 +35,7 @@ func StockCheckCheckerSupplierIndex(c *gin.Context) {
 		DayOfWeek:  dayOfWeek,
 		Sort:       c.DefaultQuery("sort", "name"),
 		Page:       page,
-		Limit:      12,
+		Limit:      50,
 	})
 }
 
@@ -1208,7 +1208,7 @@ func renderStockCheckCheckerSupplierPage(c *gin.Context, supplierService *servic
 		filter.Page = 1
 	}
 	if filter.Limit <= 0 {
-		filter.Limit = 12
+		filter.Limit = 50
 	}
 	if filter.Sort == "" {
 		filter.Sort = "name"
@@ -2011,7 +2011,7 @@ func buildStockCheckCheckerSupplierPagination(filter models.SupplierListFilter, 
 		pagination.CurrentPage = 1
 	}
 	if pagination.PageSize <= 0 {
-		pagination.PageSize = 12
+		pagination.PageSize = 50
 	}
 	if totalItems == 0 {
 		return pagination
