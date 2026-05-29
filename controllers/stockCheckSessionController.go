@@ -24,6 +24,7 @@ const stockCheckSessionDetailItemLimit = 0
 func StockCheckCheckerSupplierIndex(c *gin.Context) {
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 	dayOfWeek, _ := strconv.Atoi(c.DefaultQuery("day_of_week", "0"))
+	lastSODate := sanitizeQueryDate(c.Query("last_so_date"))
 	if dayOfWeek < 1 || dayOfWeek > 7 {
 		dayOfWeek = 0
 	}
@@ -33,6 +34,7 @@ func StockCheckCheckerSupplierIndex(c *gin.Context) {
 		SearchMode: "name_code",
 		Status:     "active",
 		DayOfWeek:  dayOfWeek,
+		LastSODate: lastSODate,
 		Sort:       "recent",
 		Page:       page,
 		Limit:      50,
@@ -1216,6 +1218,7 @@ func renderStockCheckCheckerSupplierPage(c *gin.Context, supplierService *servic
 	if filter.DayOfWeek < 1 || filter.DayOfWeek > 7 {
 		filter.DayOfWeek = 0
 	}
+	filter.LastSODate = sanitizeQueryDate(filter.LastSODate)
 
 	suppliers, totalItems, err := supplierService.GetSuppliers(filter)
 	if err != nil {
@@ -2070,6 +2073,9 @@ func buildStockCheckCheckerSupplierPageURL(filter models.SupplierListFilter, pag
 	}
 	if filter.DayOfWeek > 0 {
 		values.Set("day_of_week", strconv.Itoa(filter.DayOfWeek))
+	}
+	if filter.LastSODate != "" {
+		values.Set("last_so_date", filter.LastSODate)
 	}
 	if page > 1 {
 		values.Set("page", strconv.Itoa(page))

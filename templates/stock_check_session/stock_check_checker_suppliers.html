@@ -106,7 +106,7 @@
 
             @media (min-width: 640px) {
                 .filter-grid {
-                    grid-template-columns: minmax(0, 1fr) minmax(11rem, 14rem) auto;
+                    grid-template-columns: minmax(0, 1fr) minmax(11rem, 14rem) minmax(11rem, 14rem) auto;
                     align-items: end;
                 }
 
@@ -159,12 +159,14 @@
                                     <option value="7" {{ if eq .Filters.DayOfWeek 7 }}selected{{ end }}>Minggu</option>
                                 </select>
 
+                                <input id="last_so_date" type="date" name="last_so_date" value="{{ .Filters.LastSODate }}" class="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-extrabold text-[#1e2b42] outline-none transition focus:border-[#153e8a] focus:bg-white" aria-label="Filter tanggal SO terakhir">
+
                                 <div class="filter-actions">
                                     <button type="submit" class="inline-flex min-h-[48px] flex-1 items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-extrabold text-white transition sm:flex-none" style="background-color: #153e8a;">
                                         <i class="bx bx-search-alt text-base"></i>
                                         <span>Terapkan</span>
                                     </button>
-                                    {{ if or .Filters.Search (gt .Filters.DayOfWeek 0) }}
+                                    {{ if or .Filters.Search (gt .Filters.DayOfWeek 0) .Filters.LastSODate }}
                                     <a href="/stock-checker" class="inline-flex min-h-[48px] flex-1 items-center justify-center gap-2 rounded-xl bg-slate-50 px-5 py-3 text-sm font-extrabold text-[#566173] transition hover:bg-slate-100 sm:flex-none">
                                         <i class="bx bx-reset text-base"></i>
                                         <span>Reset</span>
@@ -232,7 +234,7 @@
                                     </div>
 
                                     <div class="mt-4 grid gap-2">
-                                        <a href="/stock-checker/{{ .ID }}" class="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-extrabold text-white transition" style="background-color: #f26419;">
+                                        <a href="/stock-checker/{{ .ID }}" class="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-extrabold text-white transition" {{ if and $.Filters.LastSODate .HasSOOnFilterDate }}style="background-color: #16a34a;"{{ else }}style="background-color: #f26419;"{{ end }}>
                                             <span>Buka Supplier</span>
                                             <i class="bx bx-right-arrow-alt text-base"></i>
                                         </a>
@@ -281,7 +283,7 @@
                                             </td>
                                             <td class="px-5 py-4 font-semibold text-slate-500">{{ .LastSODateDisplay }}</td>
                                             <td class="px-5 py-4">
-                                                <a href="/stock-checker/{{ .ID }}" class="inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-extrabold text-white transition" style="background-color: #f26419;">
+                                                <a href="/stock-checker/{{ .ID }}" class="inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-extrabold text-white transition" {{ if and $.Filters.LastSODate .HasSOOnFilterDate }}style="background-color: #16a34a;"{{ else }}style="background-color: #f26419;"{{ end }}>
                                                     <span>Pilih</span>
                                                     <i class="bx bx-right-arrow-alt text-base"></i>
                                                 </a>

@@ -78,7 +78,16 @@ func buildSupplierListQuery(filter models.SupplierListFilter, countOnly bool) (s
 				WHERE scs2.supplier_id = s.id
 				ORDER BY scs2.session_date DESC, scs2.id DESC
 				LIMIT 1
-			), '') AS last_so_status
+			), '') AS last_so_status,
+			CASE
+				WHEN ? <> '' AND EXISTS (
+					SELECT 1
+					FROM stock_check_sessions scf
+					WHERE scf.supplier_id = s.id
+					  AND DATE(scf.session_date) = ?
+				) THEN 1
+				ELSE 0
+			END AS has_so_on_filter_date
 		FROM suppliers s
 		LEFT JOIN stores st ON st.store_id = s.store_id
 		LEFT JOIN supplier_groups sg ON sg.id = s.supplier_group_id
@@ -88,7 +97,10 @@ func buildSupplierListQuery(filter models.SupplierListFilter, countOnly bool) (s
 	}
 
 	conditions := make([]string, 0, 3)
-	args := make([]interface{}, 0, 6)
+	args := make([]interface{}, 0, 8)
+	if !countOnly {
+		args = append(args, strings.TrimSpace(filter.LastSODate), strings.TrimSpace(filter.LastSODate))
+	}
 
 	if filter.Search != "" {
 		keyword := "%" + strings.ToLower(filter.Search) + "%"
@@ -195,7 +207,8 @@ func (r *SupplierRepository) GetByID(id int) (models.Supplier, error) {
 				WHERE scs2.supplier_id = s.id
 				ORDER BY scs2.session_date DESC, scs2.id DESC
 				LIMIT 1
-			), '') AS last_so_status
+			), '') AS last_so_status,
+			0 AS has_so_on_filter_date
 		FROM suppliers s
 		LEFT JOIN stores st ON st.store_id = s.store_id
 		LEFT JOIN supplier_groups sg ON sg.id = s.supplier_group_id
@@ -740,6 +753,7 @@ func scanSupplier(scanner interface {
 	var (
 		supplier   models.Supplier
 		isActive   int
+		hasSOOnDay int
 		createdAt  sql.NullTime
 		updatedAt  sql.NullTime
 		lastSODate sql.NullTime
@@ -766,6 +780,7 @@ func scanSupplier(scanner interface {
 		&supplier.ProductCount,
 		&lastSODate,
 		&lastStatus,
+		&hasSOOnDay,
 	)
 	if err != nil {
 		return supplier, err
@@ -803,6 +818,7 @@ func scanSupplier(scanner interface {
 	}
 	supplier.LastSOStatus = strings.TrimSpace(lastStatus.String)
 	supplier.LastSOStatusLabel = supplierSOStatusLabel(supplier.LastSOStatus)
+	supplier.HasSOOnFilterDate = hasSOOnDay == 1
 
 	return supplier, nil
 }

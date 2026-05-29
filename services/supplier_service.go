@@ -15,6 +15,7 @@ type SupplierService struct {
 func (s *SupplierService) GetSuppliers(filter models.SupplierListFilter) ([]models.Supplier, int, error) {
 	filter.Search = strings.TrimSpace(filter.Search)
 	filter.Type = strings.TrimSpace(filter.Type)
+	filter.LastSODate = strings.TrimSpace(filter.LastSODate)
 
 	switch filter.Status {
 	case "active", "inactive", "":

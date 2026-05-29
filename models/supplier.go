@@ -25,6 +25,7 @@ type Supplier struct {
 	LastSODateDisplay string
 	LastSOStatus      string
 	LastSOStatusLabel string
+	HasSOOnFilterDate bool
 }
 
 type SupplierGroup struct {
@@ -93,6 +94,7 @@ type SupplierListFilter struct {
 	Status     string
 	Type       string
 	DayOfWeek  int
+	LastSODate string
 	Sort       string
 	Page       int
 	Limit      int
