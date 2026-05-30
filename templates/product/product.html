@@ -129,8 +129,8 @@
                                         <tr>
                                             <th class="px-2.5 py-2 text-left">No</th>
                                             <th class="px-2.5 py-2 text-left">SKU</th>
-                                            <th class="px-2.5 py-2 text-left">Store</th>
                                             <th class="px-2.5 py-2 text-left">Detail Produk</th>
+                                            <th class="px-2.5 py-2 text-left">Store</th>
                                             <th class="px-2.5 py-2 text-left">Barcode Unit</th>
                                             <th class="px-2.5 py-2 text-left">Barcode Box</th>
                                             <th class="px-2.5 py-2 text-left">Barcode Carton</th>
@@ -148,9 +148,7 @@
                                             <td class="px-2.5 py-1.5">
                                                 <p class="font-mono text-[12px] font-black uppercase tracking-[0.12em] text-[#001e62]">{{ $product.ProductCode }}</p>
                                             </td>
-                                            <td class="px-2.5 py-1.5">
-                                                <p class="text-[12px] font-semibold text-[#1e2b42]">{{ if $product.StoreName }}{{ $product.StoreName }}{{ else }}-{{ end }}</p>
-                                            </td>
+                                           
                                             <td class="px-2.5 py-1.5">
                                                 <div class="flex items-center gap-2">
                                                     <span class="inline-flex h-8 w-8 flex-none items-center justify-center overflow-hidden rounded-md bg-[#eef3ff] text-[10px] font-extrabold uppercase text-[#001e62]">
@@ -165,6 +163,9 @@
                                                         <p class="text-[10px] font-semibold leading-tight text-[#566173]">{{ if $product.CategoryName }}{{ $product.CategoryName }}{{ else }}Tanpa Kategori{{ end }}</p>
                                                     </div>
                                                 </div>
+                                            </td>
+                                             <td class="px-2.5 py-1.5">
+                                                <p class="text-[12px] font-semibold text-[#1e2b42]">{{ if $product.StoreName }}{{ $product.StoreName }}{{ else }}-{{ end }}</p>
                                             </td>
                                             <td class="px-2.5 py-1.5">
                                                 <p class="text-[10px] font-semibold text-[#566173]">{{ if $product.Barcode }}{{ $product.Barcode }}{{ else }}-{{ end }}</p>
