@@ -15,6 +15,43 @@
         <link rel="stylesheet" href="/assets/fonts/google/plus-jakarta-sans.css">
         <link rel="stylesheet" href="/assets/css/tailwind.css">
         <link href="/assets/vendor/boxicons/css/boxicons.min.css" rel="stylesheet" />
+        <link href="/assets/vendor/select2/css/select2.min.css" rel="stylesheet" />
+        <style>
+            .select2-container .select2-selection--single {
+                height: 46px;
+                border: 1px solid #e2e8f0;
+                border-radius: 0.375rem;
+                display: flex;
+                align-items: center;
+                padding: 0 0.75rem;
+                font-size: 0.875rem;
+                font-weight: 600;
+                color: #07142f;
+                background: #fff;
+            }
+
+            .select2-container--default .select2-selection--single .select2-selection__rendered {
+                color: #07142f;
+                line-height: 1.25rem;
+                padding-left: 0;
+            }
+
+            .select2-container--default .select2-selection--single .select2-selection__arrow {
+                height: 44px;
+                right: 0.5rem;
+            }
+
+            .select2-container--default .select2-dropdown {
+                border: 1px solid #e2e8f0;
+            }
+
+            .select2-search--dropdown .select2-search__field {
+                border: 1px solid #e2e8f0;
+                border-radius: 0.375rem;
+                padding: 0.5rem 0.75rem;
+                font-size: 0.875rem;
+            }
+        </style>
     </head>
 
     <body class="bg-[#f5f7fb] font-display text-[#07142f]">
@@ -178,7 +215,7 @@
                                             <td class="px-4 py-3.5 text-[11px] font-semibold text-[#8b95a5]">#{{ .ProductCode }}</td>
                                             <td class="px-4 py-3.5">
                                                 <p class="font-extrabold text-[#07142f]">{{ .ProductName }}</p>
-                                                <p class="mt-1 text-[11px] font-semibold text-[#566173]">{{ .ProductCode }}{{ if .IsPrimary }} - Supplier Utama{{ else }} - Prioritas {{ .PriorityNo }}{{ end }}</p>
+                                                <p class="mt-1 text-[11px] font-semibold text-[#566173]">{{ if .IsPrimary }} - Supplier Utama{{ else }} - Prioritas {{ .PriorityNo }}{{ end }}</p>
                                             </td>
                                             <td class="px-4 py-3.5">
                                                 <span class="inline-flex rounded-full bg-slate-100 px-3 py-1 text-[10px] font-extrabold text-[#566173]">{{ if .CategoryName }}{{ .CategoryName }}{{ else }}Tanpa Kategori{{ end }}</span>
@@ -366,6 +403,8 @@
 
         <div id="sidebar-overlay" class="fixed inset-0 z-40 hidden bg-slate-900/50 lg:hidden"></div>
 
+        <script src="/assets/vendor/jquery/jquery-4.0.0.js"></script>
+        <script src="/assets/vendor/select2/js/select2.min.js"></script>
         <script>
             document.addEventListener('DOMContentLoaded', function () {
                 var sidebar = document.getElementById('app-sidebar');
@@ -473,6 +512,23 @@
                         openModal('supplierProductEditModal');
                     });
                 });
+
+                if (window.jQuery && window.jQuery.fn && window.jQuery.fn.select2) {
+                    var $productSelect = window.jQuery('#product_id');
+                    if ($productSelect.length) {
+                        $productSelect.select2({
+                            width: '100%',
+                            dropdownParent: window.jQuery('#supplierProductModal'),
+                            placeholder: 'Pilih Item',
+                            allowClear: true,
+                            language: {
+                                noResults: function () {
+                                    return 'Item tidak ditemukan';
+                                }
+                            }
+                        });
+                    }
+                }
 
             });
         </script>
