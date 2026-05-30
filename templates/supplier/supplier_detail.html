@@ -164,7 +164,7 @@
                                 <table class="w-full text-sm" style="min-width: 980px;">
                                     <thead class="bg-slate-50 text-[10px] font-extrabold text-[#001e62]">
                                         <tr>
-                                            <th class="px-4 py-3 text-left">Barcode/SKU</th>
+                                            <th class="px-4 py-3 text-left">PLU</th>
                                             <th class="px-4 py-3 text-left">Nama Produk</th>
                                             <th class="px-4 py-3 text-left">Kategori</th>
                                             <th class="px-4 py-3 text-left">Waktu Tunggu</th>
@@ -175,7 +175,7 @@
                                     <tbody class="divide-y divide-slate-100">
                                         {{ range .Products }}
                                         <tr class="hover:bg-slate-50/70">
-                                            <td class="px-4 py-3.5 text-[11px] font-semibold text-[#8b95a5]">{{ if .Barcode }}#{{ .Barcode }}{{ else }}#{{ .ProductCode }}{{ end }}</td>
+                                            <td class="px-4 py-3.5 text-[11px] font-semibold text-[#8b95a5]">#{{ .ProductCode }}</td>
                                             <td class="px-4 py-3.5">
                                                 <p class="font-extrabold text-[#07142f]">{{ .ProductName }}</p>
                                                 <p class="mt-1 text-[11px] font-semibold text-[#566173]">{{ .ProductCode }}{{ if .IsPrimary }} - Supplier Utama{{ else }} - Prioritas {{ .PriorityNo }}{{ end }}</p>
