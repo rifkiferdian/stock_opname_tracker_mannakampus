@@ -402,6 +402,7 @@ type stockCheckSessionPOItemView struct {
 	ProductCode      string
 	UnitName         string
 	QtyDisplay       string
+	QtyBreakdownDisplay string
 	UnitPriceDisplay string
 	SubtotalDisplay  string
 }
@@ -470,8 +471,11 @@ func StockCheckSessionPODetail(c *gin.Context) {
 	items := make([]stockCheckSessionPOItemView, 0, len(pageData.Items))
 	subtotal := 0.0
 	totalQty := 0.0
+	totalCarton := 0
+	totalBox := 0
+	totalPcs := 0
 	for _, item := range pageData.Items {
-		if item.ApprovedBuyQty <= 0 {
+		if item.Status != "approved" && item.Status != "po_created" {
 			continue
 		}
 
@@ -482,15 +486,19 @@ func StockCheckSessionPODetail(c *gin.Context) {
 		lineSubtotal := item.ApprovedLineValue
 		subtotal += lineSubtotal
 		totalQty += item.ApprovedBuyQty
+		totalCarton += item.ApprovedBuyCarton
+		totalBox += item.ApprovedBuyBox
+		totalPcs += item.ApprovedBuyPcs
 
 		items = append(items, stockCheckSessionPOItemView{
-			No:               len(items) + 1,
-			ProductName:      item.ProductName,
-			ProductCode:      item.ProductCode,
-			UnitName:         item.UnitName,
-			QtyDisplay:       formatStockCheckPOWholeNumber(item.ApprovedBuyQty),
-			UnitPriceDisplay: formatStockCheckPOCurrency(unitPrice),
-			SubtotalDisplay:  formatStockCheckPOCurrency(lineSubtotal),
+			No:                  len(items) + 1,
+			ProductName:         item.ProductName,
+			ProductCode:         item.ProductCode,
+			UnitName:            item.UnitName,
+			QtyDisplay:          formatStockCheckPOWholeNumber(item.ApprovedBuyQty),
+			QtyBreakdownDisplay: formatStockCheckPOBreakdown(item.ApprovedBuyCarton, item.ApprovedBuyBox, item.ApprovedBuyPcs),
+			UnitPriceDisplay:    formatStockCheckPOCurrency(unitPrice),
+			SubtotalDisplay:     formatStockCheckPOCurrency(lineSubtotal),
 		})
 	}
 
@@ -512,6 +520,7 @@ func StockCheckSessionPODetail(c *gin.Context) {
 		"POItems":             items,
 		"POItemCount":         len(items),
 		"POTotalQtyDisplay":   formatStockCheckPOWholeNumber(totalQty),
+		"POTotalBreakdownDisplay": formatStockCheckPOBreakdown(totalCarton, totalBox, totalPcs),
 		"SubtotalDisplay":     formatStockCheckPOCurrency(subtotal),
 		"ShippingDisplay":     formatStockCheckPOCurrency(shippingHandling),
 		"EstimatedTaxDisplay": formatStockCheckPOCurrency(estimatedTax),
@@ -2189,6 +2198,10 @@ func buildStockCheckCheckerDefaultBackURL(supplierID int) string {
 
 func formatStockCheckPOWholeNumber(value float64) string {
 	return fmt.Sprintf("%.0f", value)
+}
+
+func formatStockCheckPOBreakdown(carton int, box int, pcs int) string {
+	return fmt.Sprintf("%dc - %db - %dp", carton, box, pcs)
 }
 
 func formatStockCheckPOCurrency(value float64) string {

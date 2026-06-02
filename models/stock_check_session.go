@@ -128,6 +128,25 @@ type StockCheckSessionCheckerScanPage struct {
 	Items   []StockCheckSessionCheckerInputItem
 }
 
+type StockCheckSessionRecentSOHistory struct {
+	SessionID                 int
+	SessionNumber             string
+	SessionDate               string
+	SessionDateDisplay        string
+	QtyStoreCarton            int
+	QtyStoreBox               int
+	QtyStorePcs               int
+	QtyStoreBreakdownDisplay  string
+	QtyWarehouseCarton        int
+	QtyWarehouseBox           int
+	QtyWarehousePcs           int
+	QtyWarehouseBreakdownDisplay string
+	TotalQtyCarton            int
+	TotalQtyBox               int
+	TotalQtyPcs               int
+	TotalQtyBreakdownDisplay  string
+}
+
 type StockCheckSessionDetail struct {
 	StockCheckSession
 	StageLabel                    string
@@ -249,6 +268,7 @@ type StockCheckSessionCheckerInputItem struct {
 	HasBarcode                   bool
 	StoreChecked                 bool
 	WarehouseChecked             bool
+	RecentSOHistory              []StockCheckSessionRecentSOHistory
 }
 
 type StockCheckSessionOverviewCard struct {

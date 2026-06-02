@@ -8,6 +8,7 @@ import (
 	"math"
 	"strconv"
 	"strings"
+	"time"
 )
 
 type StockCheckSessionRepository struct {
@@ -23,6 +24,70 @@ type StockCheckLatestSubmittedItem struct {
 	SuggestBuyPcs    int
 	ApprovedBuyQty   float64
 	BuyerNotes       string
+}
+
+func (r *StockCheckSessionRepository) GetCheckerItemRecentSOHistory(currentSessionID int, productID int, storeID int, supplierID int, limit int) ([]models.StockCheckSessionRecentSOHistory, error) {
+	if limit <= 0 {
+		limit = 4
+	}
+
+	rows, err := r.DB.Query(`
+		SELECT
+			scs.id,
+			COALESCE(scs.session_number, '') AS session_number,
+			COALESCE(scs.session_date, '') AS session_date,
+			COALESCE(si.qty_store_carton, 0) AS qty_store_carton,
+			COALESCE(si.qty_store_box, 0) AS qty_store_box,
+			COALESCE(si.qty_store_pcs, 0) AS qty_store_pcs,
+			COALESCE(si.qty_warehouse_carton, 0) AS qty_warehouse_carton,
+			COALESCE(si.qty_warehouse_box, 0) AS qty_warehouse_box,
+			COALESCE(si.qty_warehouse_pcs, 0) AS qty_warehouse_pcs
+		FROM stock_check_session_items si
+		INNER JOIN stock_check_sessions scs ON scs.id = si.stock_check_session_id
+		WHERE si.product_id = ?
+			AND scs.store_id = ?
+			AND scs.supplier_id = ?
+			AND scs.id <> ?
+		ORDER BY scs.session_date DESC, scs.id DESC
+		LIMIT ?
+	`, productID, storeID, supplierID, currentSessionID, limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	histories := make([]models.StockCheckSessionRecentSOHistory, 0)
+	for rows.Next() {
+		var history models.StockCheckSessionRecentSOHistory
+		if err := rows.Scan(
+			&history.SessionID,
+			&history.SessionNumber,
+			&history.SessionDate,
+			&history.QtyStoreCarton,
+			&history.QtyStoreBox,
+			&history.QtyStorePcs,
+			&history.QtyWarehouseCarton,
+			&history.QtyWarehouseBox,
+			&history.QtyWarehousePcs,
+		); err != nil {
+			return nil, err
+		}
+
+		history.TotalQtyCarton = history.QtyStoreCarton + history.QtyWarehouseCarton
+		history.TotalQtyBox = history.QtyStoreBox + history.QtyWarehouseBox
+		history.TotalQtyPcs = history.QtyStorePcs + history.QtyWarehousePcs
+		history.QtyStoreBreakdownDisplay = formatStockCheckUnitBreakdownShort(history.QtyStoreCarton, history.QtyStoreBox, history.QtyStorePcs)
+		history.QtyWarehouseBreakdownDisplay = formatStockCheckUnitBreakdownShort(history.QtyWarehouseCarton, history.QtyWarehouseBox, history.QtyWarehousePcs)
+		history.TotalQtyBreakdownDisplay = formatStockCheckUnitBreakdownShort(history.TotalQtyCarton, history.TotalQtyBox, history.TotalQtyPcs)
+		history.SessionDateDisplay = history.SessionDate
+		if parsedDate, err := time.Parse("2006-01-02", history.SessionDate); err == nil {
+			history.SessionDateDisplay = parsedDate.Format("02 Jan 2006")
+		}
+
+		histories = append(histories, history)
+	}
+
+	return histories, rows.Err()
 }
 
 func (r *StockCheckSessionRepository) GetAll(filter models.StockCheckSessionListFilter) ([]models.StockCheckSession, error) {

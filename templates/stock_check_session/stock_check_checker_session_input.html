@@ -451,6 +451,10 @@
                 color: #16a34a;
             }
 
+            .desktop-suggest-checked {
+                color: #15803d;
+            }
+
             .page-toolbar {
                 display: flex;
                 flex-direction: column;
@@ -975,11 +979,12 @@
                                             </div>
                                             {{ if .WarehouseChecked }}<p class="compact-qty-status">Sudah input</p>{{ end }}
                                         </div>
-                                        <div>
+                                        <div class="{{ if ne .Status "draft" }}qty-checked{{ end }}">
                                             <span>Suggest</span>
                                             <div class="compact-unit-lines">
                                                 <p><b style="color: #d35400;">{{ .SuggestBuyCarton }}</b>c - <b style="color: #d35400;">{{ .SuggestBuyBox }}</b>b - <b style="color: #d35400;">{{ .SuggestBuyPcs }}</b>p</p>
                                             </div>
+                                            {{ if ne .Status "draft" }}<p class="compact-qty-status">Sudah input</p>{{ end }}
                                         </div>
                                     </div>
                                 </article>
@@ -1022,9 +1027,9 @@
                                                 <p>{{ .QtyWarehouseDisplay }}</p>
                                                 {{ if .WarehouseChecked }}<p class="desktop-qty-note">Sudah input</p>{{ end }}
                                             </td>
-                                            <td class="px-5 py-4 font-extrabold text-[#153e8a]">
+                                            <td class="px-5 py-4 font-extrabold {{ if ne .Status "draft" }}desktop-suggest-checked{{ else }}text-[#153e8a]{{ end }}">
                                                 <p>{{ .SuggestBuyCarton }}c - {{ .SuggestBuyBox }}b - {{ .SuggestBuyPcs }}p</p>
-                                                <p class="mt-1 text-xs font-semibold text-slate-400">Total {{ .SuggestBuyQtyDisplay }} pcs</p>
+                                                <p class="mt-1 text-xs font-semibold {{ if ne .Status "draft" }}desktop-qty-note{{ else }}text-slate-400{{ end }}">Total {{ .SuggestBuyQtyDisplay }} pcs</p>
                                             </td>
                                             <td class="px-5 py-4">
                                                 <span class="item-status-badge px-3 py-1 text-[11px] {{ if eq .Status "submitted" }}item-status-badge-submitted{{ else if eq .Status "approved" }}item-status-badge-approved{{ else if eq .StatusLabel "Unknown" }}item-status-badge-unknown{{ else }}item-status-badge-default{{ end }}">{{ .StatusLabel }}</span>

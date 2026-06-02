@@ -256,14 +256,24 @@
             }
 
             .po-table tbody td.qty {
-                width: 5rem;
-                text-align: center;
+                width: 7rem;
+                text-align: left;
+                padding-left: 0;
                 color: #0b2a6c;
                 font-weight: 800;
                 font-size: 0.94rem;
                 line-height: 1.2;
                 font-family: "Space Grotesk", sans-serif;
                 letter-spacing: 0.01em;
+            }
+
+            .po-qty-breakdown {
+                display: block;
+                font-size: 0.9rem;
+                line-height: 1.2;
+                font-weight: 800;
+                color: #0b2a6c;
+                white-space: nowrap;
             }
 
             .po-table tbody td.money {
@@ -521,7 +531,9 @@
                                                     <p class="po-item-title">{{ .ProductName }}</p>
                                                     <p class="po-item-sub">PLU: <b>{{ .ProductCode }}</b></p>
                                                 </td>
-                                                <td class="qty">{{ .QtyDisplay }}</td>
+                                                <td class="qty">
+                                                    <span class="po-qty-breakdown">{{ .QtyBreakdownDisplay }}</span>
+                                                </td>
                                             </tr>
                                         {{ else }}
                                             <tr>
@@ -534,7 +546,9 @@
                                             <td colspan="2" style="padding: 0.82rem 0.64rem; font-size: 0.82rem; font-weight: 800; color: #0f2f78; border-top: 1px solid #dce5f4; background: #f7faff;">
                                                 Total Item: {{ .POItemCount }}
                                             </td>
-                                            <td class="qty" style="border-top: 1px solid #dce5f4; background: #f7faff; color: #f26419 ;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ .POTotalQtyDisplay }}</td>
+                                            <td class="qty" style="border-top: 1px solid #dce5f4; background: #f7faff; color: #f26419 ; text-align: left; padding-left: 0;">
+                                                <span class="po-qty-breakdown">{{ .POTotalBreakdownDisplay }}</span>
+                                            </td>
                                         </tr>
                                     </tfoot>
                                 </table>

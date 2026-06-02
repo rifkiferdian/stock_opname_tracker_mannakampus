@@ -161,6 +161,11 @@
                 text-align: center;
             }
 
+            .qty-summary-card.checked {
+                background: #dcfce7;
+                border-color: #86efac;
+            }
+
             .qty-summary-card span {
                 display: block;
                 font-size: 0.58rem;
@@ -483,6 +488,84 @@
                 color: #94a3b8;
             }
 
+            .modal-history-section {
+                display: grid;
+                gap: 0.65rem;
+                border-top: 1px solid #e2e8f0;
+                padding-top: 0.95rem;
+            }
+
+            .modal-history-title {
+                font-size: 0.78rem;
+                font-weight: 800;
+                letter-spacing: 0.08em;
+                text-transform: uppercase;
+                color: #64748b;
+            }
+
+            .modal-history-wrap {
+                overflow-x: auto;
+                border: 1px solid #e2e8f0;
+                border-radius: 0.9rem;
+                background: #f8fafc;
+            }
+
+            .modal-history-table {
+                width: 100%;
+                min-width: 28rem;
+                border-collapse: collapse;
+            }
+
+            .modal-history-table th,
+            .modal-history-table td {
+                padding: 0.7rem 0.8rem;
+                text-align: left;
+                vertical-align: top;
+            }
+
+            .modal-history-table th {
+                background: #eff6ff;
+                font-size: 0.66rem;
+                font-weight: 800;
+                letter-spacing: 0.08em;
+                text-transform: uppercase;
+                color: #1d4ed8;
+            }
+
+            .modal-history-table tbody tr + tr {
+                border-top: 1px solid #e2e8f0;
+            }
+
+            .modal-history-date {
+                font-size: 0.76rem;
+                font-weight: 800;
+                color: #0f172a;
+            }
+
+            .modal-history-session {
+                margin-top: 0.18rem;
+                font-size: 0.68rem;
+                font-weight: 700;
+                color: #64748b;
+            }
+
+            .modal-history-breakdown {
+                font-size: 0.74rem;
+                font-weight: 800;
+                color: #334155;
+                white-space: nowrap;
+            }
+
+            .modal-history-empty {
+                border-radius: 0.9rem;
+                background: #f8fafc;
+                padding: 0.9rem 1rem;
+                font-size: 0.76rem;
+                font-weight: 700;
+                color: #64748b;
+                text-align: center;
+            }
+
             .modal-actions {
                 display: flex;
                 justify-content: flex-end;
@@ -659,7 +742,7 @@
                                             <p><b style="color: #d35400;">{{ .Item.QtyWarehouseCarton }}</b>c - <b style="color: #d35400;">{{ .Item.QtyWarehouseBox }}</b>b - <b style="color: #d35400;">{{ .Item.QtyWarehousePcs }}</b>p</p>
                                         </div>
                                     </div>
-                                    <div class="qty-summary-card">
+                                    <div class="qty-summary-card{{ if ne .Item.Status "draft" }} checked{{ end }}">
                                         <span>Saran PO</span>
                                         <div class="unit-stack">
                                             <p><b style="color: #d35400;">{{ .Item.SuggestBuyCarton }}</b>c - <b style="color: #d35400;">{{ .Item.SuggestBuyBox }}</b>b - <b style="color: #d35400;">{{ .Item.SuggestBuyPcs }}</b>p</p>
@@ -744,26 +827,59 @@
                     <input type="hidden" name="redirect_to" value="{{ .CurrentURL }}">
 
                     <div>
-                        <label>Suggest Qty</label>
+                        <!-- <label>Suggest Qty</label> -->
                         <div class="modal-qty-grid">
                             <div class="modal-qty-field">
                                 <label for="suggest_carton">Carton</label>
                                 <input type="number" id="suggest_carton" name="suggest_carton" min="0" step="1" value="{{ .Item.SuggestBuyCarton }}" placeholder="0" required>
-                                <p class="modal-field-note">Isi jumlah karton penuh.</p>
+                                <!-- <p class="modal-field-note">Isi jumlah karton penuh.</p> -->
                             </div>
                             <div class="modal-qty-field">
                                 <label for="suggest_box">Box</label>
                                 <input type="number" id="suggest_box" name="suggest_box" min="0" step="1" value="{{ .Item.SuggestBuyBox }}" placeholder="0">
-                                <p class="modal-field-note">Isi sisa box di luar carton.</p>
+                                <!-- <p class="modal-field-note">Isi sisa box di luar carton.</p> -->
                             </div>
                             <div class="modal-qty-field">
                                 <label for="suggest_pcs">Pcs</label>
                                 <input type="number" id="suggest_pcs" name="suggest_pcs" min="0" step="1" value="{{ .Item.SuggestBuyPcs }}" placeholder="0">
-                                <p class="modal-field-note">Isi sisa pcs satuan terkecil.</p>
+                                <!-- <p class="modal-field-note">Isi sisa pcs satuan terkecil.</p> -->
                             </div>
                         </div>
-                        <p id="suggestModalHint" class="modal-hint">{{ .Item.ConversionDisplay }}</p>
-                        <p class="modal-hint">Breakdown saat ini: {{ .Item.SuggestBuyBreakdownDisplay }}</p>
+                        <!-- <p id="suggestModalHint" class="modal-hint">{{ .Item.ConversionDisplay }}</p> -->
+                        <!-- <p class="modal-hint">Breakdown saat ini: {{ .Item.SuggestBuyBreakdownDisplay }}</p> -->
+                    </div>
+
+                    <div class="modal-history-section">
+                        <p class="modal-history-title">4 SO Terakhir</p>
+                        {{ if .Item.RecentSOHistory }}
+                        <div class="modal-history-wrap">
+                            <table class="modal-history-table">
+                                <thead>
+                                    <tr>
+                                        <th>Tanggal</th>
+                                        <th>Toko</th>
+                                        <th>Gudang</th>
+                                        <th>Total SO</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {{ range .Item.RecentSOHistory }}
+                                    <tr>
+                                        <td>
+                                            <p class="modal-history-date">{{ .SessionDateDisplay }}</p>
+                                            <p class="modal-history-session">{{ .SessionNumber }}</p>
+                                        </td>
+                                        <td><p class="modal-history-breakdown">{{ .QtyStoreBreakdownDisplay }}</p></td>
+                                        <td><p class="modal-history-breakdown">{{ .QtyWarehouseBreakdownDisplay }}</p></td>
+                                        <td><p class="modal-history-breakdown">{{ .TotalQtyBreakdownDisplay }}</p></td>
+                                    </tr>
+                                    {{ end }}
+                                </tbody>
+                            </table>
+                        </div>
+                        {{ else }}
+                        <div class="modal-history-empty">Belum ada histori SO sebelumnya untuk item ini.</div>
+                        {{ end }}
                     </div>
 
                     <div class="modal-actions">

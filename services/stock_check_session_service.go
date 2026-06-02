@@ -216,6 +216,11 @@ func (s *StockCheckSessionService) GetCheckerScanPage(sessionID int, userID int,
 		if strings.ToLower(strings.TrimSpace(item.Barcode)) == normalizedBarcode ||
 			strings.ToLower(strings.TrimSpace(item.BarcodeBox)) == normalizedBarcode ||
 			strings.ToLower(strings.TrimSpace(item.BarcodeCarton)) == normalizedBarcode {
+			history, err := s.Repo.GetCheckerItemRecentSOHistory(sessionID, item.ProductID, pageData.Session.StoreID, pageData.Session.SupplierID, 4)
+			if err != nil {
+				return models.StockCheckSessionCheckerScanPage{}, err
+			}
+			item.RecentSOHistory = history
 			return models.StockCheckSessionCheckerScanPage{
 				Session: pageData.Session,
 				Item:    item,
