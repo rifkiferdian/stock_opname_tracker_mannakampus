@@ -111,6 +111,27 @@
                 background: #ffffff;
             }
 
+            .filter-submit-button {
+                display: inline-flex;
+                min-height: 40px;
+                align-items: center;
+                justify-content: center;
+                gap: 0.5rem;
+                border: 1px solid #173f92;
+                border-radius: 0.75rem;
+                background: #173f92;
+                padding: 0.625rem 1rem;
+                font-size: 0.875rem;
+                font-weight: 800;
+                color: #ffffff;
+                transition: background-color 180ms ease, border-color 180ms ease;
+            }
+
+            .filter-submit-button:hover {
+                background: #1f4da9;
+                border-color: #1f4da9;
+            }
+
             .kpi-grid {
                 display: grid;
                 grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -546,7 +567,7 @@
                                         <option value="cancelled" {{ if eq .SelectedStatus "cancelled" }}selected{{ end }}>Cancelled</option>
                                     </select>
                                 </label>
-                                <button type="submit" class="inline-flex min-h-[40px] items-center justify-center gap-2 rounded-xl bg-[#173f92] px-4 py-2.5 text-sm font-extrabold text-white transition hover:bg-[#1f4da9]">
+                                <button type="submit" class="filter-submit-button">
                                     <i class="bx bx-filter-alt"></i>
                                     Terapkan
                                 </button>
@@ -564,7 +585,7 @@
                                             <thead>
                                                 <tr>
                                                     <th>Session</th>
-                                                    <th>Store</th>
+                                                    <!-- <th>Store</th> -->
                                                     <th>Supplier</th>
                                                     <th>Dibuat Oleh</th>
                                                     <th>Status</th>
@@ -576,13 +597,13 @@
                                                     <tr>
                                                         <td>
                                                             <div class="table-cell-main">
-                                                                <p class="session-title">{{ .SessionNumber }}</p>
-                                                                <p class="session-sub">{{ .SessionDateDisplay }}</p>
+                                                                <p class="session-title">{{ .SessionDateDisplay }}</p>
+                                                                <p class="session-sub">{{ .SessionNumber }}</p>
                                                             </div>
                                                         </td>
-                                                        <td>
+                                                        <!-- <td>
                                                             <span class="table-cell-text">{{ .StoreName }}</span>
-                                                        </td>
+                                                        </td> -->
                                                         <td>
                                                             <span class="table-cell-text">{{ .SupplierName }}</span>
                                                         </td>

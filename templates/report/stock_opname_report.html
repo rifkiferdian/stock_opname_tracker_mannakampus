@@ -997,7 +997,7 @@
                                                 <span style="font-size: 0.52rem; letter-spacing: 0.08em; color: #5f7293;">Session:</span>
                                                 <span style="font-size: 0.52rem; letter-spacing: 0.08em; {{ if eq .Report.CurrentSessionStatus "Closed" }}color: #16a34a;{{ else }}color: #f59e0b;{{ end }}">{{ .Report.CurrentSessionStatus }}</span>
                                             </th>
-                                            <th>SO / Bulan</th>
+                                            <th>13 SO Terakhir</th>
                                             {{ range .Report.HistoryDateLabels }}
                                             <th>SO Sebelumnya <br>({{ . }})</th>
                                             {{ end }}
@@ -1082,12 +1082,13 @@
                                             <td class="po-trend-cell">
                                                 <div class="po-trend-card">
                                                     <div class="po-trend-head">
-                                                        <span class="po-trend-label">Trend SO 13 Bulan</span>
+                                                        <span class="po-trend-label">Trend 13 SO Terakhir</span>
                                                         <span class="po-trend-total">{{ .SOTrendTotalLabel }}</span>
                                                     </div>
                                                     <div
                                                         class="po-trend-chart"
                                                         data-po-trend
+                                                        data-value-series='{{ .SOTrendValueSeriesJSON }}'
                                                         data-carton-series='{{ .SOTrendCartonSeriesJSON }}'
                                                         data-box-series='{{ .SOTrendBoxSeriesJSON }}'
                                                         data-pcs-series='{{ .SOTrendPcsSeriesJSON }}'
@@ -1353,17 +1354,20 @@
                 }
 
                 document.querySelectorAll('[data-po-trend]').forEach(function (element) {
+                    var valueSeries = [];
                     var cartonSeries = [];
                     var boxSeries = [];
                     var pcsSeries = [];
                     var labels = [];
 
                     try {
+                        valueSeries = JSON.parse(element.getAttribute('data-value-series') || '[]');
                         cartonSeries = JSON.parse(element.getAttribute('data-carton-series') || '[]');
                         boxSeries = JSON.parse(element.getAttribute('data-box-series') || '[]');
                         pcsSeries = JSON.parse(element.getAttribute('data-pcs-series') || '[]');
                         labels = JSON.parse(element.getAttribute('data-labels') || '[]');
                     } catch (error) {
+                        valueSeries = [];
                         cartonSeries = [];
                         boxSeries = [];
                         pcsSeries = [];
@@ -1371,6 +1375,13 @@
                     }
 
                     if (!window.ApexCharts) return;
+                    if (Array.isArray(labels) && labels.length === 1) {
+                        labels = [labels[0], labels[0]];
+                        valueSeries = [valueSeries[0] || 0, valueSeries[0] || 0];
+                        cartonSeries = [cartonSeries[0] || 0, cartonSeries[0] || 0];
+                        boxSeries = [boxSeries[0] || 0, boxSeries[0] || 0];
+                        pcsSeries = [pcsSeries[0] || 0, pcsSeries[0] || 0];
+                    }
 
                     var chart = new ApexCharts(element, {
                         chart: {
@@ -1381,9 +1392,7 @@
                             animations: { enabled: false }
                         },
                         series: [
-                            { name: 'Carton', data: cartonSeries },
-                            { name: 'Box', data: boxSeries },
-                            { name: 'Pcs', data: pcsSeries }
+                            { name: 'Total SO', data: valueSeries }
                         ],
                         xaxis: {
                             categories: labels
@@ -1392,7 +1401,7 @@
                             curve: 'smooth',
                             width: 2
                         },
-                        colors: ['#ea580c', '#16a34a', '#2563eb'],
+                        colors: ['#2563eb'],
                         grid: {
                             show: false
                         },
@@ -1404,16 +1413,21 @@
                         },
                         tooltip: {
                             theme: 'light',
-                            x: {
-                                show: true
+                            custom: function (opts) {
+                                var index = opts && opts.dataPointIndex >= 0 ? opts.dataPointIndex : 0;
+                                var label = labels[index] || '-';
+                                var carton = cartonSeries[index] || 0;
+                                var box = boxSeries[index] || 0;
+                                var pcs = pcsSeries[index] || 0;
+
+                                return '<div style="padding:8px 10px;">' +
+                                    '<div style="font-weight:800; color:#0f347d; margin-bottom:4px;">' + label + '</div>' +
+                                    '<div style="font-size:12px; font-weight:700; color:#475569;">' + carton + ' ctn / ' + box + ' box / ' + pcs + ' pcs</div>' +
+                                '</div>';
                             },
                             y: {
-                                formatter: function (value, context) {
-                                    var unit = 'qty';
-                                    if (context && context.seriesIndex === 0) unit = 'ctn';
-                                    if (context && context.seriesIndex === 1) unit = 'box';
-                                    if (context && context.seriesIndex === 2) unit = 'pcs';
-                                    return value + ' ' + unit;
+                                formatter: function () {
+                                    return '';
                                 }
                             }
                         }

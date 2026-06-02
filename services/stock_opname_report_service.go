@@ -72,6 +72,7 @@ type stockOpnameReportSummaryMetrics struct {
 
 type stockOpnameSOUnitMonthlyTrend struct {
 	Labels       []string
+	ValueSeries  []int
 	CartonValues []int
 	BoxValues    []int
 	PcsValues    []int
@@ -148,14 +149,12 @@ func (s *StockOpnameReportService) GetDetailPage(supplierID int, filter models.S
 		return models.StockOpnameReportPage{}, err
 	}
 
-	poTrendStart := time.Date(currentDate.Year(), currentDate.Month(), 1, 0, 0, 0, 0, currentDate.Location()).AddDate(0, -12, 0)
-	monthlySOTrendRecords, err := s.Repo.GetProductMonthlySOTrendRecords(supplierID, filter.Status, filter.ItemName, currentDate, poTrendStart)
-	if err != nil {
-		return models.StockOpnameReportPage{}, err
+	chartDates := make([]time.Time, 0, minInt(len(sessionDates), 13))
+	for index := minInt(len(sessionDates), 13) - 1; index >= 0; index-- {
+		chartDates = append(chartDates, sessionDates[index])
 	}
-	soTrendMap := buildStockOpnameProductMonthlySOTrendMap(monthlySOTrendRecords, currentDate)
 
-	rows, auditFindings, summaryMetrics := buildStockOpnameReportRows(records, historyDates, currentDate, soTrendMap)
+	rows, auditFindings, summaryMetrics := buildStockOpnameReportRows(records, historyDates, currentDate, chartDates)
 	summaryMetrics.TotalSessionCount = totalSessions
 	page.SummaryCards = buildStockOpnameReportSummaryCards(summaryMetrics, currentDate)
 	page.LatestSessionCount = summaryMetrics.TotalSessionCount
@@ -180,7 +179,7 @@ func (s *StockOpnameReportService) GetDetailPage(supplierID int, filter models.S
 	return page, nil
 }
 
-func buildStockOpnameReportRows(records []repositories.StockOpnameReportRecord, historyDates []time.Time, currentDate time.Time, soTrendMap map[int]stockOpnameSOUnitMonthlyTrend) ([]models.StockOpnameReportRow, []models.StockOpnameReportAuditFinding, stockOpnameReportSummaryMetrics) {
+func buildStockOpnameReportRows(records []repositories.StockOpnameReportRecord, historyDates []time.Time, currentDate time.Time, chartDates []time.Time) ([]models.StockOpnameReportRow, []models.StockOpnameReportAuditFinding, stockOpnameReportSummaryMetrics) {
 	currentDateKey := currentDate.Format("2006-01-02")
 	productMap := make(map[int]*stockOpnameReportAggregation)
 	metrics := stockOpnameReportSummaryMetrics{}
@@ -331,23 +330,17 @@ func buildStockOpnameReportRows(records []repositories.StockOpnameReportRecord, 
 			row.ActionURL = fmt.Sprintf("/products/%d", aggregate.ProductID)
 		}
 
-		if trend, ok := soTrendMap[aggregate.ProductID]; ok {
-			row.SOTrendCartonSeriesJSON = mustMarshalStockOpnameReportJSON(trend.CartonValues)
-			row.SOTrendBoxSeriesJSON = mustMarshalStockOpnameReportJSON(trend.BoxValues)
-			row.SOTrendPcsSeriesJSON = mustMarshalStockOpnameReportJSON(trend.PcsValues)
-			row.SOTrendLabelsJSON = mustMarshalStockOpnameReportJSON(trend.Labels)
-			row.SOTrendTotalLabel = reportFormatUnitBreakdown(
-				sumStockOpnameTrendIntValues(trend.CartonValues),
-				sumStockOpnameTrendIntValues(trend.BoxValues),
-				sumStockOpnameTrendIntValues(trend.PcsValues),
-			)
-		} else {
-			row.SOTrendCartonSeriesJSON = "[0,0,0,0,0,0,0,0,0,0,0,0,0]"
-			row.SOTrendBoxSeriesJSON = "[0,0,0,0,0,0,0,0,0,0,0,0,0]"
-			row.SOTrendPcsSeriesJSON = "[0,0,0,0,0,0,0,0,0,0,0,0,0]"
-			row.SOTrendLabelsJSON = `["-","-","-","-","-","-","-","-","-","-","-","-","-"]`
-			row.SOTrendTotalLabel = "0 ctn / 0 box / 0 pcs"
-		}
+		trend := buildStockOpnameProductRecentSOTrend(aggregate, chartDates)
+		row.SOTrendValueSeriesJSON = mustMarshalStockOpnameReportJSON(trend.ValueSeries)
+		row.SOTrendCartonSeriesJSON = mustMarshalStockOpnameReportJSON(trend.CartonValues)
+		row.SOTrendBoxSeriesJSON = mustMarshalStockOpnameReportJSON(trend.BoxValues)
+		row.SOTrendPcsSeriesJSON = mustMarshalStockOpnameReportJSON(trend.PcsValues)
+		row.SOTrendLabelsJSON = mustMarshalStockOpnameReportJSON(trend.Labels)
+		row.SOTrendTotalLabel = reportFormatUnitBreakdown(
+			sumStockOpnameTrendIntValues(trend.CartonValues),
+			sumStockOpnameTrendIntValues(trend.BoxValues),
+			sumStockOpnameTrendIntValues(trend.PcsValues),
+		)
 
 		row.History = make([]models.StockOpnameReportHistoryPoint, 0, len(historyDates))
 		for _, historyDate := range historyDates {
@@ -418,54 +411,47 @@ func buildStockOpnameReportRows(records []repositories.StockOpnameReportRecord, 
 	return rows, auditFindings, metrics
 }
 
-func buildStockOpnameProductMonthlySOTrendMap(records []repositories.StockOpnameProductMonthlySOTrendRecord, anchorDate time.Time) map[int]stockOpnameSOUnitMonthlyTrend {
-	monthKeys := make([]string, 0, 13)
-	labels := make([]string, 0, 13)
-	startMonth := time.Date(anchorDate.Year(), anchorDate.Month(), 1, 0, 0, 0, 0, anchorDate.Location()).AddDate(0, -12, 0)
-	for offset := 0; offset < 13; offset++ {
-		currentMonth := startMonth.AddDate(0, offset, 0)
-		monthKeys = append(monthKeys, currentMonth.Format("2006-01"))
-		labels = append(labels, currentMonth.Format("Jan 06"))
+func buildStockOpnameProductRecentSOTrend(aggregate *stockOpnameReportAggregation, chartDates []time.Time) stockOpnameSOUnitMonthlyTrend {
+	labels := make([]string, 0, len(chartDates))
+	valueSeries := make([]int, 0, len(chartDates))
+	cartonValues := make([]int, 0, len(chartDates))
+	boxValues := make([]int, 0, len(chartDates))
+	pcsValues := make([]int, 0, len(chartDates))
+
+	for _, chartDate := range chartDates {
+		dateKey := chartDate.Format("2006-01-02")
+		snapshot := aggregate.HistoryByDate[dateKey]
+		suggestCarton, suggestBox, suggestPcs, _ := reportResolveSuggestBreakdown(
+			snapshot.SuggestQty,
+			snapshot.SuggestCarton,
+			snapshot.SuggestBox,
+			snapshot.SuggestPcs,
+			aggregate.PcsPerBox,
+			aggregate.PcsPerCarton,
+		)
+
+		labels = append(labels, chartDate.Format("02 Jan 06"))
+		totalCarton := snapshot.QtyStoreCarton + snapshot.QtyWarehouseCarton + suggestCarton
+		totalBox := snapshot.QtyStoreBox + snapshot.QtyWarehouseBox + suggestBox
+		totalPcs := snapshot.QtyStorePcs + snapshot.QtyWarehousePcs + suggestPcs
+		cartonValues = append(cartonValues, totalCarton)
+		boxValues = append(boxValues, totalBox)
+		pcsValues = append(pcsValues, totalPcs)
+
+		totalValue := totalPcs
+		if aggregate.PcsPerCarton > 0 || aggregate.PcsPerBox > 0 {
+			totalValue = (totalCarton * aggregate.PcsPerCarton) + (totalBox * aggregate.PcsPerBox) + totalPcs
+		}
+		valueSeries = append(valueSeries, totalValue)
 	}
 
-	type unitBreakdown struct {
-		Carton int
-		Box    int
-		Pcs    int
+	return stockOpnameSOUnitMonthlyTrend{
+		Labels:       labels,
+		ValueSeries:  valueSeries,
+		CartonValues: cartonValues,
+		BoxValues:    boxValues,
+		PcsValues:    pcsValues,
 	}
-
-	valuesByProduct := make(map[int]map[string]unitBreakdown)
-	for _, record := range records {
-		if _, ok := valuesByProduct[record.ProductID]; !ok {
-			valuesByProduct[record.ProductID] = make(map[string]unitBreakdown)
-		}
-		valuesByProduct[record.ProductID][record.MonthKey] = unitBreakdown{
-			Carton: record.TotalCarton,
-			Box:    record.TotalBox,
-			Pcs:    record.TotalPcs,
-		}
-	}
-
-	result := make(map[int]stockOpnameSOUnitMonthlyTrend)
-	for productID, monthValues := range valuesByProduct {
-		cartonValues := make([]int, 0, len(monthKeys))
-		boxValues := make([]int, 0, len(monthKeys))
-		pcsValues := make([]int, 0, len(monthKeys))
-		for _, monthKey := range monthKeys {
-			breakdown := monthValues[monthKey]
-			cartonValues = append(cartonValues, breakdown.Carton)
-			boxValues = append(boxValues, breakdown.Box)
-			pcsValues = append(pcsValues, breakdown.Pcs)
-		}
-		result[productID] = stockOpnameSOUnitMonthlyTrend{
-			Labels:       labels,
-			CartonValues: cartonValues,
-			BoxValues:    boxValues,
-			PcsValues:    pcsValues,
-		}
-	}
-
-	return result
 }
 
 type stockOpnameAuditCandidate struct {
