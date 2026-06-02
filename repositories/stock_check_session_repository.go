@@ -991,6 +991,8 @@ func (r *StockCheckSessionRepository) GetCheckerInputItems(sessionID int, storeI
 				COALESCE(si.suggest_buy_box, 0) * COALESCE(p.pcs_per_box, 0) +
 				COALESCE(si.suggest_buy_pcs, 0)
 			) AS suggest_qty,
+			CASE WHEN si.store_checked_at IS NULL THEN 0 ELSE 1 END AS store_checked,
+			CASE WHEN si.warehouse_checked_at IS NULL THEN 0 ELSE 1 END AS warehouse_checked,
 			COALESCE(si.status, 'draft') AS status
 		FROM stock_check_session_items si
 		INNER JOIN products p ON p.id = si.product_id
@@ -1018,11 +1020,13 @@ func (r *StockCheckSessionRepository) GetCheckerInputItems(sessionID int, storeI
 	items := make([]models.StockCheckSessionCheckerInputItem, 0)
 	for rows.Next() {
 		var (
-			item         models.StockCheckSessionCheckerInputItem
-			qtyStore     sql.NullFloat64
-			qtyWarehouse sql.NullFloat64
-			totalQty     sql.NullFloat64
-			suggestQty   sql.NullFloat64
+			item             models.StockCheckSessionCheckerInputItem
+			qtyStore         sql.NullFloat64
+			qtyWarehouse     sql.NullFloat64
+			totalQty         sql.NullFloat64
+			suggestQty       sql.NullFloat64
+			storeChecked     int
+			warehouseChecked int
 		)
 
 		if err := rows.Scan(
@@ -1051,6 +1055,8 @@ func (r *StockCheckSessionRepository) GetCheckerInputItems(sessionID int, storeI
 			&item.SuggestBuyBox,
 			&item.SuggestBuyPcs,
 			&suggestQty,
+			&storeChecked,
+			&warehouseChecked,
 			&item.Status,
 		); err != nil {
 			return nil, err
@@ -1089,6 +1095,8 @@ func (r *StockCheckSessionRepository) GetCheckerInputItems(sessionID int, storeI
 		item.BarcodeSummary = buildProductBarcodeSummary(item.Barcode, item.BarcodeBox, item.BarcodeCarton)
 		item.BarcodeSearchText = strings.TrimSpace(strings.Join([]string{item.Barcode, item.BarcodeBox, item.BarcodeCarton}, " "))
 		item.HasBarcode = item.PreferredBarcode != ""
+		item.StoreChecked = storeChecked > 0
+		item.WarehouseChecked = warehouseChecked > 0
 
 		items = append(items, item)
 	}
@@ -1169,22 +1177,6 @@ func (r *StockCheckSessionRepository) UpdateCheckerItemQtyByBarcode(sessionID in
 		storePcs = qtyPcs
 	}
 
-	storeQty, err := computeStockCheckQtyInPcs(storeCarton, storeBox, storePcs, pcsPerBox, pcsPerCarton)
-	if err != nil {
-		return 0, err
-	}
-
-	warehouseQty, err := computeStockCheckQtyInPcs(warehouseCarton, warehouseBox, warehousePcs, pcsPerBox, pcsPerCarton)
-	if err != nil {
-		return 0, err
-	}
-
-	totalQty := storeQty + warehouseQty
-	status := "draft"
-	if totalQty > 0 {
-		status = "submitted"
-	}
-
 	_, err = tx.Exec(`
 		UPDATE stock_check_session_items
 		SET
@@ -1194,7 +1186,10 @@ func (r *StockCheckSessionRepository) UpdateCheckerItemQtyByBarcode(sessionID in
 			qty_warehouse_carton = ?,
 			qty_warehouse_box = ?,
 			qty_warehouse_pcs = ?,
-			status = ?,
+			store_checked_at = CASE WHEN ? = 'warehouse' THEN store_checked_at ELSE NOW() END,
+			store_checked_by = CASE WHEN ? = 'warehouse' THEN store_checked_by ELSE ? END,
+			warehouse_checked_at = CASE WHEN ? = 'warehouse' THEN NOW() ELSE warehouse_checked_at END,
+			warehouse_checked_by = CASE WHEN ? = 'warehouse' THEN ? ELSE warehouse_checked_by END,
 			updated_by = ?
 		WHERE stock_check_session_id = ? AND id = ?
 	`,
@@ -1204,7 +1199,12 @@ func (r *StockCheckSessionRepository) UpdateCheckerItemQtyByBarcode(sessionID in
 		warehouseCarton,
 		warehouseBox,
 		warehousePcs,
-		status,
+		location,
+		location,
+		updatedBy,
+		location,
+		location,
+		updatedBy,
 		updatedBy,
 		sessionID,
 		itemID,
@@ -1238,6 +1238,10 @@ func (r *StockCheckSessionRepository) UpdateCheckerItemSuggest(sessionID int, it
 			suggest_buy_carton = ?,
 			suggest_buy_box = ?,
 			suggest_buy_pcs = ?,
+			status = CASE
+				WHEN status = 'draft' THEN 'submitted'
+				ELSE status
+			END,
 			updated_by = ?
 		WHERE stock_check_session_id = ? AND id = ?
 	`, suggestCarton, suggestBox, suggestPcs, updatedBy, sessionID, itemID)

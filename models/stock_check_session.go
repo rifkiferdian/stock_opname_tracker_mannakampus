@@ -247,6 +247,8 @@ type StockCheckSessionCheckerInputItem struct {
 	Status                       string
 	StatusLabel                  string
 	HasBarcode                   bool
+	StoreChecked                 bool
+	WarehouseChecked             bool
 }
 
 type StockCheckSessionOverviewCard struct {
