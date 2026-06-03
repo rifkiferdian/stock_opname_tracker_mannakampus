@@ -3,6 +3,7 @@ package models
 type StockOpnameReportFilter struct {
 	Status   string
 	ItemName string
+	Sort     string
 	Page     int
 	Limit    int
 }

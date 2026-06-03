@@ -70,12 +70,14 @@ func StockOpnameReportDetail(c *gin.Context) {
 
 	status := c.Query("status")
 	itemName := strings.TrimSpace(c.Query("item_name"))
+	sortBy := c.DefaultQuery("sort", "product_asc")
 	reportService := buildStockOpnameReportService()
 
 	if c.Query("export") == "csv" {
 		exportPage, err := reportService.GetDetailPage(id, models.StockOpnameReportFilter{
 			Status:   status,
 			ItemName: itemName,
+			Sort:     sortBy,
 		})
 		if err != nil {
 			c.String(http.StatusInternalServerError, err.Error())
@@ -88,6 +90,7 @@ func StockOpnameReportDetail(c *gin.Context) {
 	reportPage, err := reportService.GetDetailPage(id, models.StockOpnameReportFilter{
 		Status:   status,
 		ItemName: itemName,
+		Sort:     sortBy,
 	})
 	if err != nil {
 		c.String(http.StatusInternalServerError, err.Error())
@@ -501,6 +504,9 @@ func buildStockOpnameReportExportURL(supplierID int, filter models.StockOpnameRe
 	}
 	if strings.TrimSpace(filter.ItemName) != "" {
 		values.Set("item_name", strings.TrimSpace(filter.ItemName))
+	}
+	if filter.Sort != "" && filter.Sort != "product_asc" {
+		values.Set("sort", filter.Sort)
 	}
 	values.Set("export", "csv")
 	return fmt.Sprintf("/reports/stock-opname/%d?%s", supplierID, values.Encode())

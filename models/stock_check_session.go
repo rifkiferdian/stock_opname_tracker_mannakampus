@@ -102,6 +102,11 @@ type StockCheckSessionReviewItemEditForm struct {
 	BuyerNotes        string
 }
 
+type StockCheckSessionDetailFilter struct {
+	SortBy string
+	Status string
+}
+
 type StockCheckSessionCheckerScanForm struct {
 	Location  string
 	Barcode   string
@@ -115,6 +120,7 @@ type StockCheckSessionDetailPage struct {
 	Items         []StockCheckSessionReviewItem
 	OverviewCards []StockCheckSessionOverviewCard
 	Pagination    Pagination
+	Filters       StockCheckSessionDetailFilter
 }
 
 type StockCheckSessionCheckerInputPage struct {

@@ -234,15 +234,8 @@ func (r *StockCheckSessionRepository) GetReviewItems(sessionID int) ([]models.St
 		LEFT JOIN suppliers sel ON sel.id = COALESCE(si.approved_supplier_id, si.suggested_supplier_id, scs.supplier_id)
 		WHERE si.stock_check_session_id = ?
 		ORDER BY
-			CASE si.status
-				WHEN 'approved' THEN 1
-				WHEN 'po_created' THEN 1
-				WHEN 'reviewed' THEN 2
-				WHEN 'submitted' THEN 2
-				WHEN 'draft' THEN 2
-				WHEN 'rejected' THEN 3
-				ELSE 4
-			END,
+			LOWER(COALESCE(p.product_name, '')) ASC,
+			p.product_name ASC,
 			si.id ASC
 	`, sessionID)
 	if err != nil {

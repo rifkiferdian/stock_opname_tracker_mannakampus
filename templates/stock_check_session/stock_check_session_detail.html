@@ -297,6 +297,51 @@
                 gap: 0.65rem;
             }
 
+            .toolbar-filter-form {
+                display: flex;
+                flex-wrap: wrap;
+                align-items: flex-end;
+                gap: 0.75rem;
+            }
+
+            .toolbar-field {
+                display: flex;
+                min-width: 11rem;
+                flex-direction: column;
+                gap: 0.35rem;
+            }
+
+            .toolbar-label {
+                font-size: 0.62rem;
+                font-weight: 800;
+                letter-spacing: 0.16em;
+                text-transform: uppercase;
+                color: #6e7f9d;
+            }
+
+            .toolbar-select {
+                min-height: 2.9rem;
+                border: 1px solid var(--line);
+                border-radius: 0.9rem;
+                background: rgba(255, 255, 255, 0.96);
+                padding: 0.75rem 0.95rem;
+                font-size: 0.82rem;
+                font-weight: 800;
+                color: #233659;
+                outline: none;
+            }
+
+            .toolbar-select:focus {
+                border-color: #315ec0;
+                box-shadow: 0 0 0 3px rgba(49, 94, 192, 0.12);
+            }
+
+            .toolbar-filter-note {
+                font-size: 0.72rem;
+                font-weight: 700;
+                color: #6e7f9d;
+            }
+
             .tool-button {
                 display: inline-flex;
                 min-height: 2.9rem;
@@ -1185,15 +1230,45 @@
 
                         <section class="toolbar-row">
                             <div class="toolbar-group">
-                                <button type="button" class="tool-button neutral">
-                                    <i class="bx bx-filter-alt"></i>
-                                    Filter Items
-                                </button>
+                                <form method="get" action="/stock-check-sessions/{{ .Session.ID }}" class="toolbar-filter-form">
+                                    <div class="toolbar-field">
+                                        <label for="sort_by" class="toolbar-label">Order By</label>
+                                        <select id="sort_by" name="sort_by" class="toolbar-select">
+                                            <option value="name_asc" {{ if eq .Filters.SortBy "name_asc" }}selected{{ end }}>Nama Produk A-Z</option>
+                                            <option value="name_desc" {{ if eq .Filters.SortBy "name_desc" }}selected{{ end }}>Nama Produk Z-A</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="toolbar-field">
+                                        <label for="item_status" class="toolbar-label">Status</label>
+                                        <select id="item_status" name="item_status" class="toolbar-select">
+                                            <option value="" {{ if eq .Filters.Status "" }}selected{{ end }}>Semua Status</option>
+                                            <option value="draft" {{ if eq .Filters.Status "draft" }}selected{{ end }}>Draft</option>
+                                            <option value="submitted" {{ if eq .Filters.Status "submitted" }}selected{{ end }}>Submitted</option>
+                                            <option value="reviewed" {{ if eq .Filters.Status "reviewed" }}selected{{ end }}>Reviewed</option>
+                                            <option value="approved" {{ if eq .Filters.Status "approved" }}selected{{ end }}>Approved</option>
+                                            <option value="po_created" {{ if eq .Filters.Status "po_created" }}selected{{ end }}>PO Created</option>
+                                            <option value="rejected" {{ if eq .Filters.Status "rejected" }}selected{{ end }}>Rejected</option>
+                                        </select>
+                                    </div>
+
+                                    <button type="submit" class="tool-button neutral">
+                                        <i class="bx bx-filter-alt"></i>
+                                        Terapkan
+                                    </button>
+
+                                    {{ if or (ne .Filters.SortBy "name_asc") (ne .Filters.Status "") }}
+                                    <a href="/stock-check-sessions/{{ .Session.ID }}" class="tool-button primary">
+                                        <i class="bx bx-refresh"></i>
+                                        Reset
+                                    </a>
+                                    {{ end }}
+                                </form>
                             </div>
 
                             <div class="toolbar-group">
                                 <form method="post" action="/stock-check-sessions/{{ .Session.ID }}/apply-all-submitted" onsubmit="return confirm('Apply semua item submitted di sesi ini? Nilai Suggest (carton/box/pcs) akan dipindah ke Final Approve.');">
-                                    <input type="hidden" name="redirect_to" value="/stock-check-sessions/{{ .Session.ID }}{{ if gt .Pagination.CurrentPage 1 }}?page={{ .Pagination.CurrentPage }}{{ end }}">
+                                    <input type="hidden" name="redirect_to" value="{{ .CurrentURL }}">
                                     <button type="submit" class="tool-button emphasis">
                                         <i class="bx bx-check-circle"></i>
                                         Approve All
@@ -1283,8 +1358,14 @@
                                         <span>Showing Items</span>
                                         {{ if gt .Pagination.TotalItems 0 }}
                                         <strong>{{ .Pagination.StartItem }}-{{ .Pagination.EndItem }} of {{ .Pagination.TotalItems }} items</strong>
+                                        {{ if or (ne .Filters.SortBy "name_asc") (ne .Filters.Status "") }}
+                                        <p class="toolbar-filter-note">Hasil filter dari total {{ .Session.ItemCount }} item sesi.</p>
+                                        {{ end }}
                                         {{ else }}
                                         <strong>No items found</strong>
+                                        {{ if or (ne .Filters.SortBy "name_asc") (ne .Filters.Status "") }}
+                                        <p class="toolbar-filter-note">Coba ubah filter status atau urutan item.</p>
+                                        {{ end }}
                                         {{ end }}
                                     </div>
                                 </div>
@@ -1333,7 +1414,7 @@
 
                                 <form method="post" action="/stock-checker/po-recap/{{ .Session.ID }}/status" data-close-session-form>
                                     <input type="hidden" name="status" value="reviewed">
-                                    <input type="hidden" name="redirect_to" value="{{ .CurrentPath }}">
+                                    <input type="hidden" name="redirect_to" value="{{ .CurrentURL }}">
                                     <button type="submit" class="summary-cta" {{ if eq .Session.Status "po" }}disabled aria-disabled="true"{{ end }}>Selesai &amp; Pindah ke PO Buyer</button>
                                 </form>
                                 <p class="summary-caption">
@@ -1368,6 +1449,7 @@
 
                 <form method="POST" action="/stock-check-sessions/{{ .Session.ID }}/items/review{{ if gt .Pagination.CurrentPage 1 }}?page={{ .Pagination.CurrentPage }}{{ end }}" class="modal-form">
                     <input type="hidden" name="item_id" id="review_item_id" value="{{ .ReviewForm.ItemID }}">
+                    <input type="hidden" name="redirect_to" value="{{ .CurrentURL }}">
 
                     <div class="modal-grid">
                         <div>

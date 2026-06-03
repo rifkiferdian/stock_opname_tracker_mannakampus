@@ -11,6 +11,7 @@ import (
 	"math"
 	"net/http"
 	"net/url"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -413,9 +414,10 @@ func StockCheckSessionPODetail(c *gin.Context) {
 		c.String(http.StatusBadRequest, "invalid stock check session id")
 		return
 	}
+	poSortBy := sanitizeStockCheckSessionPOSortBy(c.Query("sort_by"))
 
 	sessionService := buildStockCheckSessionService()
-	pageData, err := sessionService.GetSessionDetailPage(sessionID, 1, 0)
+	pageData, err := sessionService.GetSessionDetailPage(sessionID, 1, 0, models.StockCheckSessionDetailFilter{})
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			c.HTML(http.StatusNotFound, "error.html", gin.H{
@@ -491,7 +493,6 @@ func StockCheckSessionPODetail(c *gin.Context) {
 		totalPcs += item.ApprovedBuyPcs
 
 		items = append(items, stockCheckSessionPOItemView{
-			No:                  len(items) + 1,
 			ProductName:         item.ProductName,
 			ProductCode:         item.ProductCode,
 			UnitName:            item.UnitName,
@@ -500,6 +501,31 @@ func StockCheckSessionPODetail(c *gin.Context) {
 			UnitPriceDisplay:    formatStockCheckPOCurrency(unitPrice),
 			SubtotalDisplay:     formatStockCheckPOCurrency(lineSubtotal),
 		})
+	}
+
+	sort.SliceStable(items, func(i, j int) bool {
+		leftName := strings.ToLower(strings.TrimSpace(items[i].ProductName))
+		rightName := strings.ToLower(strings.TrimSpace(items[j].ProductName))
+		if leftName != rightName {
+			if poSortBy == "name_desc" {
+				return leftName > rightName
+			}
+			return leftName < rightName
+		}
+
+		leftCode := strings.ToLower(strings.TrimSpace(items[i].ProductCode))
+		rightCode := strings.ToLower(strings.TrimSpace(items[j].ProductCode))
+		if leftCode != rightCode {
+			if poSortBy == "name_desc" {
+				return leftCode > rightCode
+			}
+			return leftCode < rightCode
+		}
+
+		return i < j
+	})
+	for i := range items {
+		items[i].No = i + 1
 	}
 
 	shippingHandling := 0.0
@@ -518,6 +544,7 @@ func StockCheckSessionPODetail(c *gin.Context) {
 		"StoreAddress":        storeAddress,
 		"BuyerApproverName":   buyerApproverName,
 		"POItems":             items,
+		"POSortBy":            poSortBy,
 		"POItemCount":         len(items),
 		"POTotalQtyDisplay":   formatStockCheckPOWholeNumber(totalQty),
 		"POTotalBreakdownDisplay": formatStockCheckPOBreakdown(totalCarton, totalBox, totalPcs),
@@ -533,6 +560,15 @@ func StockCheckSessionPODetail(c *gin.Context) {
 			SupplierName: c.Query("supplier_name"),
 		}, parsePositiveInt(c.Query("page"), 1)),
 	})
+}
+
+func sanitizeStockCheckSessionPOSortBy(value string) string {
+	switch strings.ToLower(strings.TrimSpace(value)) {
+	case "name_desc", "desc":
+		return "name_desc"
+	default:
+		return "name_asc"
+	}
 }
 
 func StockCheckSessionReviewItemUpdate(c *gin.Context) {
@@ -1521,7 +1557,10 @@ func renderStockCheckCheckerSessionScanPage(c *gin.Context, service *services.St
 
 func renderStockCheckSessionDetailPage(c *gin.Context, service *services.StockCheckSessionService, id int, successMessage string, errorMessage string, reviewForm models.StockCheckSessionReviewItemEditForm) {
 	currentPage := 1
-	pageData, err := service.GetSessionDetailPage(id, currentPage, stockCheckSessionDetailItemLimit)
+	pageData, err := service.GetSessionDetailPage(id, currentPage, stockCheckSessionDetailItemLimit, models.StockCheckSessionDetailFilter{
+		SortBy: c.Query("sort_by"),
+		Status: c.Query("item_status"),
+	})
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			c.HTML(http.StatusNotFound, "error.html", gin.H{
@@ -1557,10 +1596,12 @@ func renderStockCheckSessionDetailPage(c *gin.Context, service *services.StockCh
 		"Items":       pageData.Items,
 		"Overview":    pageData.OverviewCards,
 		"Pagination":  pageData.Pagination,
+		"Filters":     pageData.Filters,
 		"Success":     successMessage,
 		"Error":       errorMessage,
 		"ReviewForm":  reviewForm,
 		"CurrentPath": c.Request.URL.Path,
+		"CurrentURL":  c.Request.URL.RequestURI(),
 	})
 }
 
@@ -1591,7 +1632,11 @@ func buildStockCheckSessionDetailPagination(sessionID int, pagination models.Pag
 		pagination.CurrentPage = 1
 	}
 	if pagination.PageSize <= 0 {
-		pagination.PageSize = stockCheckSessionDetailItemLimit
+		if pagination.TotalItems > 0 {
+			pagination.PageSize = pagination.TotalItems
+		} else {
+			pagination.PageSize = 1
+		}
 	}
 	if pagination.TotalItems == 0 {
 		return pagination

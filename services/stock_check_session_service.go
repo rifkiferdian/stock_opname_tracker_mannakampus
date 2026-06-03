@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"gobase-app/models"
 	"gobase-app/repositories"
+	"sort"
 	"strings"
 	"time"
 )
@@ -69,13 +70,15 @@ func (s *StockCheckSessionService) GetSupplierOptions() ([]models.Supplier, erro
 	return s.Repo.GetSupplierOptions()
 }
 
-func (s *StockCheckSessionService) GetSessionDetailPage(id int, page int, limit int) (models.StockCheckSessionDetailPage, error) {
+func (s *StockCheckSessionService) GetSessionDetailPage(id int, page int, limit int, filter models.StockCheckSessionDetailFilter) (models.StockCheckSessionDetailPage, error) {
 	if id <= 0 {
 		return models.StockCheckSessionDetailPage{}, errors.New("session id tidak valid")
 	}
 	if page <= 0 {
 		page = 1
 	}
+	filter.SortBy = sanitizeStockCheckSessionDetailSortBy(filter.SortBy)
+	filter.Status = sanitizeStockCheckSessionDetailItemStatus(filter.Status)
 	disablePagination := limit <= 0
 
 	session, err := s.Repo.GetByID(id)
@@ -88,7 +91,8 @@ func (s *StockCheckSessionService) GetSessionDetailPage(id int, page int, limit 
 		return models.StockCheckSessionDetailPage{}, err
 	}
 
-	totalItems := len(items)
+	filteredItems := filterStockCheckSessionReviewItems(items, filter)
+	totalItems := len(filteredItems)
 	totalPages := 0
 	if disablePagination {
 		page = 1
@@ -102,14 +106,14 @@ func (s *StockCheckSessionService) GetSessionDetailPage(id int, page int, limit 
 		}
 	}
 
-	pagedItems := items
+	pagedItems := filteredItems
 	if !disablePagination && totalItems > 0 {
 		startIndex := (page - 1) * limit
 		endIndex := startIndex + limit
 		if endIndex > totalItems {
 			endIndex = totalItems
 		}
-		pagedItems = items[startIndex:endIndex]
+		pagedItems = filteredItems[startIndex:endIndex]
 	}
 
 	detail := models.StockCheckSessionDetail{
@@ -165,7 +169,63 @@ func (s *StockCheckSessionService) GetSessionDetailPage(id int, page int, limit 
 			TotalItems:  totalItems,
 			TotalPages:  totalPages,
 		},
+		Filters: filter,
 	}, nil
+}
+
+func sanitizeStockCheckSessionDetailSortBy(value string) string {
+	switch strings.ToLower(strings.TrimSpace(value)) {
+	case "name_desc", "desc":
+		return "name_desc"
+	default:
+		return "name_asc"
+	}
+}
+
+func sanitizeStockCheckSessionDetailItemStatus(value string) string {
+	switch strings.ToLower(strings.TrimSpace(value)) {
+	case "draft", "submitted", "reviewed", "approved", "po_created", "rejected":
+		return strings.ToLower(strings.TrimSpace(value))
+	default:
+		return ""
+	}
+}
+
+func filterStockCheckSessionReviewItems(items []models.StockCheckSessionReviewItem, filter models.StockCheckSessionDetailFilter) []models.StockCheckSessionReviewItem {
+	filteredItems := make([]models.StockCheckSessionReviewItem, 0, len(items))
+	for _, item := range items {
+		if filter.Status != "" && item.Status != filter.Status {
+			continue
+		}
+		filteredItems = append(filteredItems, item)
+	}
+
+	sort.SliceStable(filteredItems, func(i, j int) bool {
+		left := filteredItems[i]
+		right := filteredItems[j]
+
+		leftName := strings.ToLower(strings.TrimSpace(left.ProductName))
+		rightName := strings.ToLower(strings.TrimSpace(right.ProductName))
+		if leftName != rightName {
+			if filter.SortBy == "name_desc" {
+				return leftName > rightName
+			}
+			return leftName < rightName
+		}
+
+		leftCode := strings.ToLower(strings.TrimSpace(left.ProductCode))
+		rightCode := strings.ToLower(strings.TrimSpace(right.ProductCode))
+		if leftCode != rightCode {
+			if filter.SortBy == "name_desc" {
+				return leftCode > rightCode
+			}
+			return leftCode < rightCode
+		}
+
+		return left.ID < right.ID
+	})
+
+	return filteredItems
 }
 
 func (s *StockCheckSessionService) GetCheckerInputPage(sessionID int, userID int) (models.StockCheckSessionCheckerInputPage, error) {

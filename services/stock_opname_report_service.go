@@ -127,6 +127,7 @@ func (s *StockOpnameReportService) GetDetailPage(supplierID int, filter models.S
 	statusOptions := buildStockOpnameReportStatusOptions(statuses)
 	filter.Status = normalizeStockOpnameReportStatusFilter(filter.Status, statusOptions)
 	filter.ItemName = strings.TrimSpace(filter.ItemName)
+	filter.Sort = normalizeStockOpnameReportSort(filter.Sort)
 	page.Filter = filter
 	page.StatusOptions = statusOptions
 	page.CurrentStatusLabel = stockOpnameReportStatusFilterLabel(filter.Status)
@@ -154,7 +155,7 @@ func (s *StockOpnameReportService) GetDetailPage(supplierID int, filter models.S
 		chartDates = append(chartDates, sessionDates[index])
 	}
 
-	rows, auditFindings, summaryMetrics := buildStockOpnameReportRows(records, historyDates, currentDate, chartDates)
+	rows, auditFindings, summaryMetrics := buildStockOpnameReportRows(records, historyDates, currentDate, chartDates, filter.Sort)
 	summaryMetrics.TotalSessionCount = totalSessions
 	page.SummaryCards = buildStockOpnameReportSummaryCards(summaryMetrics, currentDate)
 	page.LatestSessionCount = summaryMetrics.TotalSessionCount
@@ -179,7 +180,7 @@ func (s *StockOpnameReportService) GetDetailPage(supplierID int, filter models.S
 	return page, nil
 }
 
-func buildStockOpnameReportRows(records []repositories.StockOpnameReportRecord, historyDates []time.Time, currentDate time.Time, chartDates []time.Time) ([]models.StockOpnameReportRow, []models.StockOpnameReportAuditFinding, stockOpnameReportSummaryMetrics) {
+func buildStockOpnameReportRows(records []repositories.StockOpnameReportRecord, historyDates []time.Time, currentDate time.Time, chartDates []time.Time, sortBy string) ([]models.StockOpnameReportRow, []models.StockOpnameReportAuditFinding, stockOpnameReportSummaryMetrics) {
 	currentDateKey := currentDate.Format("2006-01-02")
 	productMap := make(map[int]*stockOpnameReportAggregation)
 	metrics := stockOpnameReportSummaryMetrics{}
@@ -386,7 +387,25 @@ func buildStockOpnameReportRows(records []repositories.StockOpnameReportRecord, 
 	}
 
 	sort.Slice(rows, func(i, j int) bool {
-		return strings.ToLower(rows[i].Name) < strings.ToLower(rows[j].Name)
+		leftName := strings.ToLower(strings.TrimSpace(rows[i].Name))
+		rightName := strings.ToLower(strings.TrimSpace(rows[j].Name))
+		if leftName != rightName {
+			if sortBy == "product_desc" {
+				return leftName > rightName
+			}
+			return leftName < rightName
+		}
+
+		leftSKU := strings.ToLower(strings.TrimSpace(rows[i].SKU))
+		rightSKU := strings.ToLower(strings.TrimSpace(rows[j].SKU))
+		if leftSKU != rightSKU {
+			if sortBy == "product_desc" {
+				return leftSKU > rightSKU
+			}
+			return leftSKU < rightSKU
+		}
+
+		return rows[i].ProductID < rows[j].ProductID
 	})
 	sort.Slice(findings, func(i, j int) bool {
 		if findings[i].Score == findings[j].Score {
@@ -409,6 +428,15 @@ func buildStockOpnameReportRows(records []repositories.StockOpnameReportRecord, 
 	}
 
 	return rows, auditFindings, metrics
+}
+
+func normalizeStockOpnameReportSort(value string) string {
+	switch strings.ToLower(strings.TrimSpace(value)) {
+	case "product_desc", "desc":
+		return "product_desc"
+	default:
+		return "product_asc"
+	}
 }
 
 func buildStockOpnameProductRecentSOTrend(aggregate *stockOpnameReportAggregation, chartDates []time.Time) stockOpnameSOUnitMonthlyTrend {

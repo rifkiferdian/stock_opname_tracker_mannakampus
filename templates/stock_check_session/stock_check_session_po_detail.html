@@ -67,6 +67,37 @@
                 gap: 0.65rem;
             }
 
+            .po-sort-form {
+                display: inline-flex;
+                align-items: center;
+                gap: 0.55rem;
+                border: 1px solid #dbe4f3;
+                border-radius: 0.75rem;
+                background: #ffffff;
+                padding: 0.45rem 0.6rem;
+            }
+
+            .po-sort-label {
+                font-size: 0.72rem;
+                font-weight: 800;
+                letter-spacing: 0.08em;
+                text-transform: uppercase;
+                color: #5a6a84;
+                white-space: nowrap;
+            }
+
+            .po-sort-select {
+                min-height: 2.2rem;
+                border: 1px solid #dbe4f3;
+                border-radius: 0.55rem;
+                background: #f8fbff;
+                padding: 0.45rem 0.75rem;
+                font-size: 0.82rem;
+                font-weight: 800;
+                color: #123d8d;
+                outline: none;
+            }
+
             .po-status-edit-form {
                 display: inline-flex;
                 align-items: center;
@@ -450,6 +481,13 @@
                             </div>
 
                             <div class="flex flex-wrap items-center gap-3">
+                                <form method="get" action="/stock-check-sessions/{{ .Session.ID }}/po-detail" class="po-sort-form">
+                                    <label for="sort_by" class="po-sort-label">Order By</label>
+                                    <select id="sort_by" name="sort_by" class="po-sort-select" onchange="this.form.submit()">
+                                        <option value="name_asc" {{ if eq .POSortBy "name_asc" }}selected{{ end }}>Nama Product A-Z</option>
+                                        <option value="name_desc" {{ if eq .POSortBy "name_desc" }}selected{{ end }}>Nama Product Z-A</option>
+                                    </select>
+                                </form>
                                 <form method="post" action="/stock-checker/po-recap/{{ .Session.ID }}/status" class="po-status-edit-form" data-po-status-form>
                                     <input type="hidden" name="redirect_to" value="{{ .CurrentDetailURL }}">
                                     <input type="hidden" name="status" value="po">

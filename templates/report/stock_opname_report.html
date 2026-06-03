@@ -977,6 +977,10 @@
                                             <option value="{{ .Value }}" {{ if eq $.Report.Filter.Status .Value }}selected{{ end }}>{{ .Label }}</option>
                                             {{ end }}
                                         </select>
+                                        <select name="sort" class="filter-select">
+                                            <option value="product_asc" {{ if eq .Report.Filter.Sort "product_asc" }}selected{{ end }}>Product A-Z</option>
+                                            <option value="product_desc" {{ if eq .Report.Filter.Sort "product_desc" }}selected{{ end }}>Product Z-A</option>
+                                        </select>
                                         <button type="submit" class="filter-button">
                                             <i class="bx bx-filter-alt"></i>
                                             <span>Filter</span>
