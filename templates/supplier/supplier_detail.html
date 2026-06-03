@@ -163,11 +163,106 @@
                         </div>
                         {{ end }}
 
+                        <section class="rounded-lg bg-white p-5 shadow-sm">
+                            <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                                <div>
+                                    <h2 class="text-lg font-extrabold text-[#001e62]">Group Item Supplier</h2>
+                                    <p class="mt-1 text-xs font-medium text-[#566173]">Buat beberapa group item untuk supplier ini. Item tetap bisa disimpan tanpa group.</p>
+                                </div>
+
+                                <div class="flex flex-wrap items-center gap-2">
+                                    <div class="inline-flex items-center gap-2 rounded-md bg-slate-50 px-4 py-3 text-sm font-extrabold text-[#001e62]">
+                                        <i class="bx bx-collection text-base"></i>
+                                        {{ len .ProductGroups }} group
+                                    </div>
+                                    <div class="inline-flex items-center gap-2 rounded-md bg-amber-50 px-4 py-3 text-sm font-extrabold text-amber-700">
+                                        <i class="bx bx-layer-minus text-base"></i>
+                                        {{ .UngroupedProductCount }} item tanpa group
+                                    </div>
+                                    <button type="button" class="inline-flex items-center justify-center gap-2 rounded-md bg-[#001e62] px-5 py-3 text-sm font-extrabold text-white transition hover:bg-[#002f95]" data-modal-open="supplierProductGroupModal">
+                                        <i class="bx bx-folder-plus text-base"></i>
+                                        Tambah Group Item
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="mt-5 overflow-hidden rounded-lg border border-slate-200">
+                                <div class="overflow-x-auto">
+                                    <table class="w-full text-sm" style="min-width: 820px;">
+                                        <thead class="bg-slate-50 text-[10px] font-extrabold uppercase text-[#001e62]">
+                                            <tr>
+                                                <th class="px-4 py-3 text-left">Nama Group</th>
+                                                <th class="px-4 py-3 text-left">Deskripsi</th>
+                                                <th class="px-4 py-3 text-left">Jumlah Item</th>
+                                                <th class="px-4 py-3 text-left">Urutan</th>
+                                                <th class="px-4 py-3 text-left">Status</th>
+                                                <th class="px-4 py-3 text-left">Update</th>
+                                                <th class="px-4 py-3 text-left">Aksi</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="divide-y divide-slate-100 bg-white">
+                                            {{ range .ProductGroups }}
+                                            <tr class="hover:bg-slate-50/70">
+                                                <td class="px-4 py-3.5">
+                                                    <p class="font-extrabold text-[#07142f]">{{ .GroupName }}</p>
+                                                </td>
+                                                <td class="px-4 py-3.5 font-semibold text-[#566173]">
+                                                    {{ if .Description }}{{ .Description }}{{ else }}-{{ end }}
+                                                </td>
+                                                <td class="px-4 py-3.5 font-extrabold text-[#001e62]">{{ .ItemCount }}</td>
+                                                <td class="px-4 py-3.5 font-semibold text-[#566173]">{{ .SortOrder }}</td>
+                                                <td class="px-4 py-3.5">
+                                                    {{ if .IsActive }}
+                                                    <span class="inline-flex items-center gap-1 rounded-full bg-[#dcfae7] px-2.5 py-0.5 text-[10px] font-extrabold uppercase text-[#19a856]">
+                                                        <span class="h-2 w-2 rounded-full bg-[#19a856]"></span>
+                                                        {{ .StatusLabel }}
+                                                    </span>
+                                                    {{ else }}
+                                                    <span class="inline-flex items-center gap-1 rounded-full bg-rose-50 px-2.5 py-0.5 text-[10px] font-extrabold uppercase text-rose-600">
+                                                        <span class="h-2 w-2 rounded-full bg-rose-500"></span>
+                                                        {{ .StatusLabel }}
+                                                    </span>
+                                                    {{ end }}
+                                                </td>
+                                                <td class="px-4 py-3.5 font-semibold text-[#566173]">{{ .UpdatedAtDisplay }}</td>
+                                                <td class="px-4 py-3.5">
+                                                    <div class="flex flex-wrap items-center gap-2">
+                                                        <button
+                                                            type="button"
+                                                            class="btn-edit-supplier-product-group inline-flex rounded-md px-2.5 py-1.5 text-[11px] font-extrabold text-amber-700 transition hover:bg-amber-100"
+                                                            data-id="{{ .ID }}"
+                                                            data-group-name="{{ .GroupName }}"
+                                                            data-description="{{ .Description }}"
+                                                            data-sort-order="{{ .SortOrder }}"
+                                                            data-is-active="{{ if .IsActive }}1{{ else }}0{{ end }}">
+                                                            Edit
+                                                        </button>
+                                                        <form method="post" action="/suppliers/{{ $.Supplier.ID }}/product-groups/{{ .ID }}/delete" onsubmit="return confirm('Hapus group {{ .GroupName }}? Item yang ada di dalamnya akan menjadi tanpa group.');">
+                                                            <button type="submit" class="inline-flex rounded-md px-2.5 py-1.5 text-[11px] font-extrabold text-rose-600 transition hover:bg-rose-100">
+                                                                Hapus
+                                                            </button>
+                                                        </form>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            {{ else }}
+                                            <tr>
+                                                <td colspan="7" class="px-5 py-8 text-center text-sm font-semibold text-[#566173]">
+                                                    Belum ada group item supplier. Tambahkan group jika Anda ingin mengelompokkan item berdasarkan kategori internal supplier ini.
+                                                </td>
+                                            </tr>
+                                            {{ end }}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </section>
+
                         <section class="overflow-hidden rounded-lg bg-white shadow-sm">
                             <div class="flex flex-col gap-4 px-5 py-5 md:flex-row md:items-center md:justify-between">
                                 <div>
                                     <h2 class="text-lg font-extrabold text-[#001e62]">Produk yang Disuplai</h2>
-                                    <p class="mt-1 text-xs font-medium text-[#566173]">Kelola katalog dan informasi stok yang terhubung dengan supplier ini.</p>
+                                    <p class="mt-1 text-xs font-medium text-[#566173]">Semua item supplier ditampilkan dalam satu tabel. Gunakan filter jika ingin melihat group item tertentu saja.</p>
                                 </div>
 
                                 <div class="flex flex-col gap-2">
@@ -176,15 +271,14 @@
                                             type="button"
                                             class="inline-flex items-center justify-center gap-2 rounded-md border border-[#001e62] bg-white px-6 py-3 text-sm font-extrabold text-[#001e62] transition hover:bg-slate-50"
                                             {{ if .ProductOptions }}
-                                            onclick="var modal=document.getElementById('supplierProductModal'); if(modal){ modal.classList.remove('hidden'); modal.classList.add('flex'); document.body.classList.add('overflow-hidden'); } return false;"
+                                            data-modal-open="supplierProductModal"
                                             {{ else }}
                                             onclick="var feedback=document.getElementById('supplier-add-item-feedback'); if(feedback){ feedback.classList.remove('hidden'); } window.alert('Tidak ada item aktif yang bisa ditambahkan ke supplier ini karena semua item aktif sudah tertaut.'); return false;"
                                             {{ end }}
                                         >
-                                        <i class="bx bx-plus-circle text-base"></i>
-                                        Tambah Item
+                                            <i class="bx bx-plus-circle text-base"></i>
+                                            Tambah Item
                                         </button>
-                                        
                                     </div>
                                     {{ if not .ProductOptions }}
                                     <p id="supplier-add-item-notice" class="text-xs font-semibold text-amber-700">
@@ -197,82 +291,132 @@
                                 </div>
                             </div>
 
-                            <div class="overflow-x-auto">
-                                <table class="w-full text-sm" style="min-width: 980px;">
-                                    <thead class="bg-slate-50 text-[10px] font-extrabold text-[#001e62]">
-                                        <tr>
-                                            <th class="px-4 py-3 text-left">PLU</th>
-                                            <th class="px-4 py-3 text-left">Nama Produk</th>
-                                            <th class="px-4 py-3 text-left">Kategori</th>
-                                            <th class="px-4 py-3 text-left">Waktu Tunggu</th>
-                                            <th class="px-4 py-3 text-left">Status</th>
-                                            <th class="px-4 py-3 text-left">Aksi</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody class="divide-y divide-slate-100">
-                                        {{ range .Products }}
-                                        <tr class="hover:bg-slate-50/70">
-                                            <td class="px-4 py-3.5 text-[11px] font-semibold text-[#8b95a5]">#{{ .ProductCode }}</td>
-                                            <td class="px-4 py-3.5">
-                                                <p class="font-extrabold text-[#07142f]">{{ .ProductName }}</p>
-                                                <p class="mt-1 text-[11px] font-semibold text-[#566173]">{{ if .IsPrimary }} - Supplier Utama{{ else }} - Prioritas {{ .PriorityNo }}{{ end }}</p>
-                                            </td>
-                                            <td class="px-4 py-3.5">
-                                                <span class="inline-flex rounded-full bg-slate-100 px-3 py-1 text-[10px] font-extrabold text-[#566173]">{{ if .CategoryName }}{{ .CategoryName }}{{ else }}Tanpa Kategori{{ end }}</span>
-                                            </td>
-                                            <td class="px-4 py-3.5 font-semibold text-[#566173]">{{ .LeadTimeDays }} hari</td>
-                                            <td class="px-4 py-3.5">
-                                                {{ if .IsActive }}
-                                                <span class="inline-flex items-center gap-2 text-xs font-extrabold text-[#07142f]">
-                                                    <span class="h-2 w-2 rounded-full bg-[#19a856]"></span>
-                                                    {{ .StatusLabel }}
-                                                </span>
-                                                {{ else }}
-                                                <span class="inline-flex items-center gap-2 text-xs font-extrabold text-rose-600">
-                                                    <span class="h-2 w-2 rounded-full bg-rose-500"></span>
-                                                    {{ .StatusLabel }}
-                                                </span>
+                            <div class="space-y-5 px-5 pb-5">
+                                <form action="/suppliers/{{ .Supplier.ID }}" method="get" class="rounded-lg border border-slate-200 bg-slate-50 p-4">
+                                    <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                                        <div class="min-w-0 flex-1">
+                                            <p class="text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#566173]">Filter Group Item</p>
+                                            <p class="mt-1 text-xs font-semibold text-[#566173]">Tampilkan item berdasarkan group tertentu saja.</p>
+                                        </div>
+                                        <div class="flex flex-col gap-2 sm:flex-row sm:items-center">
+                                            <select name="product_group" class="rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-extrabold text-[#001e62] outline-none transition focus:border-brand-500">
+                                                <option value="">Semua Group Item</option>
+                                                <option value="ungrouped" {{ if eq .SelectedProductGroup "ungrouped" }}selected{{ end }}>Tanpa Group</option>
+                                                {{ range .ProductGroups }}
+                                                <option value="{{ .ID }}" {{ if eq $.SelectedProductGroup (printf "%d" .ID) }}selected{{ end }}>{{ .GroupName }}</option>
                                                 {{ end }}
-                                            </td>
-                                            <td class="px-4 py-3.5">
-                                                <div class="flex items-center gap-1.5">
-                                                    <button
-                                                        type="button"
-                                                        class="btn-edit-supplier-product inline-flex items-center justify-center rounded-md border border-slate-200 bg-white px-2.5 py-1.5 text-[11px] font-extrabold text-[#001e62] transition hover:bg-slate-50"
-                                                        data-product-id="{{ .ProductID }}"
-                                                        data-product-name="{{ .ProductName }}"
-                                                        data-product-code="{{ .ProductCode }}"
-                                                        data-barcode="{{ .Barcode }}"
-                                                        data-last-price="{{ printf "%.2f" .LastPrice }}"
-                                                        data-moq="{{ printf "%.2f" .MOQ }}"
-                                                        data-pack-size="{{ printf "%.2f" .PackSize }}"
-                                                        data-lead-time-days="{{ .LeadTimeDays }}"
-                                                        data-is-primary="{{ if .IsPrimary }}1{{ else }}0{{ end }}"
-                                                        data-is-active="{{ if .IsActive }}1{{ else }}0{{ end }}"
-                                                    >
-                                                        <i class="bx bx-pencil text-sm"></i>
-                                                        Edit
-                                                    </button>
-                                                    <form method="post" action="/suppliers/{{ $.Supplier.ID }}/products/{{ .ProductID }}/delete" onsubmit="return confirm('Hapus item {{ .ProductName }} dari supplier ini?');">
-                                                        <button type="submit" class="inline-flex items-center justify-center rounded-md border border-rose-200 bg-rose-50 px-2.5 py-1.5 text-[11px] font-extrabold text-rose-600 transition hover:bg-rose-100">
-                                                            <i class="bx bx-trash text-sm"></i>
-                                                            Hapus
-                                                        </button>
-                                                    </form>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                        {{ else }}
-                                        <tr>
-                                            <td colspan="8" class="px-4 py-8 text-center text-sm font-semibold text-[#566173]">Supplier ini belum terhubung ke produk mana pun.</td>
-                                        </tr>
-                                        {{ end }}
-                                    </tbody>
-                                </table>
+                                            </select>
+                                            <div class="flex items-center gap-2">
+                                                <button type="submit" class="inline-flex items-center justify-center gap-2 rounded-md bg-[#001e62] px-5 py-3 text-sm font-extrabold text-white transition hover:bg-[#002f95]">
+                                                    <i class="bx bx-filter-alt text-base"></i>
+                                                    Filter
+                                                </button>
+                                                {{ if .SelectedProductGroup }}
+                                                <a href="/suppliers/{{ .Supplier.ID }}" class="inline-flex items-center justify-center gap-2 rounded-md bg-white px-5 py-3 text-sm font-extrabold text-[#566173] transition hover:bg-slate-100">
+                                                    <i class="bx bx-reset text-base"></i>
+                                                    Reset
+                                                </a>
+                                                {{ end }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </form>
+
+                                {{ if .Products }}
+                                <div class="overflow-hidden rounded-lg border border-slate-200">
+                                    <div class="overflow-x-auto">
+                                        <table class="w-full text-sm" style="min-width: 1120px;">
+                                            <thead class="bg-slate-50 text-[10px] font-extrabold uppercase text-[#001e62]">
+                                                <tr>
+                                                    <th class="px-4 py-3 text-center">No</th>
+                                                    <th class="px-4 py-3 text-left">SKU</th>
+                                                    <th class="px-4 py-3 text-left">Nama Produk</th>
+                                                    <th class="px-4 py-3 text-left">Group Item</th>
+                                                    <!-- <th class="px-4 py-3 text-left">Kategori</th> -->
+                                                    <th class="px-4 py-3 text-left">Lead Time</th>
+                                                    <th class="px-4 py-3 text-left">Status</th>
+                                                    <th class="px-4 py-3 text-left">Aksi</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody class="divide-y divide-slate-100 bg-white">
+                                                {{ range $index, $product := .Products }}
+                                                <tr class="hover:bg-slate-50/70">
+                                                    <td class="px-4 py-3.5 text-center font-extrabold text-[#566173]">{{ add $index 1 }}</td>
+                                                    <td class="px-4 py-3.5 ">
+                                                        <span class="inline-flex items-center gap-2 text-xs font-extrabold text-[#07142f]">
+                                                            {{ $product.ProductCode }}
+                                                        </span>
+                                                    </td>
+                                                    <td class="px-4 py-3.5">
+                                                        <p class="font-extrabold text-[#07142f]">{{ $product.ProductName }}</p>
+                                                        <p class="mt-1 text-[11px] font-semibold text-[#566173]">{{ if $product.IsPrimary }}Supplier Utama{{ else }}Prioritas {{ $product.PriorityNo }}{{ end }}</p>
+                                                    </td>
+                                                    <td class="px-4 py-3.5">
+                                                        {{ if $product.SupplierProductGroupName }}
+                                                        <span class="inline-flex rounded-full bg-[#eef3ff] px-3 py-1 text-[10px] font-extrabold text-[#001e62]">{{ $product.SupplierProductGroupName }}</span>
+                                                        {{ else }}
+                                                        <span class="inline-flex rounded-full bg-amber-50 px-3 py-1 text-[10px] font-extrabold text-amber-700">Tanpa Group</span>
+                                                        {{ end }}
+                                                    </td>
+                                                    <!-- <td class="px-4 py-3.5">
+                                                        <span class="inline-flex rounded-full bg-slate-100 px-3 py-1 text-[10px] font-extrabold text-[#566173]">{{ if .CategoryName }}{{ .CategoryName }}{{ else }}Tanpa Kategori{{ end }}</span>
+                                                    </td> -->
+                                                    <td class="px-4 py-3.5 font-semibold text-[#566173]">{{ $product.LeadTimeDays }} hari</td>
+                                                    <td class="px-4 py-3.5">
+                                                        {{ if $product.IsActive }}
+                                                        <span class="inline-flex items-center gap-2 text-xs font-extrabold text-[#07142f]">
+                                                            <span class="h-2 w-2 rounded-full bg-[#19a856]"></span>
+                                                            {{ $product.StatusLabel }}
+                                                        </span>
+                                                        {{ else }}
+                                                        <span class="inline-flex items-center gap-2 text-xs font-extrabold text-rose-600">
+                                                            <span class="h-2 w-2 rounded-full bg-rose-500"></span>
+                                                            {{ $product.StatusLabel }}
+                                                        </span>
+                                                        {{ end }}
+                                                    </td>
+                                                    <td class="px-4 py-3.5">
+                                                        <div class="flex items-center gap-1.5">
+                                                            <button
+                                                                type="button"
+                                                                class="btn-edit-supplier-product inline-flex items-center justify-center rounded-md border border-slate-200 bg-white px-2.5 py-1.5 text-[11px] font-extrabold text-[#001e62] transition hover:bg-slate-50"
+                                                                data-product-id="{{ $product.ProductID }}"
+                                                                data-product-name="{{ $product.ProductName }}"
+                                                                data-product-code="{{ $product.ProductCode }}"
+                                                                data-barcode="{{ $product.Barcode }}"
+                                                                data-last-price="{{ printf "%.2f" $product.LastPrice }}"
+                                                                data-moq="{{ printf "%.2f" $product.MOQ }}"
+                                                                data-pack-size="{{ printf "%.2f" $product.PackSize }}"
+                                                                data-lead-time-days="{{ $product.LeadTimeDays }}"
+                                                                data-supplier-product-group-id="{{ $product.SupplierProductGroupID }}"
+                                                                data-is-primary="{{ if $product.IsPrimary }}1{{ else }}0{{ end }}"
+                                                                data-is-active="{{ if $product.IsActive }}1{{ else }}0{{ end }}">
+                                                                <i class="bx bx-pencil text-sm"></i>
+                                                                Edit
+                                                            </button>
+                                                            <form method="post" action="/suppliers/{{ $.Supplier.ID }}/products/{{ $product.ProductID }}/delete" onsubmit="return confirm('Hapus item {{ $product.ProductName }} dari supplier ini?');">
+                                                                <button type="submit" class="inline-flex items-center justify-center rounded-md border border-rose-200 bg-rose-50 px-2.5 py-1.5 text-[11px] font-extrabold text-rose-600 transition hover:bg-rose-100">
+                                                                    <i class="bx bx-trash text-sm"></i>
+                                                                    Hapus
+                                                                </button>
+                                                            </form>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                                {{ end }}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                                {{ else }}
+                                <div class="rounded-lg border border-dashed border-slate-300 px-4 py-10 text-center text-sm font-semibold text-[#566173]">
+                                    Tidak ada produk supplier untuk filter yang dipilih.
+                                </div>
+                                {{ end }}
                             </div>
 
                             <div class="flex flex-col gap-3 border-t border-slate-100 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
-                                <p class="text-xs font-semibold text-[#566173]">Menampilkan {{ len .Products }} dari {{ .Supplier.ProductCount }} produk tertaut</p>
+                                <p class="text-xs font-semibold text-[#566173]">Menampilkan {{ len .Products }} dari {{ .Supplier.ProductCount }} produk tertaut{{ if .SelectedProductGroup }} dengan filter group item{{ end }}</p>
                                 <div class="flex items-center gap-2">
                                     {{ if not .ProductOptions }}
                                     <span class="inline-flex items-center justify-center rounded-md bg-amber-50 px-4 py-2 text-sm font-extrabold text-amber-700">Semua item aktif sudah tertaut</span>
@@ -286,7 +430,96 @@
             </div>
         </div>
 
-        <div data-modal class="fixed inset-0 z-50 hidden items-center justify-center p-4 sm:p-6" id="supplierProductModal" {{ if .Error }}data-modal-auto-open="true"{{ end }}>
+        <div data-modal class="fixed inset-0 z-50 hidden items-center justify-center p-4 sm:p-6" id="supplierProductGroupModal" {{ if eq .AutoOpenModal "supplierProductGroupModal" }}data-modal-auto-open="true"{{ end }}>
+            <div class="absolute inset-0 bg-slate-900/50" data-modal-close></div>
+            <div class="relative w-full max-w-xl rounded-lg bg-white p-5 shadow-xl sm:p-6">
+                <div class="flex items-center justify-between border-b border-slate-100 pb-4">
+                    <div>
+                        <h2 class="text-lg font-extrabold text-[#001e62]">Tambah Group Item Supplier</h2>
+                        <p class="mt-1 text-sm font-medium text-[#566173]">Satu supplier bisa memiliki beberapa group item.</p>
+                    </div>
+                    <button type="button" class="inline-flex h-10 w-10 items-center justify-center rounded-lg text-slate-400 transition hover:bg-slate-50 hover:text-slate-600" data-modal-close>
+                        <i class="bx bx-x text-2xl"></i>
+                    </button>
+                </div>
+
+                <form action="/suppliers/{{ .Supplier.ID }}/product-groups" method="post" class="mt-6 space-y-5">
+                    <div class="grid gap-5 md:grid-cols-2">
+                        <div class="md:col-span-2">
+                            <label for="group_name" class="text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#566173]">Nama Group</label>
+                            <input type="text" id="group_name" name="group_name" required class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-[#07142f] outline-none transition focus:border-brand-500" placeholder="Contoh: Minuman Dingin">
+                        </div>
+                        <div class="md:col-span-2">
+                            <label for="group_description" class="text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#566173]">Deskripsi</label>
+                            <textarea id="group_description" name="description" class="mt-2 h-24 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-[#07142f] outline-none transition focus:border-brand-500" placeholder="Keterangan tambahan untuk group item"></textarea>
+                        </div>
+                        <div>
+                            <label for="group_sort_order" class="text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#566173]">Urutan Tampil</label>
+                            <input type="number" id="group_sort_order" name="sort_order" min="0" value="0" class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-[#07142f] outline-none transition focus:border-brand-500">
+                        </div>
+                        <div>
+                            <label for="group_is_active" class="text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#566173]">Status</label>
+                            <select id="group_is_active" name="is_active" class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-[#07142f] outline-none transition focus:border-brand-500">
+                                <option value="1" selected>Aktif</option>
+                                <option value="0">Nonaktif</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col gap-3 border-t border-slate-100 pt-4 sm:flex-row sm:justify-end">
+                        <button type="button" class="inline-flex items-center justify-center rounded-md border border-slate-200 bg-white px-5 py-3 text-sm font-extrabold text-[#1e2b42] transition hover:bg-slate-50 sm:min-w-[120px]" data-modal-close>Batal</button>
+                        <button type="submit" class="inline-flex items-center justify-center rounded-md bg-[#001e62] px-5 py-3 text-sm font-extrabold text-white transition hover:bg-[#002f95] sm:min-w-[170px]">Simpan Group</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div data-modal class="fixed inset-0 z-50 hidden items-center justify-center p-4 sm:p-6" id="supplierProductGroupEditModal" {{ if eq .AutoOpenModal "supplierProductGroupEditModal" }}data-modal-auto-open="true"{{ end }}>
+            <div class="absolute inset-0 bg-slate-900/50" data-modal-close></div>
+            <div class="relative w-full max-w-xl rounded-lg bg-white p-5 shadow-xl sm:p-6">
+                <div class="flex items-center justify-between border-b border-slate-100 pb-4">
+                    <div>
+                        <h2 class="text-lg font-extrabold text-[#001e62]">Edit Group Item Supplier</h2>
+                        <p class="mt-1 text-sm font-medium text-[#566173]">Perbarui nama, urutan, atau status group item supplier.</p>
+                    </div>
+                    <button type="button" class="inline-flex h-10 w-10 items-center justify-center rounded-lg text-slate-400 transition hover:bg-slate-50 hover:text-slate-600" data-modal-close>
+                        <i class="bx bx-x text-2xl"></i>
+                    </button>
+                </div>
+
+                <form action="/suppliers/{{ .Supplier.ID }}/product-groups/update" method="post" class="mt-6 space-y-5">
+                    <input type="hidden" id="edit_group_id" name="id">
+                    <div class="grid gap-5 md:grid-cols-2">
+                        <div class="md:col-span-2">
+                            <label for="edit_group_name" class="text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#566173]">Nama Group</label>
+                            <input type="text" id="edit_group_name" name="group_name" required class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-[#07142f] outline-none transition focus:border-brand-500">
+                        </div>
+                        <div class="md:col-span-2">
+                            <label for="edit_group_description" class="text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#566173]">Deskripsi</label>
+                            <textarea id="edit_group_description" name="description" class="mt-2 h-24 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-[#07142f] outline-none transition focus:border-brand-500"></textarea>
+                        </div>
+                        <div>
+                            <label for="edit_group_sort_order" class="text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#566173]">Urutan Tampil</label>
+                            <input type="number" id="edit_group_sort_order" name="sort_order" min="0" value="0" class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-[#07142f] outline-none transition focus:border-brand-500">
+                        </div>
+                        <div>
+                            <label for="edit_group_is_active" class="text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#566173]">Status</label>
+                            <select id="edit_group_is_active" name="is_active" class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-[#07142f] outline-none transition focus:border-brand-500">
+                                <option value="1">Aktif</option>
+                                <option value="0">Nonaktif</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col gap-3 border-t border-slate-100 pt-4 sm:flex-row sm:justify-end">
+                        <button type="button" class="inline-flex items-center justify-center rounded-md border border-slate-200 bg-white px-5 py-3 text-sm font-extrabold text-[#1e2b42] transition hover:bg-slate-50 sm:min-w-[120px]" data-modal-close>Batal</button>
+                        <button type="submit" class="inline-flex items-center justify-center rounded-md bg-[#001e62] px-5 py-3 text-sm font-extrabold text-white transition hover:bg-[#002f95] sm:min-w-[170px]">Simpan Perubahan</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div data-modal class="fixed inset-0 z-50 hidden items-center justify-center p-4 sm:p-6" id="supplierProductModal" {{ if eq .AutoOpenModal "supplierProductModal" }}data-modal-auto-open="true"{{ end }}>
             <div class="absolute inset-0 bg-slate-900/50" data-modal-close onclick="var modal=document.getElementById('supplierProductModal'); if(modal){ modal.classList.add('hidden'); modal.classList.remove('flex'); } if(!document.querySelector('[data-modal].flex')){ document.body.classList.remove('overflow-hidden'); }"></div>
             <div class="relative w-full max-w-4xl rounded-lg bg-white p-5 shadow-xl sm:p-6">
                 <div class="flex items-start justify-between gap-4 border-b border-slate-100 pb-4">
@@ -324,6 +557,15 @@
                         </div>
 
                         <div class="grid gap-4 md:grid-cols-2">
+                            <div>
+                                <label for="supplier_product_group_id" class="text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#566173]">Group Item</label>
+                                <select id="supplier_product_group_id" name="supplier_product_group_id" class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-[#07142f] outline-none transition focus:border-brand-500">
+                                    <option value="0">Tanpa Group</option>
+                                    {{ range .ProductGroups }}
+                                    <option value="{{ .ID }}" {{ if eq $.Form.SupplierProductGroupID .ID }}selected{{ end }}>{{ .GroupName }}</option>
+                                    {{ end }}
+                                </select>
+                            </div>
                             <div>
                                 <label for="lead_time_days" class="text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#566173]">Lead Time (Hari)</label>
                                 <input type="number" id="lead_time_days" name="lead_time_days" min="0" step="1" value="{{ .Form.LeadTimeDays }}" class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-[#07142f] outline-none transition focus:border-brand-500">
@@ -371,9 +613,20 @@
                         <input type="hidden" id="edit_last_price" name="last_price" value="0">
                         <input type="hidden" id="edit_moq" name="moq" value="0">
 
-                        <div>
-                            <label for="edit_lead_time_days" class="text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#566173]">Lead Time (Hari)</label>
-                            <input type="number" id="edit_lead_time_days" name="lead_time_days" min="0" step="1" value="0" class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-[#07142f] outline-none transition focus:border-brand-500">
+                        <div class="grid gap-4 md:grid-cols-2">
+                            <div>
+                                <label for="edit_supplier_product_group_id" class="text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#566173]">Group Item</label>
+                                <select id="edit_supplier_product_group_id" name="supplier_product_group_id" class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-[#07142f] outline-none transition focus:border-brand-500">
+                                    <option value="0">Tanpa Group</option>
+                                    {{ range .ProductGroups }}
+                                    <option value="{{ .ID }}">{{ .GroupName }}</option>
+                                    {{ end }}
+                                </select>
+                            </div>
+                            <div>
+                                <label for="edit_lead_time_days" class="text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#566173]">Lead Time (Hari)</label>
+                                <input type="number" id="edit_lead_time_days" name="lead_time_days" min="0" step="1" value="0" class="mt-2 w-full rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-[#07142f] outline-none transition focus:border-brand-500">
+                            </div>
                         </div>
 
                         <div>
@@ -462,6 +715,15 @@
                     overlay.addEventListener('click', closeSidebar);
                 }
 
+                document.querySelectorAll('[data-modal-open]').forEach(function (trigger) {
+                    trigger.addEventListener('click', function () {
+                        var target = trigger.getAttribute('data-modal-open');
+                        if (target) {
+                            openModal(target);
+                        }
+                    });
+                });
+
                 document.querySelectorAll('[data-modal-close]').forEach(function (close) {
                     close.addEventListener('click', function () {
                         closeModal(close.closest('[data-modal]'));
@@ -499,6 +761,7 @@
                         var moqEl = document.getElementById('edit_moq');
                         var primaryEl = document.getElementById('edit_is_primary');
                         var statusEl = document.getElementById('edit_is_active');
+                        var groupEl = document.getElementById('edit_supplier_product_group_id');
 
                         if (nameEl) nameEl.value = productName;
                         if (metaEl) metaEl.textContent = barcode ? (productCode + ' - ' + barcode) : productCode;
@@ -508,8 +771,30 @@
                         if (moqEl) moqEl.value = button.getAttribute('data-moq') || '0';
                         if (primaryEl) primaryEl.checked = (button.getAttribute('data-is-primary') || '0') === '1';
                         if (statusEl) statusEl.value = (button.getAttribute('data-is-active') || '1') === '0' ? '0' : '1';
+                        if (groupEl) groupEl.value = button.getAttribute('data-supplier-product-group-id') || '0';
 
                         openModal('supplierProductEditModal');
+                    });
+                });
+
+                document.querySelectorAll('.btn-edit-supplier-product-group').forEach(function (button) {
+                    button.addEventListener('click', function () {
+                        var editModal = document.getElementById('supplierProductGroupEditModal');
+                        if (!editModal) return;
+
+                        var idEl = document.getElementById('edit_group_id');
+                        var nameEl = document.getElementById('edit_group_name');
+                        var descriptionEl = document.getElementById('edit_group_description');
+                        var sortOrderEl = document.getElementById('edit_group_sort_order');
+                        var statusEl = document.getElementById('edit_group_is_active');
+
+                        if (idEl) idEl.value = button.getAttribute('data-id') || '';
+                        if (nameEl) nameEl.value = button.getAttribute('data-group-name') || '';
+                        if (descriptionEl) descriptionEl.value = button.getAttribute('data-description') || '';
+                        if (sortOrderEl) sortOrderEl.value = button.getAttribute('data-sort-order') || '0';
+                        if (statusEl) statusEl.value = button.getAttribute('data-is-active') || '1';
+
+                        openModal('supplierProductGroupEditModal');
                     });
                 });
 

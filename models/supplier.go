@@ -45,24 +45,48 @@ type SupplierGroup struct {
 }
 
 type SupplierProduct struct {
-	ProductID        int
-	ProductCode      string
-	Barcode          string
-	ProductName      string
-	CategoryName     string
-	LastPrice        float64
-	LastPriceDisplay string
-	MOQ              float64
-	MOQDisplay       string
-	PackSize         float64
-	PackSizeDisplay  string
-	LeadTimeDays     int
-	PriorityNo       int
-	IsPrimary        bool
+	ProductID                int
+	ProductCode              string
+	Barcode                  string
+	ProductName              string
+	CategoryName             string
+	SupplierProductGroupID   int
+	SupplierProductGroupName string
+	LastPrice                float64
+	LastPriceDisplay         string
+	MOQ                      float64
+	MOQDisplay               string
+	PackSize                 float64
+	PackSizeDisplay          string
+	LeadTimeDays             int
+	PriorityNo               int
+	IsPrimary                bool
+	IsActive                 bool
+	StatusLabel              string
+	UpdatedAt                string
+	UpdatedAtDisplay         string
+}
+
+type SupplierProductGroupItem struct {
+	ID               int
+	SupplierID       int
+	SupplierName     string
+	GroupName        string
+	Description      string
+	SortOrder        int
 	IsActive         bool
 	StatusLabel      string
+	ItemCount        int
+	CreatedAt        string
+	CreatedAtDisplay string
 	UpdatedAt        string
 	UpdatedAtDisplay string
+}
+
+type SupplierProductGroupSection struct {
+	Group     SupplierProductGroupItem
+	Items     []SupplierProduct
+	Ungrouped bool
 }
 
 type SupplierProductOption struct {
@@ -166,19 +190,38 @@ type SupplierUpdateInput struct {
 }
 
 type SupplierProductCreateInput struct {
-	SupplierID   int
-	ProductID    int
-	LastPrice    float64
-	MOQ          float64
-	PackSize     float64
-	LeadTimeDays int
-	IsPrimary    bool
-	IsActive     bool
+	SupplierID             int
+	ProductID              int
+	SupplierProductGroupID int
+	LastPrice              float64
+	MOQ                    float64
+	PackSize               float64
+	LeadTimeDays           int
+	IsPrimary              bool
+	IsActive               bool
+	KeepExistingGroup      bool
 }
 
 type SupplierProductDeleteInput struct {
 	SupplierID int
 	ProductID  int
+}
+
+type SupplierProductGroupCreateInput struct {
+	SupplierID  int
+	GroupName   string
+	Description string
+	SortOrder   int
+	IsActive    bool
+}
+
+type SupplierProductGroupUpdateInput struct {
+	ID          int
+	SupplierID  int
+	GroupName   string
+	Description string
+	SortOrder   int
+	IsActive    bool
 }
 
 type SupplierGroupUpdateInput struct {

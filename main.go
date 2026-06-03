@@ -3,13 +3,13 @@ package main
 import (
 	"encoding/gob"
 	"fmt"
+	"gobase-app/config"
+	"gobase-app/models"
+	"gobase-app/routes"
 	"html/template"
 	"log"
 	"net/http"
 	"os"
-	"gobase-app/config"
-	"gobase-app/models"
-	"gobase-app/routes"
 	"strings"
 
 	"github.com/gin-contrib/sessions"
@@ -40,6 +40,9 @@ func main() {
 	// Custom template functions tambah
 	r.SetFuncMap(template.FuncMap{
 		"no": func(a, b int) int {
+			return a + b
+		},
+		"add": func(a, b int) int {
 			return a + b
 		},
 		"baseURL": func(path string) string {
@@ -107,4 +110,3 @@ func main() {
 		log.Fatalf("failed to run server: %v", err)
 	}
 }
-

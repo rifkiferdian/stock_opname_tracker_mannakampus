@@ -67,14 +67,15 @@ func ProductSupplierNetworkUpdate(c *gin.Context) {
 
 	supplierService := buildSupplierService()
 	err = supplierService.UpdateSupplierProduct(models.SupplierProductCreateInput{
-		SupplierID:   supplierID,
-		ProductID:    productID,
-		LastPrice:    form.LastPrice,
-		MOQ:          form.MOQ,
-		PackSize:     form.PackSize,
-		LeadTimeDays: form.LeadTimeDays,
-		IsPrimary:    form.IsPrimary == 1,
-		IsActive:     c.DefaultPostForm("is_active", "1") == "1",
+		SupplierID:        supplierID,
+		ProductID:         productID,
+		LastPrice:         form.LastPrice,
+		MOQ:               form.MOQ,
+		PackSize:          form.PackSize,
+		LeadTimeDays:      form.LeadTimeDays,
+		IsPrimary:         form.IsPrimary == 1,
+		IsActive:          c.DefaultPostForm("is_active", "1") == "1",
+		KeepExistingGroup: true,
 	})
 	if err != nil {
 		c.Redirect(http.StatusSeeOther, buildProductDetailURL(productID, err.Error(), ""))

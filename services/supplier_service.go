@@ -75,6 +75,13 @@ func (s *SupplierService) GetSuppliedProducts(supplierID int) ([]models.Supplier
 	return s.Repo.GetSuppliedProducts(supplierID)
 }
 
+func (s *SupplierService) GetSupplierProductGroups(supplierID int) ([]models.SupplierProductGroupItem, error) {
+	if supplierID <= 0 {
+		return nil, errors.New("supplier id tidak valid")
+	}
+	return s.Repo.GetSupplierProductGroups(supplierID)
+}
+
 func (s *SupplierService) GetAvailableProductOptions(supplierID int) ([]models.SupplierProductOption, error) {
 	if supplierID <= 0 {
 		return nil, errors.New("supplier id tidak valid")
@@ -177,6 +184,16 @@ func (s *SupplierService) CreateSupplierProduct(input models.SupplierProductCrea
 		return fmt.Errorf("produk id %d tidak ditemukan", input.ProductID)
 	}
 
+	if input.SupplierProductGroupID > 0 {
+		groupBelongs, err := s.Repo.SupplierProductGroupBelongsToSupplier(input.SupplierProductGroupID, input.SupplierID)
+		if err != nil {
+			return err
+		}
+		if !groupBelongs {
+			return errors.New("group item tidak ditemukan untuk supplier ini")
+		}
+	}
+
 	return s.Repo.UpsertProductSupply(input)
 }
 
@@ -196,6 +213,16 @@ func (s *SupplierService) UpdateSupplierProduct(input models.SupplierProductCrea
 	}
 	if !exists {
 		return errors.New("tautan item supplier tidak ditemukan")
+	}
+
+	if !input.KeepExistingGroup && input.SupplierProductGroupID > 0 {
+		groupBelongs, err := s.Repo.SupplierProductGroupBelongsToSupplier(input.SupplierProductGroupID, input.SupplierID)
+		if err != nil {
+			return err
+		}
+		if !groupBelongs {
+			return errors.New("group item tidak ditemukan untuk supplier ini")
+		}
 	}
 
 	return s.Repo.UpsertProductSupply(input)
@@ -218,6 +245,88 @@ func (s *SupplierService) DeleteSupplierProduct(input models.SupplierProductDele
 	}
 
 	return s.Repo.DeleteProductSupply(input)
+}
+
+func (s *SupplierService) CreateSupplierProductGroup(input models.SupplierProductGroupCreateInput) error {
+	sanitizeSupplierProductGroupCreateInput(&input)
+
+	if err := validateSupplierProductGroupCreateInput(input); err != nil {
+		return err
+	}
+
+	supplierExists, err := s.Repo.ExistsByID(input.SupplierID)
+	if err != nil {
+		return err
+	}
+	if !supplierExists {
+		return fmt.Errorf("supplier id %d tidak ditemukan", input.SupplierID)
+	}
+
+	exists, err := s.Repo.SupplierProductGroupExistsByName(input.SupplierID, input.GroupName, 0)
+	if err != nil {
+		return err
+	}
+	if exists {
+		return fmt.Errorf("nama group item %s sudah digunakan untuk supplier ini", input.GroupName)
+	}
+
+	return s.Repo.CreateSupplierProductGroup(input)
+}
+
+func (s *SupplierService) UpdateSupplierProductGroup(input models.SupplierProductGroupUpdateInput) error {
+	sanitizeSupplierProductGroupUpdateInput(&input)
+
+	if input.ID <= 0 {
+		return errors.New("group item supplier tidak valid")
+	}
+	if err := validateSupplierProductGroupUpdateInput(input); err != nil {
+		return err
+	}
+
+	exists, err := s.Repo.SupplierProductGroupExists(input.ID)
+	if err != nil {
+		return err
+	}
+	if !exists {
+		return errors.New("group item supplier tidak ditemukan")
+	}
+
+	groupBelongs, err := s.Repo.SupplierProductGroupBelongsToSupplier(input.ID, input.SupplierID)
+	if err != nil {
+		return err
+	}
+	if !groupBelongs {
+		return errors.New("group item tidak ditemukan untuk supplier ini")
+	}
+
+	nameExists, err := s.Repo.SupplierProductGroupExistsByName(input.SupplierID, input.GroupName, input.ID)
+	if err != nil {
+		return err
+	}
+	if nameExists {
+		return fmt.Errorf("nama group item %s sudah digunakan untuk supplier ini", input.GroupName)
+	}
+
+	return s.Repo.UpdateSupplierProductGroup(input)
+}
+
+func (s *SupplierService) DeleteSupplierProductGroup(id int, supplierID int) error {
+	if id <= 0 {
+		return errors.New("group item supplier tidak valid")
+	}
+	if supplierID <= 0 {
+		return errors.New("supplier id tidak valid")
+	}
+
+	groupBelongs, err := s.Repo.SupplierProductGroupBelongsToSupplier(id, supplierID)
+	if err != nil {
+		return err
+	}
+	if !groupBelongs {
+		return errors.New("group item tidak ditemukan untuk supplier ini")
+	}
+
+	return s.Repo.DeleteSupplierProductGroup(id, supplierID)
 }
 
 func sanitizeSupplierCreateInput(input *models.SupplierCreateInput) {
@@ -261,6 +370,22 @@ func sanitizeSupplierProductCreateInput(input *models.SupplierProductCreateInput
 	}
 }
 
+func sanitizeSupplierProductGroupCreateInput(input *models.SupplierProductGroupCreateInput) {
+	input.GroupName = strings.TrimSpace(input.GroupName)
+	input.Description = strings.TrimSpace(input.Description)
+	if input.SortOrder < 0 {
+		input.SortOrder = 0
+	}
+}
+
+func sanitizeSupplierProductGroupUpdateInput(input *models.SupplierProductGroupUpdateInput) {
+	input.GroupName = strings.TrimSpace(input.GroupName)
+	input.Description = strings.TrimSpace(input.Description)
+	if input.SortOrder < 0 {
+		input.SortOrder = 0
+	}
+}
+
 func validateSupplierCreateInput(input models.SupplierCreateInput) error {
 	if input.StoreID <= 0 {
 		return errors.New("store wajib dipilih")
@@ -283,6 +408,26 @@ func validateSupplierUpdateInput(input models.SupplierUpdateInput) error {
 	}
 	if input.SupplierName == "" {
 		return errors.New("nama supplier wajib diisi")
+	}
+	return nil
+}
+
+func validateSupplierProductGroupCreateInput(input models.SupplierProductGroupCreateInput) error {
+	if input.SupplierID <= 0 {
+		return errors.New("supplier wajib dipilih")
+	}
+	if input.GroupName == "" {
+		return errors.New("nama group item wajib diisi")
+	}
+	return nil
+}
+
+func validateSupplierProductGroupUpdateInput(input models.SupplierProductGroupUpdateInput) error {
+	if input.SupplierID <= 0 {
+		return errors.New("supplier wajib dipilih")
+	}
+	if input.GroupName == "" {
+		return errors.New("nama group item wajib diisi")
 	}
 	return nil
 }

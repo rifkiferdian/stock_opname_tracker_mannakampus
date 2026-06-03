@@ -246,6 +246,8 @@ func (r *SupplierRepository) GetSuppliedProducts(supplierID int) ([]models.Suppl
 			COALESCE(p.barcode, '') AS barcode,
 			p.product_name,
 			COALESCE(pc.category_name, '') AS category_name,
+			COALESCE(spg.id, 0) AS supplier_product_group_id,
+			COALESCE(spg.group_name, '') AS supplier_product_group_name,
 			ps.last_price,
 			ps.moq,
 			ps.pack_size,
@@ -257,8 +259,9 @@ func (r *SupplierRepository) GetSuppliedProducts(supplierID int) ([]models.Suppl
 		FROM product_suppliers ps
 		INNER JOIN products p ON p.id = ps.product_id
 		LEFT JOIN product_categories pc ON pc.id = p.category_id
+		LEFT JOIN supplier_product_groups spg ON spg.id = ps.supplier_product_group_id
 		WHERE ps.supplier_id = ?
-		ORDER BY ps.is_primary DESC, ps.priority_no ASC, p.product_name ASC
+		ORDER BY p.product_name ASC, p.id ASC
 	`, supplierID)
 	if err != nil {
 		return nil, err
@@ -283,6 +286,8 @@ func (r *SupplierRepository) GetSuppliedProducts(supplierID int) ([]models.Suppl
 			&product.Barcode,
 			&product.ProductName,
 			&product.CategoryName,
+			&product.SupplierProductGroupID,
+			&product.SupplierProductGroupName,
 			&lastPrice,
 			&moq,
 			&packSize,
@@ -327,6 +332,52 @@ func (r *SupplierRepository) GetSuppliedProducts(supplierID int) ([]models.Suppl
 	}
 
 	return products, rows.Err()
+}
+
+func (r *SupplierRepository) GetSupplierProductGroups(supplierID int) ([]models.SupplierProductGroupItem, error) {
+	rows, err := r.DB.Query(`
+		SELECT
+			spg.id,
+			spg.supplier_id,
+			COALESCE(s.supplier_name, '') AS supplier_name,
+			spg.group_name,
+			COALESCE(spg.description, '') AS description,
+			COALESCE(spg.sort_order, 0) AS sort_order,
+			spg.is_active,
+			COUNT(ps.id) AS item_count,
+			spg.created_at,
+			spg.updated_at
+		FROM supplier_product_groups spg
+		INNER JOIN suppliers s ON s.id = spg.supplier_id
+		LEFT JOIN product_suppliers ps ON ps.supplier_product_group_id = spg.id AND ps.supplier_id = spg.supplier_id
+		WHERE spg.supplier_id = ?
+		GROUP BY
+			spg.id,
+			spg.supplier_id,
+			s.supplier_name,
+			spg.group_name,
+			spg.description,
+			spg.sort_order,
+			spg.is_active,
+			spg.created_at,
+			spg.updated_at
+		ORDER BY spg.sort_order ASC, spg.group_name ASC, spg.id ASC
+	`, supplierID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var groups []models.SupplierProductGroupItem
+	for rows.Next() {
+		group, err := scanSupplierProductGroup(rows)
+		if err != nil {
+			return nil, err
+		}
+		groups = append(groups, group)
+	}
+
+	return groups, rows.Err()
 }
 
 func (r *SupplierRepository) GetAvailableProductOptions(supplierID int) ([]models.SupplierProductOption, error) {
@@ -474,6 +525,111 @@ func (r *SupplierRepository) ProductSupplyExists(supplierID, productID int) (boo
 	return count > 0, err
 }
 
+func (r *SupplierRepository) SupplierProductGroupExists(id int) (bool, error) {
+	var count int
+	err := r.DB.QueryRow(`SELECT COUNT(1) FROM supplier_product_groups WHERE id = ?`, id).Scan(&count)
+	return count > 0, err
+}
+
+func (r *SupplierRepository) SupplierProductGroupBelongsToSupplier(groupID int, supplierID int) (bool, error) {
+	var count int
+	err := r.DB.QueryRow(`
+		SELECT COUNT(1)
+		FROM supplier_product_groups
+		WHERE id = ? AND supplier_id = ?
+	`, groupID, supplierID).Scan(&count)
+	return count > 0, err
+}
+
+func (r *SupplierRepository) SupplierProductGroupExistsByName(supplierID int, groupName string, ignoreID int) (bool, error) {
+	var (
+		count int
+		err   error
+	)
+
+	if ignoreID > 0 {
+		err = r.DB.QueryRow(`
+			SELECT COUNT(1)
+			FROM supplier_product_groups
+			WHERE supplier_id = ? AND group_name = ? AND id <> ?
+		`, supplierID, groupName, ignoreID).Scan(&count)
+	} else {
+		err = r.DB.QueryRow(`
+			SELECT COUNT(1)
+			FROM supplier_product_groups
+			WHERE supplier_id = ? AND group_name = ?
+		`, supplierID, groupName).Scan(&count)
+	}
+
+	return count > 0, err
+}
+
+func (r *SupplierRepository) CreateSupplierProductGroup(input models.SupplierProductGroupCreateInput) error {
+	_, err := r.DB.Exec(`
+		INSERT INTO supplier_product_groups (
+			supplier_id,
+			group_name,
+			description,
+			sort_order,
+			is_active
+		) VALUES (?, ?, ?, ?, ?)
+	`,
+		input.SupplierID,
+		input.GroupName,
+		nullableString(input.Description),
+		input.SortOrder,
+		boolToInt(input.IsActive),
+	)
+	return err
+}
+
+func (r *SupplierRepository) UpdateSupplierProductGroup(input models.SupplierProductGroupUpdateInput) error {
+	_, err := r.DB.Exec(`
+		UPDATE supplier_product_groups
+		SET
+			supplier_id = ?,
+			group_name = ?,
+			description = ?,
+			sort_order = ?,
+			is_active = ?
+		WHERE id = ?
+	`,
+		input.SupplierID,
+		input.GroupName,
+		nullableString(input.Description),
+		input.SortOrder,
+		boolToInt(input.IsActive),
+		input.ID,
+	)
+	return err
+}
+
+func (r *SupplierRepository) DeleteSupplierProductGroup(id int, supplierID int) error {
+	tx, err := r.DB.Begin()
+	if err != nil {
+		return err
+	}
+
+	if _, err := tx.Exec(`
+		UPDATE product_suppliers
+		SET supplier_product_group_id = NULL
+		WHERE supplier_id = ? AND supplier_product_group_id = ?
+	`, supplierID, id); err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	if _, err := tx.Exec(`
+		DELETE FROM supplier_product_groups
+		WHERE id = ? AND supplier_id = ?
+	`, id, supplierID); err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	return tx.Commit()
+}
+
 func (r *SupplierRepository) ExistsByCode(code string, storeID int, ignoreID int) (bool, error) {
 	var (
 		count int
@@ -580,18 +736,24 @@ func (r *SupplierRepository) UpsertProductSupply(input models.SupplierProductCre
 	var (
 		existingID       int
 		existingPriority int
+		existingGroupID  sql.NullInt64
 	)
 
 	err = tx.QueryRow(`
-		SELECT id, priority_no
+		SELECT id, priority_no, supplier_product_group_id
 		FROM product_suppliers
 		WHERE product_id = ? AND supplier_id = ?
 		LIMIT 1
-	`, input.ProductID, input.SupplierID).Scan(&existingID, &existingPriority)
+	`, input.ProductID, input.SupplierID).Scan(&existingID, &existingPriority, &existingGroupID)
 
 	if err != nil && err != sql.ErrNoRows {
 		tx.Rollback()
 		return err
+	}
+
+	groupID := input.SupplierProductGroupID
+	if input.KeepExistingGroup && existingGroupID.Valid {
+		groupID = int(existingGroupID.Int64)
 	}
 
 	priorityNo := existingPriority
@@ -617,6 +779,7 @@ func (r *SupplierRepository) UpsertProductSupply(input models.SupplierProductCre
 			INSERT INTO product_suppliers (
 				product_id,
 				supplier_id,
+				supplier_product_group_id,
 				is_primary,
 				priority_no,
 				last_price,
@@ -628,6 +791,7 @@ func (r *SupplierRepository) UpsertProductSupply(input models.SupplierProductCre
 		`,
 			input.ProductID,
 			input.SupplierID,
+			nullableInt(groupID),
 			boolToInt(input.IsPrimary),
 			priorityNo,
 			input.LastPrice,
@@ -652,6 +816,7 @@ func (r *SupplierRepository) UpsertProductSupply(input models.SupplierProductCre
 	_, err = tx.Exec(`
 		UPDATE product_suppliers
 		SET
+			supplier_product_group_id = ?,
 			is_primary = ?,
 			priority_no = ?,
 			last_price = ?,
@@ -661,6 +826,7 @@ func (r *SupplierRepository) UpsertProductSupply(input models.SupplierProductCre
 			is_active = ?
 		WHERE id = ?
 	`,
+		nullableInt(groupID),
 		boolToInt(input.IsPrimary),
 		priorityNo,
 		input.LastPrice,
@@ -821,6 +987,58 @@ func scanSupplier(scanner interface {
 	supplier.HasSOOnFilterDate = hasSOOnDay == 1
 
 	return supplier, nil
+}
+
+func scanSupplierProductGroup(scanner interface {
+	Scan(dest ...interface{}) error
+}) (models.SupplierProductGroupItem, error) {
+	var (
+		group     models.SupplierProductGroupItem
+		isActive  int
+		createdAt sql.NullTime
+		updatedAt sql.NullTime
+	)
+
+	err := scanner.Scan(
+		&group.ID,
+		&group.SupplierID,
+		&group.SupplierName,
+		&group.GroupName,
+		&group.Description,
+		&group.SortOrder,
+		&isActive,
+		&group.ItemCount,
+		&createdAt,
+		&updatedAt,
+	)
+	if err != nil {
+		return group, err
+	}
+
+	group.IsActive = isActive == 1
+	if group.IsActive {
+		group.StatusLabel = "Aktif"
+	} else {
+		group.StatusLabel = "Nonaktif"
+	}
+
+	if createdAt.Valid {
+		group.CreatedAt = createdAt.Time.Format("2006-01-02 15:04:05")
+		group.CreatedAtDisplay = createdAt.Time.Format("02 Jan 2006 15:04")
+	} else {
+		group.CreatedAt = "-"
+		group.CreatedAtDisplay = "-"
+	}
+
+	if updatedAt.Valid {
+		group.UpdatedAt = updatedAt.Time.Format("2006-01-02 15:04:05")
+		group.UpdatedAtDisplay = updatedAt.Time.Format("02 Jan 2006 15:04")
+	} else {
+		group.UpdatedAt = "-"
+		group.UpdatedAtDisplay = "-"
+	}
+
+	return group, nil
 }
 
 func supplierSOStatusLabel(status string) string {

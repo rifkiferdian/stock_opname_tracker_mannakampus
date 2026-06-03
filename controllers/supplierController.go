@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"net/url"
 	"strconv"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 )
@@ -47,12 +48,13 @@ func SupplierProductStore(c *gin.Context) {
 	}
 
 	type supplierProductForm struct {
-		ProductID    int     `form:"product_id" binding:"required"`
-		LastPrice    float64 `form:"last_price"`
-		MOQ          float64 `form:"moq"`
-		PackSize     float64 `form:"pack_size"`
-		LeadTimeDays int     `form:"lead_time_days"`
-		IsPrimary    int     `form:"is_primary"`
+		ProductID              int     `form:"product_id" binding:"required"`
+		SupplierProductGroupID int     `form:"supplier_product_group_id"`
+		LastPrice              float64 `form:"last_price"`
+		MOQ                    float64 `form:"moq"`
+		PackSize               float64 `form:"pack_size"`
+		LeadTimeDays           int     `form:"lead_time_days"`
+		IsPrimary              int     `form:"is_primary"`
 	}
 
 	var form supplierProductForm
@@ -60,26 +62,28 @@ func SupplierProductStore(c *gin.Context) {
 
 	if err := c.ShouldBind(&form); err != nil {
 		renderSupplierDetailPage(c, supplierService, supplierID, "Form item supplier tidak lengkap", "", models.SupplierProductCreateInput{
-			SupplierID:   supplierID,
-			ProductID:    form.ProductID,
-			LastPrice:    form.LastPrice,
-			MOQ:          form.MOQ,
-			PackSize:     form.PackSize,
-			LeadTimeDays: form.LeadTimeDays,
-			IsPrimary:    form.IsPrimary == 1,
+			SupplierID:             supplierID,
+			ProductID:              form.ProductID,
+			SupplierProductGroupID: form.SupplierProductGroupID,
+			LastPrice:              form.LastPrice,
+			MOQ:                    form.MOQ,
+			PackSize:               form.PackSize,
+			LeadTimeDays:           form.LeadTimeDays,
+			IsPrimary:              form.IsPrimary == 1,
 		})
 		return
 	}
 
 	input := models.SupplierProductCreateInput{
-		SupplierID:   supplierID,
-		ProductID:    form.ProductID,
-		LastPrice:    form.LastPrice,
-		MOQ:          form.MOQ,
-		PackSize:     form.PackSize,
-		LeadTimeDays: form.LeadTimeDays,
-		IsPrimary:    form.IsPrimary == 1,
-		IsActive:     c.DefaultPostForm("is_active", "1") == "1",
+		SupplierID:             supplierID,
+		ProductID:              form.ProductID,
+		SupplierProductGroupID: form.SupplierProductGroupID,
+		LastPrice:              form.LastPrice,
+		MOQ:                    form.MOQ,
+		PackSize:               form.PackSize,
+		LeadTimeDays:           form.LeadTimeDays,
+		IsPrimary:              form.IsPrimary == 1,
+		IsActive:               c.DefaultPostForm("is_active", "1") == "1",
 	}
 
 	if err := supplierService.CreateSupplierProduct(input); err != nil {
@@ -104,12 +108,13 @@ func SupplierProductUpdate(c *gin.Context) {
 	}
 
 	type supplierProductEditForm struct {
-		LastPrice    float64 `form:"last_price"`
-		MOQ          float64 `form:"moq"`
-		PackSize     float64 `form:"pack_size"`
-		LeadTimeDays int     `form:"lead_time_days"`
-		IsPrimary    int     `form:"is_primary"`
-		IsActive     int     `form:"is_active"`
+		SupplierProductGroupID int     `form:"supplier_product_group_id"`
+		LastPrice              float64 `form:"last_price"`
+		MOQ                    float64 `form:"moq"`
+		PackSize               float64 `form:"pack_size"`
+		LeadTimeDays           int     `form:"lead_time_days"`
+		IsPrimary              int     `form:"is_primary"`
+		IsActive               int     `form:"is_active"`
 	}
 
 	var form supplierProductEditForm
@@ -121,14 +126,15 @@ func SupplierProductUpdate(c *gin.Context) {
 	}
 
 	err = supplierService.UpdateSupplierProduct(models.SupplierProductCreateInput{
-		SupplierID:   supplierID,
-		ProductID:    productID,
-		LastPrice:    form.LastPrice,
-		MOQ:          form.MOQ,
-		PackSize:     form.PackSize,
-		LeadTimeDays: form.LeadTimeDays,
-		IsPrimary:    form.IsPrimary == 1,
-		IsActive:     c.DefaultPostForm("is_active", "1") == "1",
+		SupplierID:             supplierID,
+		ProductID:              productID,
+		SupplierProductGroupID: form.SupplierProductGroupID,
+		LastPrice:              form.LastPrice,
+		MOQ:                    form.MOQ,
+		PackSize:               form.PackSize,
+		LeadTimeDays:           form.LeadTimeDays,
+		IsPrimary:              form.IsPrimary == 1,
+		IsActive:               c.DefaultPostForm("is_active", "1") == "1",
 	})
 	if err != nil {
 		renderSupplierDetailPage(c, supplierService, supplierID, err.Error(), "", models.SupplierProductCreateInput{})
@@ -161,6 +167,102 @@ func SupplierProductDelete(c *gin.Context) {
 	}
 
 	c.Redirect(http.StatusSeeOther, buildSupplierDetailURL(supplierID, "Item supplier berhasil dihapus"))
+}
+
+func SupplierProductGroupStore(c *gin.Context) {
+	supplierID, err := strconv.Atoi(c.Param("id"))
+	if err != nil || supplierID <= 0 {
+		c.String(http.StatusBadRequest, "invalid supplier id")
+		return
+	}
+
+	type supplierProductGroupForm struct {
+		GroupName   string `form:"group_name" binding:"required"`
+		Description string `form:"description"`
+		SortOrder   int    `form:"sort_order"`
+		IsActive    int    `form:"is_active"`
+	}
+
+	var form supplierProductGroupForm
+	if err := c.ShouldBind(&form); err != nil {
+		c.Redirect(http.StatusSeeOther, buildSupplierDetailResultURL(supplierID, "Form group item tidak lengkap", "", "supplierProductGroupModal"))
+		return
+	}
+
+	supplierService := buildSupplierService()
+	err = supplierService.CreateSupplierProductGroup(models.SupplierProductGroupCreateInput{
+		SupplierID:  supplierID,
+		GroupName:   form.GroupName,
+		Description: form.Description,
+		SortOrder:   form.SortOrder,
+		IsActive:    form.IsActive == 1,
+	})
+	if err != nil {
+		c.Redirect(http.StatusSeeOther, buildSupplierDetailResultURL(supplierID, err.Error(), "", "supplierProductGroupModal"))
+		return
+	}
+
+	c.Redirect(http.StatusSeeOther, buildSupplierDetailResultURL(supplierID, "", "Group item supplier berhasil ditambahkan", ""))
+}
+
+func SupplierProductGroupUpdate(c *gin.Context) {
+	supplierID, err := strconv.Atoi(c.Param("id"))
+	if err != nil || supplierID <= 0 {
+		c.String(http.StatusBadRequest, "invalid supplier id")
+		return
+	}
+
+	type supplierProductGroupForm struct {
+		ID          int    `form:"id" binding:"required"`
+		GroupName   string `form:"group_name" binding:"required"`
+		Description string `form:"description"`
+		SortOrder   int    `form:"sort_order"`
+		IsActive    int    `form:"is_active"`
+	}
+
+	var form supplierProductGroupForm
+	if err := c.ShouldBind(&form); err != nil {
+		c.Redirect(http.StatusSeeOther, buildSupplierDetailResultURL(supplierID, "Form edit group item tidak lengkap", "", "supplierProductGroupEditModal"))
+		return
+	}
+
+	supplierService := buildSupplierService()
+	err = supplierService.UpdateSupplierProductGroup(models.SupplierProductGroupUpdateInput{
+		ID:          form.ID,
+		SupplierID:  supplierID,
+		GroupName:   form.GroupName,
+		Description: form.Description,
+		SortOrder:   form.SortOrder,
+		IsActive:    form.IsActive == 1,
+	})
+	if err != nil {
+		c.Redirect(http.StatusSeeOther, buildSupplierDetailResultURL(supplierID, err.Error(), "", "supplierProductGroupEditModal"))
+		return
+	}
+
+	c.Redirect(http.StatusSeeOther, buildSupplierDetailResultURL(supplierID, "", "Group item supplier berhasil diperbarui", ""))
+}
+
+func SupplierProductGroupDelete(c *gin.Context) {
+	supplierID, err := strconv.Atoi(c.Param("id"))
+	if err != nil || supplierID <= 0 {
+		c.String(http.StatusBadRequest, "invalid supplier id")
+		return
+	}
+
+	groupID, err := strconv.Atoi(c.Param("group_id"))
+	if err != nil || groupID <= 0 {
+		c.String(http.StatusBadRequest, "invalid supplier product group id")
+		return
+	}
+
+	supplierService := buildSupplierService()
+	if err := supplierService.DeleteSupplierProductGroup(groupID, supplierID); err != nil {
+		c.Redirect(http.StatusSeeOther, buildSupplierDetailResultURL(supplierID, err.Error(), "", ""))
+		return
+	}
+
+	c.Redirect(http.StatusSeeOther, buildSupplierDetailResultURL(supplierID, "", "Group item supplier berhasil dihapus", ""))
 }
 
 func SupplierStore(c *gin.Context) {
@@ -468,32 +570,64 @@ func renderSupplierDetailPage(c *gin.Context, supplierService *services.Supplier
 		return
 	}
 
+	productGroups, err := supplierService.GetSupplierProductGroups(id)
+	if err != nil {
+		c.String(http.StatusInternalServerError, err.Error())
+		return
+	}
+
 	productOptions, err := supplierService.GetAvailableProductOptions(id)
 	if err != nil {
 		c.String(http.StatusInternalServerError, err.Error())
 		return
 	}
 
+	allProducts := products
+	selectedProductGroupFilter := strings.TrimSpace(c.Query("product_group"))
+	products = filterSupplierProductsByGroup(allProducts, selectedProductGroupFilter)
+	autoOpenModal := c.Query("modal")
+	if autoOpenModal == "" && errorMessage != "" && form.ProductID > 0 {
+		autoOpenModal = "supplierProductModal"
+	}
+
 	Render(c, "supplier_detail.html", gin.H{
-		"Title":          supplier.SupplierName,
-		"Page":           "supplierDetail",
-		"Supplier":       supplier,
-		"Products":       products,
-		"ProductOptions": productOptions,
-		"Form":           form,
-		"Error":          errorMessage,
-		"Success":        successMessage,
+		"Title":                 supplier.SupplierName,
+		"Page":                  "supplierDetail",
+		"Supplier":              supplier,
+		"Products":              products,
+		"ProductGroups":         productGroups,
+		"ProductOptions":        productOptions,
+		"Form":                  form,
+		"Error":                 errorMessage,
+		"Success":               successMessage,
+		"AutoOpenModal":         autoOpenModal,
+		"SelectedProductGroup":  selectedProductGroupFilter,
+		"UngroupedProductCount": countUngroupedSupplierProducts(allProducts),
 	})
 }
 
 func buildSupplierDetailURL(id int, successMessage string) string {
-	if successMessage == "" {
-		return fmt.Sprintf("/suppliers/%d", id)
+	return buildSupplierDetailResultURL(id, "", successMessage, "")
+}
+
+func buildSupplierDetailResultURL(id int, errorMessage string, successMessage string, modal string) string {
+	values := url.Values{}
+	if errorMessage != "" {
+		values.Set("error", errorMessage)
+	}
+	if successMessage != "" {
+		values.Set("success", successMessage)
+	}
+	if modal != "" {
+		values.Set("modal", modal)
 	}
 
-	values := url.Values{}
-	values.Set("success", successMessage)
-	return fmt.Sprintf("/suppliers/%d?%s", id, values.Encode())
+	basePath := fmt.Sprintf("/suppliers/%d", id)
+	encoded := values.Encode()
+	if encoded == "" {
+		return basePath
+	}
+	return basePath + "?" + encoded
 }
 
 func getStoreOptionsForCurrentUser(c *gin.Context) ([]models.Store, error) {
@@ -526,5 +660,45 @@ func filterSupplierGroupsByStoreAccess(groups []models.SupplierGroup, allowedSto
 			filtered = append(filtered, group)
 		}
 	}
+	return filtered
+}
+
+func countUngroupedSupplierProducts(products []models.SupplierProduct) int {
+	total := 0
+	for _, product := range products {
+		if product.SupplierProductGroupID == 0 {
+			total++
+		}
+	}
+	return total
+}
+
+func filterSupplierProductsByGroup(products []models.SupplierProduct, filter string) []models.SupplierProduct {
+	filter = strings.TrimSpace(filter)
+	if filter == "" {
+		return products
+	}
+
+	filtered := make([]models.SupplierProduct, 0, len(products))
+	if filter == "ungrouped" {
+		for _, product := range products {
+			if product.SupplierProductGroupID == 0 {
+				filtered = append(filtered, product)
+			}
+		}
+		return filtered
+	}
+
+	groupID, err := strconv.Atoi(filter)
+	if err != nil || groupID <= 0 {
+		return products
+	}
+
+	for _, product := range products {
+		if product.SupplierProductGroupID == groupID {
+			filtered = append(filtered, product)
+		}
+	}
+
 	return filtered
 }
