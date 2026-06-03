@@ -666,10 +666,6 @@
                 white-space: nowrap;
             }
 
-            .modal-history-breakdown.approved {
-                color: #15803d;
-            }
-
             .modal-history-empty {
                 border-radius: 0.9rem;
                 background: #f8fafc;
@@ -1395,9 +1391,8 @@
                                     <table class="modal-history-table">
                                         <thead>
                                             <tr>
-                                                <th>Tanggal</th>
+                                                <th>Tanggal SO</th>
                                                 <th>Total SO</th>
-                                                <th>Approve</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -1408,7 +1403,6 @@
                                                     <p class="modal-history-session">{{ .SessionNumber }}</p>
                                                 </td>
                                                 <td><p class="modal-history-breakdown">{{ .GrandTotalBreakdownDisplay }}</p></td>
-                                                <td><p class="modal-history-breakdown approved">{{ .ApprovedBuyBreakdownDisplay }}</p></td>
                                             </tr>
                                             {{ end }}
                                         </tbody>
