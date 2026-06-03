@@ -254,6 +254,14 @@ func (s *StockCheckSessionService) GetCheckerInputPage(sessionID int, userID int
 		return models.StockCheckSessionCheckerInputPage{}, err
 	}
 
+	for index := range items {
+		history, err := s.Repo.GetCheckerItemRecentSOHistory(sessionID, items[index].ProductID, session.StoreID, session.SupplierID, 4)
+		if err != nil {
+			return models.StockCheckSessionCheckerInputPage{}, err
+		}
+		items[index].RecentSOHistory = history
+	}
+
 	return models.StockCheckSessionCheckerInputPage{
 		Session: session,
 		Items:   items,

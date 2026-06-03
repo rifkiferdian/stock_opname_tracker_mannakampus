@@ -41,7 +41,10 @@ func (r *StockCheckSessionRepository) GetCheckerItemRecentSOHistory(currentSessi
 			COALESCE(si.qty_store_pcs, 0) AS qty_store_pcs,
 			COALESCE(si.qty_warehouse_carton, 0) AS qty_warehouse_carton,
 			COALESCE(si.qty_warehouse_box, 0) AS qty_warehouse_box,
-			COALESCE(si.qty_warehouse_pcs, 0) AS qty_warehouse_pcs
+			COALESCE(si.qty_warehouse_pcs, 0) AS qty_warehouse_pcs,
+			COALESCE(si.approved_buy_carton, 0) AS approved_buy_carton,
+			COALESCE(si.approved_buy_box, 0) AS approved_buy_box,
+			COALESCE(si.approved_buy_pcs, 0) AS approved_buy_pcs
 		FROM stock_check_session_items si
 		INNER JOIN stock_check_sessions scs ON scs.id = si.stock_check_session_id
 		WHERE si.product_id = ?
@@ -69,6 +72,9 @@ func (r *StockCheckSessionRepository) GetCheckerItemRecentSOHistory(currentSessi
 			&history.QtyWarehouseCarton,
 			&history.QtyWarehouseBox,
 			&history.QtyWarehousePcs,
+			&history.ApprovedBuyCarton,
+			&history.ApprovedBuyBox,
+			&history.ApprovedBuyPcs,
 		); err != nil {
 			return nil, err
 		}
@@ -76,9 +82,14 @@ func (r *StockCheckSessionRepository) GetCheckerItemRecentSOHistory(currentSessi
 		history.TotalQtyCarton = history.QtyStoreCarton + history.QtyWarehouseCarton
 		history.TotalQtyBox = history.QtyStoreBox + history.QtyWarehouseBox
 		history.TotalQtyPcs = history.QtyStorePcs + history.QtyWarehousePcs
+		history.GrandTotalCarton = history.QtyStoreCarton + history.QtyWarehouseCarton + history.ApprovedBuyCarton
+		history.GrandTotalBox = history.QtyStoreBox + history.QtyWarehouseBox + history.ApprovedBuyBox
+		history.GrandTotalPcs = history.QtyStorePcs + history.QtyWarehousePcs + history.ApprovedBuyPcs
 		history.QtyStoreBreakdownDisplay = formatStockCheckUnitBreakdownShort(history.QtyStoreCarton, history.QtyStoreBox, history.QtyStorePcs)
 		history.QtyWarehouseBreakdownDisplay = formatStockCheckUnitBreakdownShort(history.QtyWarehouseCarton, history.QtyWarehouseBox, history.QtyWarehousePcs)
 		history.TotalQtyBreakdownDisplay = formatStockCheckUnitBreakdownShort(history.TotalQtyCarton, history.TotalQtyBox, history.TotalQtyPcs)
+		history.ApprovedBuyBreakdownDisplay = formatStockCheckUnitBreakdownShort(history.ApprovedBuyCarton, history.ApprovedBuyBox, history.ApprovedBuyPcs)
+		history.GrandTotalBreakdownDisplay = formatStockCheckUnitBreakdownShort(history.GrandTotalCarton, history.GrandTotalBox, history.GrandTotalPcs)
 		history.SessionDateDisplay = history.SessionDate
 		if parsedDate, err := time.Parse("2006-01-02", history.SessionDate); err == nil {
 			history.SessionDateDisplay = parsedDate.Format("02 Jan 2006")

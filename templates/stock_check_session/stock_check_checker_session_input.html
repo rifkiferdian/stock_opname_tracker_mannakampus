@@ -381,6 +381,35 @@
                 border-color: #e2e8f0;
             }
 
+            button.item-edit-link {
+                cursor: pointer;
+            }
+
+            .item-action-stack {
+                display: flex;
+                flex-direction: row;
+                align-items: center;
+                justify-content: flex-end;
+                flex-wrap: nowrap;
+                gap: 0.45rem;
+                white-space: nowrap;
+            }
+
+            .item-action-stack .item-edit-link {
+                flex: 0 0 auto;
+            }
+
+            .item-suggest-button {
+                border-color: #bfdbfe;
+                background: #eff6ff;
+                color: #1d4ed8;
+            }
+
+            .item-suggest-button:hover {
+                background: #dbeafe;
+                border-color: #93c5fd;
+            }
+
             .compact-qty {
                 display: grid;
                 grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -394,9 +423,24 @@
                 text-align: center;
             }
 
+            .compact-qty button {
+                width: 100%;
+                border: 0;
+                border-radius: 0.65rem;
+                background: #f8fafc;
+                padding: 0.32rem 0.2rem;
+                text-align: center;
+            }
+
             .compact-qty div.qty-checked {
                 background: #dcfce7;
                 box-shadow: inset 0 0 0 1px #86efac;
+            }
+
+            .compact-qty button.qty-checked {
+                background: #dcfce7;
+                box-shadow: inset 0 0 0 1px #86efac;
+                cursor: pointer;
             }
 
             .compact-qty span {
@@ -453,6 +497,216 @@
 
             .desktop-suggest-checked {
                 color: #15803d;
+            }
+
+            .desktop-suggest-trigger {
+                display: block;
+                width: 100%;
+                border: 0;
+                background: transparent;
+                padding: 0;
+                text-align: left;
+                cursor: pointer;
+            }
+
+            .modal-shell {
+                position: fixed;
+                inset: 0;
+                z-index: 60;
+                display: none;
+                align-items: center;
+                justify-content: center;
+                padding: 1rem;
+                background: rgba(15, 23, 42, 0.55);
+            }
+
+            .modal-shell.flex {
+                display: flex;
+            }
+
+            .modal-card {
+                width: 100%;
+                max-width: 28rem;
+                border-radius: 1.2rem;
+                background: #fff;
+                padding: 1.1rem;
+                box-shadow: 0 26px 60px -34px rgba(15, 23, 42, 0.45);
+            }
+
+            .modal-head {
+                display: flex;
+                align-items: flex-start;
+                justify-content: space-between;
+                gap: 0.75rem;
+                border-bottom: 1px solid #e2e8f0;
+                padding-bottom: 0.85rem;
+            }
+
+            .modal-close {
+                display: inline-flex;
+                height: 2.2rem;
+                width: 2.2rem;
+                align-items: center;
+                justify-content: center;
+                border: 0;
+                border-radius: 999px;
+                background: #f8fafc;
+                color: #475569;
+            }
+
+            .modal-form {
+                display: grid;
+                gap: 0.9rem;
+                margin-top: 1rem;
+            }
+
+            .modal-qty-grid {
+                display: grid;
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+                gap: 0.75rem;
+            }
+
+            .modal-qty-field {
+                display: flex;
+                flex-direction: column;
+            }
+
+            .modal-form label {
+                display: block;
+                font-size: 0.72rem;
+                font-weight: 800;
+                letter-spacing: 0.08em;
+                text-transform: uppercase;
+                color: #64748b;
+            }
+
+            .modal-form input {
+                width: 100%;
+                border: 1px solid #dbe3f0;
+                border-radius: 0.9rem;
+                background: #f8fafc;
+                padding: 0.9rem 1rem;
+                margin-top: 0.65rem;
+                font-size: 1rem;
+                font-weight: 800;
+                color: #0f172a;
+                outline: none;
+            }
+
+            .modal-form input:focus {
+                border-color: #2948a2;
+                background: #fff;
+            }
+
+            .modal-history-section {
+                display: grid;
+                gap: 0.65rem;
+                border-top: 1px solid #e2e8f0;
+                padding-top: 0.95rem;
+            }
+
+            .modal-history-title {
+                font-size: 0.78rem;
+                font-weight: 800;
+                letter-spacing: 0.08em;
+                text-transform: uppercase;
+                color: #64748b;
+            }
+
+            .modal-history-wrap {
+                overflow-x: auto;
+                border: 1px solid #e2e8f0;
+                border-radius: 0.9rem;
+                background: #f8fafc;
+            }
+
+            .modal-history-table {
+                width: 100%;
+                min-width: 28rem;
+                border-collapse: collapse;
+            }
+
+            .modal-history-table th,
+            .modal-history-table td {
+                padding: 0.7rem 0.8rem;
+                text-align: left;
+                vertical-align: top;
+            }
+
+            .modal-history-table th {
+                background: #eff6ff;
+                font-size: 0.66rem;
+                font-weight: 800;
+                letter-spacing: 0.08em;
+                text-transform: uppercase;
+                color: #1d4ed8;
+            }
+
+            .modal-history-table tbody tr + tr {
+                border-top: 1px solid #e2e8f0;
+            }
+
+            .modal-history-date {
+                font-size: 0.76rem;
+                font-weight: 800;
+                color: #0f172a;
+            }
+
+            .modal-history-session {
+                margin-top: 0.18rem;
+                font-size: 0.68rem;
+                font-weight: 700;
+                color: #64748b;
+            }
+
+            .modal-history-breakdown {
+                font-size: 0.74rem;
+                font-weight: 800;
+                color: #334155;
+                white-space: nowrap;
+            }
+
+            .modal-history-breakdown.approved {
+                color: #15803d;
+            }
+
+            .modal-history-empty {
+                border-radius: 0.9rem;
+                background: #f8fafc;
+                padding: 0.9rem 1rem;
+                font-size: 0.76rem;
+                font-weight: 700;
+                color: #64748b;
+                text-align: center;
+            }
+
+            .modal-actions {
+                display: flex;
+                justify-content: flex-end;
+                gap: 0.65rem;
+                padding-top: 0.25rem;
+            }
+
+            .modal-button {
+                display: inline-flex;
+                min-height: 2.7rem;
+                align-items: center;
+                justify-content: center;
+                border: 0;
+                border-radius: 0.85rem;
+                padding: 0.65rem 1rem;
+                font-size: 0.86rem;
+                font-weight: 800;
+            }
+
+            .modal-button.secondary {
+                background: #f8fafc;
+                color: #475569;
+            }
+
+            .modal-button.primary {
+                background: linear-gradient(135deg, #2948a2 0%, #1a377f 100%);
+                color: #fff;
             }
 
             .page-toolbar {
@@ -977,17 +1231,19 @@
                                         </div>
                                         <div class="flex flex-col items-end gap-2">
                                             <span class="item-status-badge px-2.5 py-1 text-[10px] {{ if eq .Status "submitted" }}item-status-badge-submitted{{ else if eq .Status "approved" }}item-status-badge-approved{{ else if eq .StatusLabel "Unknown" }}item-status-badge-unknown{{ else }}item-status-badge-default{{ end }}">{{ .StatusLabel }}</span>
-                                            {{ if .HasBarcode }}
-                                            <a href="/stock-checker/sessions/{{ $.Session.ID }}/scan?barcode={{ .PreferredBarcode }}&location={{ $.ScanForm.Location }}&back_to={{ $.CurrentURL }}" class="item-edit-link">
-                                                <i class="bx bx-pencil"></i>
-                                                <span>Edit</span>
-                                            </a>
-                                            {{ else }}
-                                            <span class="item-edit-link disabled">
-                                                <i class="bx bx-block"></i>
-                                                <span>Tanpa Barcode</span>
-                                            </span>
-                                            {{ end }}
+                                            <div class="item-action-stack">
+                                                {{ if .HasBarcode }}
+                                                <a href="/stock-checker/sessions/{{ $.Session.ID }}/scan?barcode={{ .PreferredBarcode }}&location={{ $.ScanForm.Location }}&back_to={{ $.CurrentURL }}" class="item-edit-link">
+                                                    <i class="bx bx-pencil"></i>
+                                                    <span>Edit Qty</span>
+                                                </a>
+                                                {{ else }}
+                                                <span class="item-edit-link disabled">
+                                                    <i class="bx bx-block"></i>
+                                                    <span>Tanpa Barcode</span>
+                                                </span>
+                                                {{ end }}
+                                            </div>
                                         </div>
                                     </div>
 
@@ -1006,13 +1262,23 @@
                                             </div>
                                             {{ if .WarehouseChecked }}<p class="compact-qty-status">Sudah input</p>{{ end }}
                                         </div>
-                                        <div class="{{ if ne .Status "draft" }}qty-checked{{ end }}">
+                                        <button
+                                            type="button"
+                                            class="{{ if ne .Status "draft" }}qty-checked{{ end }}"
+                                            data-open-suggest-modal
+                                            data-item-id="{{ .ID }}"
+                                            data-product-name="{{ .ProductName }}"
+                                            data-suggest-carton="{{ .SuggestBuyCarton }}"
+                                            data-suggest-box="{{ .SuggestBuyBox }}"
+                                            data-suggest-pcs="{{ .SuggestBuyPcs }}"
+                                            data-history-template-id="suggest-history-template-{{ .ID }}"
+                                        >
                                             <span>Suggest</span>
                                             <div class="compact-unit-lines">
                                                 <p><b style="color: #d35400;">{{ .SuggestBuyCarton }}</b>c - <b style="color: #d35400;">{{ .SuggestBuyBox }}</b>b - <b style="color: #d35400;">{{ .SuggestBuyPcs }}</b>p</p>
                                             </div>
                                             {{ if ne .Status "draft" }}<p class="compact-qty-status">Sudah input</p>{{ end }}
-                                        </div>
+                                        </button>
                                     </div>
                                 </article>
                                 {{ else }}
@@ -1055,24 +1321,38 @@
                                                 {{ if .WarehouseChecked }}<p class="desktop-qty-note">Sudah input</p>{{ end }}
                                             </td>
                                             <td class="px-5 py-4 font-extrabold {{ if ne .Status "draft" }}desktop-suggest-checked{{ else }}text-[#153e8a]{{ end }}">
-                                                <p>{{ .SuggestBuyCarton }}c - {{ .SuggestBuyBox }}b - {{ .SuggestBuyPcs }}p</p>
-                                                <p class="mt-1 text-xs font-semibold {{ if ne .Status "draft" }}desktop-qty-note{{ else }}text-slate-400{{ end }}">Total {{ .SuggestBuyQtyDisplay }} pcs</p>
+                                                <button
+                                                    type="button"
+                                                    class="desktop-suggest-trigger"
+                                                    data-open-suggest-modal
+                                                    data-item-id="{{ .ID }}"
+                                                    data-product-name="{{ .ProductName }}"
+                                                    data-suggest-carton="{{ .SuggestBuyCarton }}"
+                                                    data-suggest-box="{{ .SuggestBuyBox }}"
+                                                    data-suggest-pcs="{{ .SuggestBuyPcs }}"
+                                                    data-history-template-id="suggest-history-template-{{ .ID }}"
+                                                >
+                                                    <p>{{ .SuggestBuyCarton }}c - {{ .SuggestBuyBox }}b - {{ .SuggestBuyPcs }}p</p>
+                                                    <p class="mt-1 text-xs font-semibold {{ if ne .Status "draft" }}desktop-qty-note{{ else }}text-slate-400{{ end }}">Total {{ .SuggestBuyQtyDisplay }} pcs</p>
+                                                </button>
                                             </td>
                                             <td class="px-5 py-4">
                                                 <span class="item-status-badge px-3 py-1 text-[11px] {{ if eq .Status "submitted" }}item-status-badge-submitted{{ else if eq .Status "approved" }}item-status-badge-approved{{ else if eq .StatusLabel "Unknown" }}item-status-badge-unknown{{ else }}item-status-badge-default{{ end }}">{{ .StatusLabel }}</span>
                                             </td>
                                             <td class="px-5 py-4">
-                                                {{ if .HasBarcode }}
-                                                <a href="/stock-checker/sessions/{{ $.Session.ID }}/scan?barcode={{ .PreferredBarcode }}&location={{ $.ScanForm.Location }}&back_to={{ $.CurrentURL }}" class="item-edit-link">
-                                                    <i class="bx bx-pencil"></i>
-                                                    <span>Edit</span>
-                                                </a>
-                                                {{ else }}
-                                                <span class="item-edit-link disabled">
-                                                    <i class="bx bx-block"></i>
-                                                    <span>Tanpa Barcode</span>
-                                                </span>
-                                                {{ end }}
+                                                <div class="item-action-stack">
+                                                    {{ if .HasBarcode }}
+                                                    <a href="/stock-checker/sessions/{{ $.Session.ID }}/scan?barcode={{ .PreferredBarcode }}&location={{ $.ScanForm.Location }}&back_to={{ $.CurrentURL }}" class="item-edit-link">
+                                                        <i class="bx bx-pencil"></i>
+                                                        <span>Edit Qty</span>
+                                                    </a>
+                                                    {{ else }}
+                                                    <span class="item-edit-link disabled">
+                                                        <i class="bx bx-block"></i>
+                                                        <span>Tanpa Barcode</span>
+                                                    </span>
+                                                    {{ end }}
+                                                </div>
                                             </td>
                                         </tr>
                                         {{ else }}
@@ -1106,6 +1386,40 @@
                             ></div>
                             {{ end }}
                         </div>
+
+                        <div id="suggestHistoryTemplates" class="hidden">
+                            {{ range .Items }}
+                            <template id="suggest-history-template-{{ .ID }}">
+                                {{ if .RecentSOHistory }}
+                                <div class="modal-history-wrap">
+                                    <table class="modal-history-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Tanggal</th>
+                                                <th>Total SO</th>
+                                                <th>Approve</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {{ range .RecentSOHistory }}
+                                            <tr>
+                                                <td>
+                                                    <p class="modal-history-date">{{ .SessionDateDisplay }}</p>
+                                                    <p class="modal-history-session">{{ .SessionNumber }}</p>
+                                                </td>
+                                                <td><p class="modal-history-breakdown">{{ .GrandTotalBreakdownDisplay }}</p></td>
+                                                <td><p class="modal-history-breakdown approved">{{ .ApprovedBuyBreakdownDisplay }}</p></td>
+                                            </tr>
+                                            {{ end }}
+                                        </tbody>
+                                    </table>
+                                </div>
+                                {{ else }}
+                                <div class="modal-history-empty">Belum ada histori SO sebelumnya untuk item ini.</div>
+                                {{ end }}
+                            </template>
+                            {{ end }}
+                        </div>
                     </div>
                 </main>
 
@@ -1114,6 +1428,54 @@
         </div>
 
         <div id="sidebar-overlay" class="fixed inset-0 z-40 hidden bg-slate-900/50 lg:hidden"></div>
+
+        <div data-modal class="modal-shell hidden" id="suggestCheckerModal">
+            <div class="modal-card">
+                <div class="modal-head">
+                    <div>
+                        <h2 class="text-lg font-extrabold text-[#153e8a]">Input Suggest Checker</h2>
+                        <p id="suggestModalProductName" class="mt-1 text-sm font-semibold text-slate-500">-</p>
+                    </div>
+                    <button type="button" class="modal-close" data-modal-close aria-label="Close suggest modal">
+                        <i class="bx bx-x text-xl"></i>
+                    </button>
+                </div>
+
+                <form method="POST" action="/stock-checker/sessions/{{ .Session.ID }}/suggest" class="modal-form">
+                    <input type="hidden" name="item_id" id="suggest_item_id" value="">
+                    <input type="hidden" name="redirect_to" value="{{ .CurrentURL }}">
+
+                    <div>
+                        <div class="modal-qty-grid">
+                            <div class="modal-qty-field">
+                                <label for="suggest_carton">Carton</label>
+                                <input type="number" id="suggest_carton" name="suggest_carton" min="0" step="1" value="0" placeholder="0" required>
+                            </div>
+                            <div class="modal-qty-field">
+                                <label for="suggest_box">Box</label>
+                                <input type="number" id="suggest_box" name="suggest_box" min="0" step="1" value="0" placeholder="0">
+                            </div>
+                            <div class="modal-qty-field">
+                                <label for="suggest_pcs">Pcs</label>
+                                <input type="number" id="suggest_pcs" name="suggest_pcs" min="0" step="1" value="0" placeholder="0">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="modal-history-section">
+                        <p class="modal-history-title">4 SO Terakhir</p>
+                        <div id="suggestModalHistoryContent">
+                            <div class="modal-history-empty">Belum ada histori SO sebelumnya untuk item ini.</div>
+                        </div>
+                    </div>
+
+                    <div class="modal-actions">
+                        <button type="button" class="modal-button secondary" data-modal-close>Batal</button>
+                        <button type="submit" class="modal-button primary">Simpan Suggest</button>
+                    </div>
+                </form>
+            </div>
+        </div>
 
         <div id="sessionStatusModal" class="status-modal-shell" aria-hidden="true">
             <div class="status-modal-card">
@@ -1185,6 +1547,15 @@
                 var desktopTableBody = document.querySelector('.desktop-table tbody');
                 var desktopFilterNodes = desktopTableBody ? Array.prototype.slice.call(desktopTableBody.querySelectorAll('[data-filter-item]')) : [];
                 var statusModal = document.getElementById('sessionStatusModal');
+                var suggestModal = document.getElementById('suggestCheckerModal');
+                var suggestOpenButtons = document.querySelectorAll('[data-open-suggest-modal]');
+                var suggestModalProductName = document.getElementById('suggestModalProductName');
+                var suggestItemInput = document.getElementById('suggest_item_id');
+                var suggestCartonInput = document.getElementById('suggest_carton');
+                var suggestBoxInput = document.getElementById('suggest_box');
+                var suggestPcsInput = document.getElementById('suggest_pcs');
+                var suggestRedirectInput = suggestModal ? suggestModal.querySelector('input[name="redirect_to"]') : null;
+                var suggestHistoryContent = document.getElementById('suggestModalHistoryContent');
                 var openStatusModalButton = document.getElementById('openStatusModalButton');
                 var closeStatusModalButtons = document.querySelectorAll('[data-status-modal-close]');
                 var scanCommitTimer = null;
@@ -1236,7 +1607,7 @@
                     if (!statusModal) return;
                     statusModal.classList.remove('flex');
                     statusModal.setAttribute('aria-hidden', 'true');
-                    if (!overlay || overlay.classList.contains('hidden')) {
+                    if (!isSuggestModalOpen() && (!overlay || overlay.classList.contains('hidden'))) {
                         document.body.classList.remove('overflow-hidden');
                     }
                     focusScannerInput();
@@ -1252,6 +1623,49 @@
 
                 function isStatusModalOpen() {
                     return !!(statusModal && statusModal.classList.contains('flex'));
+                }
+
+                function isSuggestModalOpen() {
+                    return !!(suggestModal && suggestModal.classList.contains('flex'));
+                }
+
+                function closeSuggestModal() {
+                    if (!suggestModal) return;
+                    suggestModal.classList.add('hidden');
+                    suggestModal.classList.remove('flex');
+                    if (!isStatusModalOpen() && (!overlay || overlay.classList.contains('hidden'))) {
+                        document.body.classList.remove('overflow-hidden');
+                    }
+                    focusScannerInput();
+                }
+
+                function openSuggestModal(button) {
+                    if (!suggestModal || !button) return;
+
+                    if (suggestItemInput) suggestItemInput.value = button.getAttribute('data-item-id') || '';
+                    if (suggestModalProductName) suggestModalProductName.textContent = button.getAttribute('data-product-name') || '-';
+                    if (suggestCartonInput) suggestCartonInput.value = button.getAttribute('data-suggest-carton') || '0';
+                    if (suggestBoxInput) suggestBoxInput.value = button.getAttribute('data-suggest-box') || '0';
+                    if (suggestPcsInput) suggestPcsInput.value = button.getAttribute('data-suggest-pcs') || '0';
+                    if (suggestRedirectInput) suggestRedirectInput.value = buildCurrentPageURL(locationInput.value);
+
+                    if (suggestHistoryContent) {
+                        var templateID = button.getAttribute('data-history-template-id') || '';
+                        var historyTemplate = templateID ? document.getElementById(templateID) : null;
+                        suggestHistoryContent.innerHTML = historyTemplate ? historyTemplate.innerHTML : '<div class="modal-history-empty">Belum ada histori SO sebelumnya untuk item ini.</div>';
+                    }
+
+                    closeSidebar();
+                    suggestModal.classList.remove('hidden');
+                    suggestModal.classList.add('flex');
+                    document.body.classList.add('overflow-hidden');
+
+                    if (suggestCartonInput) {
+                        window.setTimeout(function () {
+                            suggestCartonInput.focus();
+                            suggestCartonInput.select();
+                        }, 0);
+                    }
                 }
 
                 function isFilterControlFocused() {
@@ -1323,6 +1737,7 @@
                     if (activeMode !== 'scan') return;
                     if (!barcodeInput) return;
                     if (isStatusModalOpen()) return;
+                    if (isSuggestModalOpen()) return;
                     if (isFilterControlFocused()) return;
                     barcodeInput.focus();
                     if (typeof barcodeInput.setSelectionRange === 'function') {
@@ -1349,6 +1764,10 @@
 
                     if (scannerForm) {
                         scannerForm.setAttribute('data-back-url', buildCurrentPageURL(location));
+                    }
+
+                    if (suggestRedirectInput) {
+                        suggestRedirectInput.value = buildCurrentPageURL(location);
                     }
 
                     if (window.history && typeof window.history.replaceState === 'function') {
@@ -1561,6 +1980,24 @@
                     });
                 }
 
+                suggestOpenButtons.forEach(function (button) {
+                    button.addEventListener('click', function () {
+                        openSuggestModal(button);
+                    });
+                });
+
+                document.querySelectorAll('[data-modal-close]').forEach(function (button) {
+                    button.addEventListener('click', closeSuggestModal);
+                });
+
+                if (suggestModal) {
+                    suggestModal.addEventListener('click', function (event) {
+                        if (event.target === suggestModal) {
+                            closeSuggestModal();
+                        }
+                    });
+                }
+
                 locationButtons.forEach(function (button) {
                     button.addEventListener('click', function () {
                         persistLocation(button.getAttribute('data-location-button') || 'store');
@@ -1643,6 +2080,10 @@
                 }
 
                 document.addEventListener('keydown', function (event) {
+                    if (event.key === 'Escape' && suggestModal && suggestModal.classList.contains('flex')) {
+                        closeSuggestModal();
+                        return;
+                    }
                     if (event.key === 'Escape' && statusModal && statusModal.classList.contains('flex')) {
                         closeStatusModal();
                     }

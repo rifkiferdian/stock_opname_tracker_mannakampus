@@ -135,22 +135,30 @@ type StockCheckSessionCheckerScanPage struct {
 }
 
 type StockCheckSessionRecentSOHistory struct {
-	SessionID                 int
-	SessionNumber             string
-	SessionDate               string
-	SessionDateDisplay        string
-	QtyStoreCarton            int
-	QtyStoreBox               int
-	QtyStorePcs               int
-	QtyStoreBreakdownDisplay  string
-	QtyWarehouseCarton        int
-	QtyWarehouseBox           int
-	QtyWarehousePcs           int
+	SessionID                    int
+	SessionNumber                string
+	SessionDate                  string
+	SessionDateDisplay           string
+	QtyStoreCarton               int
+	QtyStoreBox                  int
+	QtyStorePcs                  int
+	QtyStoreBreakdownDisplay     string
+	QtyWarehouseCarton           int
+	QtyWarehouseBox              int
+	QtyWarehousePcs              int
 	QtyWarehouseBreakdownDisplay string
-	TotalQtyCarton            int
-	TotalQtyBox               int
-	TotalQtyPcs               int
-	TotalQtyBreakdownDisplay  string
+	TotalQtyCarton               int
+	TotalQtyBox                  int
+	TotalQtyPcs                  int
+	TotalQtyBreakdownDisplay     string
+	ApprovedBuyCarton            int
+	ApprovedBuyBox               int
+	ApprovedBuyPcs               int
+	ApprovedBuyBreakdownDisplay  string
+	GrandTotalCarton             int
+	GrandTotalBox                int
+	GrandTotalPcs                int
+	GrandTotalBreakdownDisplay   string
 }
 
 type StockCheckSessionDetail struct {
