@@ -404,6 +404,9 @@ type stockCheckSessionPOItemView struct {
 	UnitName         string
 	QtyDisplay       string
 	QtyBreakdownDisplay string
+	QtyCarton         int
+	QtyBox            int
+	QtyPcs            int
 	UnitPriceDisplay string
 	SubtotalDisplay  string
 }
@@ -498,6 +501,9 @@ func StockCheckSessionPODetail(c *gin.Context) {
 			UnitName:            item.UnitName,
 			QtyDisplay:          formatStockCheckPOWholeNumber(item.ApprovedBuyQty),
 			QtyBreakdownDisplay: formatStockCheckPOBreakdown(item.ApprovedBuyCarton, item.ApprovedBuyBox, item.ApprovedBuyPcs),
+			QtyCarton:           item.ApprovedBuyCarton,
+			QtyBox:              item.ApprovedBuyBox,
+			QtyPcs:              item.ApprovedBuyPcs,
 			UnitPriceDisplay:    formatStockCheckPOCurrency(unitPrice),
 			SubtotalDisplay:     formatStockCheckPOCurrency(lineSubtotal),
 		})
@@ -548,6 +554,9 @@ func StockCheckSessionPODetail(c *gin.Context) {
 		"POItemCount":         len(items),
 		"POTotalQtyDisplay":   formatStockCheckPOWholeNumber(totalQty),
 		"POTotalBreakdownDisplay": formatStockCheckPOBreakdown(totalCarton, totalBox, totalPcs),
+		"POTotalCarton":       totalCarton,
+		"POTotalBox":          totalBox,
+		"POTotalPcs":          totalPcs,
 		"SubtotalDisplay":     formatStockCheckPOCurrency(subtotal),
 		"ShippingDisplay":     formatStockCheckPOCurrency(shippingHandling),
 		"EstimatedTaxDisplay": formatStockCheckPOCurrency(estimatedTax),
