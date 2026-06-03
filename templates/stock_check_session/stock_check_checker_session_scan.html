@@ -1052,19 +1052,6 @@
                     });
                 });
 
-                document.querySelectorAll('[data-modal]').forEach(function (modal) {
-                    modal.addEventListener('click', function (event) {
-                        if (event.target === modal) {
-                            closeModal(modal);
-                        }
-                    });
-                });
-
-                document.addEventListener('keydown', function (event) {
-                    if (event.key !== 'Escape') return;
-                    document.querySelectorAll('[data-modal].flex').forEach(closeModal);
-                });
-
                 if (suggestOpenButton && suggestModalEl) {
                     suggestOpenButton.addEventListener('click', function () {
                         var itemIdInput = suggestModalEl.querySelector('#suggest_item_id');

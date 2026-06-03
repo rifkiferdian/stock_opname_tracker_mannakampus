@@ -1995,14 +1995,6 @@
                     button.addEventListener('click', closeSuggestModal);
                 });
 
-                if (suggestModal) {
-                    suggestModal.addEventListener('click', function (event) {
-                        if (event.target === suggestModal) {
-                            closeSuggestModal();
-                        }
-                    });
-                }
-
                 locationButtons.forEach(function (button) {
                     button.addEventListener('click', function () {
                         persistLocation(button.getAttribute('data-location-button') || 'store');
@@ -2085,10 +2077,6 @@
                 }
 
                 document.addEventListener('keydown', function (event) {
-                    if (event.key === 'Escape' && suggestModal && suggestModal.classList.contains('flex')) {
-                        closeSuggestModal();
-                        return;
-                    }
                     if (event.key === 'Escape' && statusModal && statusModal.classList.contains('flex')) {
                         closeStatusModal();
                     }
