@@ -398,17 +398,33 @@ func StockCheckSessionDetail(c *gin.Context) {
 }
 
 type stockCheckSessionPOItemView struct {
-	No               int
-	ProductName      string
-	ProductCode      string
-	UnitName         string
-	QtyDisplay       string
+	No                  int
+	ProductName         string
+	ProductCode         string
+	UnitName            string
+	QtyDisplay          string
 	QtyBreakdownDisplay string
-	QtyCarton         int
-	QtyBox            int
-	QtyPcs            int
-	UnitPriceDisplay string
-	SubtotalDisplay  string
+	QtyCarton           int
+	QtyBox              int
+	QtyPcs              int
+	UnitPriceDisplay    string
+	SubtotalDisplay     string
+	GroupID             int
+	GroupName           string
+	GroupSortOrder      int
+}
+
+type stockCheckSessionPOGroupSection struct {
+	GroupID     int
+	GroupName   string
+	GroupLabel  string
+	SortOrder   int
+	Ungrouped   bool
+	ItemCount   int
+	TotalCarton int
+	TotalBox    int
+	TotalPcs    int
+	Items       []stockCheckSessionPOItemView
 }
 
 func StockCheckSessionPODetail(c *gin.Context) {
@@ -506,69 +522,146 @@ func StockCheckSessionPODetail(c *gin.Context) {
 			QtyPcs:              item.ApprovedBuyPcs,
 			UnitPriceDisplay:    formatStockCheckPOCurrency(unitPrice),
 			SubtotalDisplay:     formatStockCheckPOCurrency(lineSubtotal),
+			GroupID:             item.SupplierProductGroupID,
+			GroupName:           strings.TrimSpace(item.SupplierProductGroupName),
+			GroupSortOrder:      item.SupplierProductGroupSortOrder,
 		})
 	}
 
-	sort.SliceStable(items, func(i, j int) bool {
-		leftName := strings.ToLower(strings.TrimSpace(items[i].ProductName))
-		rightName := strings.ToLower(strings.TrimSpace(items[j].ProductName))
-		if leftName != rightName {
-			if poSortBy == "name_desc" {
-				return leftName > rightName
-			}
-			return leftName < rightName
-		}
-
-		leftCode := strings.ToLower(strings.TrimSpace(items[i].ProductCode))
-		rightCode := strings.ToLower(strings.TrimSpace(items[j].ProductCode))
-		if leftCode != rightCode {
-			if poSortBy == "name_desc" {
-				return leftCode > rightCode
-			}
-			return leftCode < rightCode
-		}
-
-		return i < j
-	})
-	for i := range items {
-		items[i].No = i + 1
-	}
+	poSections := buildStockCheckSessionPOSections(items, poSortBy)
 
 	shippingHandling := 0.0
 	estimatedTax := subtotal * 0.08
 	totalAmount := subtotal + shippingHandling + estimatedTax
 
 	Render(c, "stock_check_session_po_detail.html", gin.H{
-		"Title":               "PO Detail " + pageData.Session.SessionNumber,
-		"Page":                "stock_check_po_recap",
-		"CurrentRole":         extractCurrentUserRole(c),
-		"Success":             strings.TrimSpace(c.Query("success")),
-		"Error":               strings.TrimSpace(c.Query("error")),
-		"CurrentDetailURL":    c.Request.URL.RequestURI(),
-		"Session":             pageData.Session,
-		"Supplier":            supplier,
-		"StoreAddress":        storeAddress,
-		"BuyerApproverName":   buyerApproverName,
-		"POItems":             items,
-		"POSortBy":            poSortBy,
-		"POItemCount":         len(items),
-		"POTotalQtyDisplay":   formatStockCheckPOWholeNumber(totalQty),
+		"Title":                   "PO Detail " + pageData.Session.SessionNumber,
+		"Page":                    "stock_check_po_recap",
+		"CurrentRole":             extractCurrentUserRole(c),
+		"Success":                 strings.TrimSpace(c.Query("success")),
+		"Error":                   strings.TrimSpace(c.Query("error")),
+		"CurrentDetailURL":        c.Request.URL.RequestURI(),
+		"Session":                 pageData.Session,
+		"Supplier":                supplier,
+		"StoreAddress":            storeAddress,
+		"BuyerApproverName":       buyerApproverName,
+		"POItems":                 items,
+		"POSections":              poSections,
+		"POSortBy":                poSortBy,
+		"POItemCount":             len(items),
+		"POTotalQtyDisplay":       formatStockCheckPOWholeNumber(totalQty),
 		"POTotalBreakdownDisplay": formatStockCheckPOBreakdown(totalCarton, totalBox, totalPcs),
-		"POTotalCarton":       totalCarton,
-		"POTotalBox":          totalBox,
-		"POTotalPcs":          totalPcs,
-		"SubtotalDisplay":     formatStockCheckPOCurrency(subtotal),
-		"ShippingDisplay":     formatStockCheckPOCurrency(shippingHandling),
-		"EstimatedTaxDisplay": formatStockCheckPOCurrency(estimatedTax),
-		"TotalAmountDisplay":  formatStockCheckPOCurrency(totalAmount),
-		"PODateDisplay":       pageData.Session.SessionDateDisplay,
-		"PONumberDisplay":     "PO-" + pageData.Session.SessionNumber,
+		"POTotalCarton":           totalCarton,
+		"POTotalBox":              totalBox,
+		"POTotalPcs":              totalPcs,
+		"SubtotalDisplay":         formatStockCheckPOCurrency(subtotal),
+		"ShippingDisplay":         formatStockCheckPOCurrency(shippingHandling),
+		"EstimatedTaxDisplay":     formatStockCheckPOCurrency(estimatedTax),
+		"TotalAmountDisplay":      formatStockCheckPOCurrency(totalAmount),
+		"PODateDisplay":           pageData.Session.SessionDateDisplay,
+		"PONumberDisplay":         "PO-" + pageData.Session.SessionNumber,
 		"BackToRecapPOPageURL": buildStockCheckPORecapPageURL(models.StockCheckSessionListFilter{
 			DateFrom:     sanitizeQueryDate(c.Query("date_from")),
 			DateTo:       sanitizeQueryDate(c.Query("date_to")),
 			SupplierName: c.Query("supplier_name"),
 		}, parsePositiveInt(c.Query("page"), 1)),
 	})
+}
+
+func buildStockCheckSessionPOSections(items []stockCheckSessionPOItemView, poSortBy string) []stockCheckSessionPOGroupSection {
+	if len(items) == 0 {
+		return nil
+	}
+
+	sectionsByKey := make(map[string]*stockCheckSessionPOGroupSection)
+	order := make([]string, 0, len(items))
+	for _, item := range items {
+		groupName := strings.TrimSpace(item.GroupName)
+		key := strconv.Itoa(item.GroupID) + "|" + groupName
+		if item.GroupID <= 0 || groupName == "" {
+			key = "ungrouped"
+		}
+
+		section, exists := sectionsByKey[key]
+		if !exists {
+			section = &stockCheckSessionPOGroupSection{
+				GroupID:    item.GroupID,
+				GroupName:  groupName,
+				GroupLabel: groupName,
+				SortOrder:  item.GroupSortOrder,
+				Ungrouped:  key == "ungrouped",
+				Items:      make([]stockCheckSessionPOItemView, 0, 8),
+			}
+			if section.Ungrouped {
+				section.GroupID = 0
+				section.GroupName = ""
+				section.GroupLabel = "Item Tanpa Group"
+				section.SortOrder = 1 << 30
+			}
+			sectionsByKey[key] = section
+			order = append(order, key)
+		}
+
+		section.Items = append(section.Items, item)
+		section.ItemCount++
+		section.TotalCarton += item.QtyCarton
+		section.TotalBox += item.QtyBox
+		section.TotalPcs += item.QtyPcs
+	}
+
+	sections := make([]stockCheckSessionPOGroupSection, 0, len(order))
+	for _, key := range order {
+		sections = append(sections, *sectionsByKey[key])
+	}
+
+	sort.SliceStable(sections, func(i, j int) bool {
+		if sections[i].Ungrouped != sections[j].Ungrouped {
+			return !sections[i].Ungrouped
+		}
+		if sections[i].SortOrder != sections[j].SortOrder {
+			return sections[i].SortOrder < sections[j].SortOrder
+		}
+
+		leftName := strings.ToLower(strings.TrimSpace(sections[i].GroupLabel))
+		rightName := strings.ToLower(strings.TrimSpace(sections[j].GroupLabel))
+		if leftName != rightName {
+			return leftName < rightName
+		}
+
+		return sections[i].GroupID < sections[j].GroupID
+	})
+
+	rowNo := 1
+	for i := range sections {
+		sort.SliceStable(sections[i].Items, func(leftIndex, rightIndex int) bool {
+			leftName := strings.ToLower(strings.TrimSpace(sections[i].Items[leftIndex].ProductName))
+			rightName := strings.ToLower(strings.TrimSpace(sections[i].Items[rightIndex].ProductName))
+			if leftName != rightName {
+				if poSortBy == "name_desc" {
+					return leftName > rightName
+				}
+				return leftName < rightName
+			}
+
+			leftCode := strings.ToLower(strings.TrimSpace(sections[i].Items[leftIndex].ProductCode))
+			rightCode := strings.ToLower(strings.TrimSpace(sections[i].Items[rightIndex].ProductCode))
+			if leftCode != rightCode {
+				if poSortBy == "name_desc" {
+					return leftCode > rightCode
+				}
+				return leftCode < rightCode
+			}
+
+			return leftIndex < rightIndex
+		})
+
+		for itemIndex := range sections[i].Items {
+			sections[i].Items[itemIndex].No = rowNo
+			rowNo++
+		}
+	}
+
+	return sections
 }
 
 func sanitizeStockCheckSessionPOSortBy(value string) string {

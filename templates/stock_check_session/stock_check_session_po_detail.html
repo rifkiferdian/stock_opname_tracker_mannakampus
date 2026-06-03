@@ -240,6 +240,54 @@
                 padding: 1rem 1.35rem 0;
             }
 
+            .po-group-section + .po-group-section {
+                margin-top: 1.1rem;
+            }
+
+            .po-group-header {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 0.8rem;
+                margin-bottom: 0.6rem;
+                padding: 0.85rem 1rem;
+                border: 1px solid #dbe4f3;
+                border-radius: 0.85rem;
+                background: linear-gradient(180deg, #f9fbff 0%, #f3f7ff 100%);
+            }
+
+            .po-group-title {
+                font-size: 0.88rem;
+                line-height: 1.2;
+                font-weight: 800;
+                color: #0f2f78;
+            }
+
+            .po-group-sub {
+                margin-top: 0.18rem;
+                font-size: 0.75rem;
+                line-height: 1.35;
+                font-weight: 700;
+                color: #64748b;
+            }
+
+            .po-group-count {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                min-width: 4.25rem;
+                padding: 0.45rem 0.75rem;
+                border-radius: 999px;
+                background: #e0ebff;
+                color: #123d8d;
+                font-size: 0.72rem;
+                line-height: 1;
+                font-weight: 800;
+                letter-spacing: 0.04em;
+                text-transform: uppercase;
+                white-space: nowrap;
+            }
+
             .po-table {
                 width: 100%;
                 border-collapse: separate;
@@ -317,6 +365,25 @@
 
             .po-qty-breakdown .qty-p {
                 color: #f26419;
+            }
+
+            .po-grand-total {
+                margin: 1rem 1.35rem 0;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 1rem;
+                padding: 0.95rem 1rem;
+                border: 1px solid #dce5f4;
+                border-radius: 0.9rem;
+                background: #f7faff;
+            }
+
+            .po-grand-total-label {
+                font-size: 0.84rem;
+                line-height: 1.3;
+                font-weight: 800;
+                color: #0f2f78;
             }
 
             .po-table tbody td.money {
@@ -565,51 +632,85 @@
                             </div>
 
                             <div class="po-table-wrap">
-                                <table class="po-table">
-                                    <thead>
-                                        <tr>
-                                            <th style="width: 3rem;">No</th>
-                                            <th>Item Description</th>
-                                            <th style="width: 5rem;">Qty</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {{ range .POItems }}
+                                {{ if .POSections }}
+                                    {{ range .POSections }}
+                                        <section class="po-group-section">
+                                            <div class="po-group-header">
+                                                <div>
+                                                    <p class="po-group-title">{{ .GroupLabel }}</p>
+                                                    <p class="po-group-sub">List item PO berdasarkan group item supplier.</p>
+                                                </div>
+                                                <span class="po-group-count">{{ .ItemCount }} Item</span>
+                                            </div>
+
+                                            <table class="po-table">
+                                                <thead>
+                                                    <tr>
+                                                        <th style="width: 3rem;">No</th>
+                                                        <th>Item Description</th>
+                                                        <th style="width: 5rem;">Qty</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {{ range .Items }}
+                                                        <tr>
+                                                            <td class="num">{{ printf "%02d" .No }}</td>
+                                                            <td>
+                                                                <p class="po-item-title">{{ .ProductName }}</p>
+                                                                <p class="po-item-sub">PLU: <b>{{ .ProductCode }}</b></p>
+                                                            </td>
+                                                            <td class="qty">
+                                                                <span class="po-qty-breakdown">
+                                                                    {{ .QtyCarton }}<span class="qty-c">c</span> -
+                                                                    {{ .QtyBox }}<span class="qty-b">b</span> -
+                                                                    {{ .QtyPcs }}<span class="qty-p">p</span>
+                                                                </span>
+                                                            </td>
+                                                        </tr>
+                                                    {{ end }}
+                                                </tbody>
+                                                <tfoot>
+                                                    <tr>
+                                                        <td colspan="2" style="padding: 0.82rem 0.64rem; font-size: 0.82rem; font-weight: 800; color: #0f2f78; border-top: 1px solid #dce5f4; background: #f7faff;">
+                                                            Total Item Group: {{ .ItemCount }}
+                                                        </td>
+                                                        <td class="qty" style="border-top: 1px solid #dce5f4; background: #f7faff; text-align: left; padding-left: 0;">
+                                                            <span class="po-qty-breakdown">
+                                                                {{ .TotalCarton }}<span class="qty-c">c</span> -
+                                                                {{ .TotalBox }}<span class="qty-b">b</span> -
+                                                                {{ .TotalPcs }}<span class="qty-p">p</span>
+                                                            </span>
+                                                        </td>
+                                                    </tr>
+                                                </tfoot>
+                                            </table>
+                                        </section>
+                                    {{ end }}
+
+                                    <div class="po-grand-total">
+                                        <p class="po-grand-total-label">Grand Total Item: {{ .POItemCount }}</p>
+                                        <span class="po-qty-breakdown">
+                                            {{ .POTotalCarton }}<span class="qty-c">c</span> -
+                                            {{ .POTotalBox }}<span class="qty-b">b</span> -
+                                            {{ .POTotalPcs }}<span class="qty-p">p</span>
+                                        </span>
+                                    </div>
+                                {{ else }}
+                                    <table class="po-table">
+                                        <thead>
                                             <tr>
-                                                <td class="num">{{ printf "%02d" .No }}</td>
-                                                <td>
-                                                    <p class="po-item-title">{{ .ProductName }}</p>
-                                                    <p class="po-item-sub">PLU: <b>{{ .ProductCode }}</b></p>
-                                                </td>
-                                                <td class="qty">
-                                                    <span class="po-qty-breakdown">
-                                                        {{ .QtyCarton }}<span class="qty-c">c</span> -
-                                                        {{ .QtyBox }}<span class="qty-b">b</span> -
-                                                        {{ .QtyPcs }}<span class="qty-p">p</span>
-                                                    </span>
-                                                </td>
+                                                <th style="width: 3rem;">No</th>
+                                                <th>Item Description</th>
+                                                <th style="width: 5rem;">Qty</th>
                                             </tr>
-                                        {{ else }}
+                                        </thead>
+                                        <tbody>
                                             <tr>
                                                 <td colspan="3" style="text-align:center; padding: 1.2rem; font-weight: 700; color: #64748b;">Belum ada item approved untuk PO ini.</td>
                                             </tr>
-                                        {{ end }}
-                                    </tbody>
-                                    <tfoot>
-                                        <tr>
-                                            <td colspan="2" style="padding: 0.82rem 0.64rem; font-size: 0.82rem; font-weight: 800; color: #0f2f78; border-top: 1px solid #dce5f4; background: #f7faff;">
-                                                Total Item: {{ .POItemCount }}
-                                            </td>
-                                            <td class="qty" style="border-top: 1px solid #dce5f4; background: #f7faff; text-align: left; padding-left: 0;">
-                                                <span class="po-qty-breakdown">
-                                                    {{ .POTotalCarton }}<span class="qty-c">c</span> -
-                                                    {{ .POTotalBox }}<span class="qty-b">b</span> -
-                                                    {{ .POTotalPcs }}<span class="qty-p">p</span>
-                                                </span>
-                                            </td>
-                                        </tr>
-                                    </tfoot>
-                                </table>
+                                        </tbody>
+                                    </table>
+                                {{ end }}
                             </div>
 
                             <div class="po-signatures">

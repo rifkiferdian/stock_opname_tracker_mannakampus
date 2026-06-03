@@ -481,6 +481,7 @@
                                 <table class="session-table">
                                     <thead>
                                         <tr>
+                                            <th>No</th>
                                             <th>Session No</th>
                                             <th>Date</th>
                                             <th>Store</th>
@@ -490,34 +491,35 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {{ range .Sessions }}
+                                        {{ range $index, $session := .Sessions }}
                                             <tr class="transition hover:bg-[#f3f6fb]">
+                                                <td class="text-[13px] font-bold text-slate-500">{{ no $.Pagination.StartItem $index }}</td>
                                                 <td>
-                                                    <a href="/stock-check-sessions/{{ .ID }}/po-detail" class="max-w-[7rem] break-words text-[13px] font-extrabold leading-6 text-[#214a98] transition hover:text-[#153e8a] hover:underline">{{ .SessionNumber }}</a>
+                                                    <a href="/stock-check-sessions/{{ $session.ID }}/po-detail" class="max-w-[7rem] break-words text-[13px] font-extrabold leading-6 text-[#214a98] transition hover:text-[#153e8a] hover:underline">{{ $session.SessionNumber }}</a>
                                                 </td>
                                                 <td>
                                                     <div class="text-[13px] font-bold leading-5 text-slate-600">
-                                                        <p>{{ .SessionDateDay }} {{ .SessionDateMonthShort }} {{ .SessionDateYear }}</p>
+                                                        <p>{{ $session.SessionDateDay }} {{ $session.SessionDateMonthShort }} {{ $session.SessionDateYear }}</p>
                                                     </div>
                                                 </td>
                                                 <td>
-                                                    <p class="max-w-[9rem] text-[13px] font-bold leading-6 text-slate-700">{{ .StoreName }}</p>
+                                                    <p class="max-w-[9rem] text-[13px] font-bold leading-6 text-slate-700">{{ $session.StoreName }}</p>
                                                 </td>
                                                 <td>
-                                                    <p class="max-w-[9rem] text-[13px] font-medium leading-6 text-slate-500">{{ .SupplierName }}</p>
+                                                    <p class="max-w-[9rem] text-[13px] font-medium leading-6 text-slate-500">{{ $session.SupplierName }}</p>
                                                 </td>
                                                 <td>
-                                                    <span class="session-status {{ .StatusTextClass }}">
-                                                        <span class="session-status-dot {{ .StatusDotClass }}"></span>
-                                                        <span class="session-status-label {{ if eq .Status "in_progress" }}break{{ end }}">
-                                                            {{ .StatusLabel }}
+                                                    <span class="session-status {{ $session.StatusTextClass }}">
+                                                        <span class="session-status-dot {{ $session.StatusDotClass }}"></span>
+                                                        <span class="session-status-label {{ if eq $session.Status "in_progress" }}break{{ end }}">
+                                                            {{ $session.StatusLabel }}
                                                         </span>
                                                     </span>
                                                 </td>
                                                 <td>
                                                     <div class="flex flex-wrap items-center gap-2">
                                                         <a
-                                                            href="/stock-check-sessions/{{ .ID }}/po-detail"
+                                                            href="/stock-check-sessions/{{ $session.ID }}/po-detail"
                                                             class="session-action-button view">
                                                             <i class="bx bx-show text-sm"></i>
                                                             PO Detail
@@ -527,7 +529,7 @@
                                             </tr>
                                         {{ else }}
                                             <tr>
-                                                <td colspan="6" class="px-5 py-12 text-center">
+                                                <td colspan="7" class="px-5 py-12 text-center">
                                                     <div class="mx-auto max-w-md">
                                                         <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 text-slate-400">
                                                             <i class="bx bx-folder-open text-3xl"></i>

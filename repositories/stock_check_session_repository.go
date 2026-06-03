@@ -214,6 +214,42 @@ func (r *StockCheckSessionRepository) GetReviewItems(sessionID int) ([]models.St
 				COALESCE(si.approved_buy_box, 0) * COALESCE(p.pcs_per_box, 0) +
 				COALESCE(si.approved_buy_pcs, 0)
 			) AS approved_qty,
+			COALESCE(
+				(
+					SELECT COALESCE(spg.id, 0)
+					FROM product_suppliers ps
+					LEFT JOIN supplier_product_groups spg ON spg.id = ps.supplier_product_group_id
+					WHERE ps.product_id = si.product_id
+						AND ps.supplier_id = COALESCE(si.approved_supplier_id, si.suggested_supplier_id, scs.supplier_id)
+					ORDER BY ps.is_primary DESC, ps.priority_no ASC, ps.id ASC
+					LIMIT 1
+				),
+				0
+			) AS supplier_product_group_id,
+			COALESCE(
+				(
+					SELECT COALESCE(spg.group_name, '')
+					FROM product_suppliers ps
+					LEFT JOIN supplier_product_groups spg ON spg.id = ps.supplier_product_group_id
+					WHERE ps.product_id = si.product_id
+						AND ps.supplier_id = COALESCE(si.approved_supplier_id, si.suggested_supplier_id, scs.supplier_id)
+					ORDER BY ps.is_primary DESC, ps.priority_no ASC, ps.id ASC
+					LIMIT 1
+				),
+				''
+			) AS supplier_product_group_name,
+			COALESCE(
+				(
+					SELECT COALESCE(spg.sort_order, 0)
+					FROM product_suppliers ps
+					LEFT JOIN supplier_product_groups spg ON spg.id = ps.supplier_product_group_id
+					WHERE ps.product_id = si.product_id
+						AND ps.supplier_id = COALESCE(si.approved_supplier_id, si.suggested_supplier_id, scs.supplier_id)
+					ORDER BY ps.is_primary DESC, ps.priority_no ASC, ps.id ASC
+					LIMIT 1
+				),
+				0
+			) AS supplier_product_group_sort_order,
 			COALESCE(sel.supplier_name, sessup.supplier_name, '') AS selected_supplier_name,
 			COALESCE(si.checker_notes, '') AS checker_notes,
 			COALESCE(si.buyer_notes, '') AS buyer_notes,
@@ -292,6 +328,9 @@ func (r *StockCheckSessionRepository) GetReviewItems(sessionID int) ([]models.St
 			&item.ApprovedBuyBox,
 			&item.ApprovedBuyPcs,
 			&approvedQty,
+			&item.SupplierProductGroupID,
+			&item.SupplierProductGroupName,
+			&item.SupplierProductGroupSortOrder,
 			&item.SelectedSupplierName,
 			&item.CheckerNotes,
 			&item.BuyerNotes,

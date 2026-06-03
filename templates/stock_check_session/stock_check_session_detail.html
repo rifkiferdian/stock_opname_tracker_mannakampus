@@ -545,6 +545,23 @@
                 color: #059669;
             }
 
+            .unit-breakdown-text.orange .qty-value,
+            .unit-breakdown-text.approved .qty-value {
+                color: #111827;
+            }
+
+            .unit-breakdown-text .qty-c {
+                color: #16a34a;
+            }
+
+            .unit-breakdown-text .qty-b {
+                color: #2563eb;
+            }
+
+            .unit-breakdown-text .qty-p {
+                color: #f26419;
+            }
+
             .qty-hint {
                 margin-top: 0.65rem;
                 font-size: 0.7rem;
@@ -1282,6 +1299,7 @@
                                 <table class="review-table">
                                     <thead>
                                         <tr>
+                                            <th>No</th>
                                             <th>Item Details</th>
                                             <th>Shop Qty</th>
                                             <th>Warehouse Qty</th>
@@ -1292,8 +1310,9 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {{ range .Items }}
+                                        {{ range $index, $item := .Items }}
                                         <tr>
+                                            <td>{{ no $.Pagination.StartItem $index }}</td>
                                             <td>
                                                 <div class="item-cell">
                                                     <!-- <span class="item-avatar" style="background: {{ .ProductAvatarClass }};">{{ .ProductInitials }}</span> -->
@@ -1317,19 +1336,39 @@
                                                 </div>
                                             </td>
                                             <td>
-                                                <small class="unit-breakdown-text">{{ .QtyStoreBreakdownDisplay }}</small>
+                                                <small class="unit-breakdown-text">
+                                                    {{ .QtyStoreCarton }}<span class="qty-c">c</span> -
+                                                    {{ .QtyStoreBox }}<span class="qty-b">b</span> -
+                                                    {{ .QtyStorePcs }}<span class="qty-p">p</span>
+                                                </small>
                                             </td>
                                             <td>
-                                                <small class="unit-breakdown-text">{{ .QtyWarehouseBreakdownDisplay }}</small>
+                                                <small class="unit-breakdown-text">
+                                                    {{ .QtyWarehouseCarton }}<span class="qty-c">c</span> -
+                                                    {{ .QtyWarehouseBox }}<span class="qty-b">b</span> -
+                                                    {{ .QtyWarehousePcs }}<span class="qty-p">p</span>
+                                                </small>
                                             </td>
                                             <td>
-                                                <small class="unit-breakdown-text">{{ .TotalQtyBreakdownDisplay }}</small>
+                                                <small class="unit-breakdown-text">
+                                                    {{ .TotalQtyCarton }}<span class="qty-c">c</span> -
+                                                    {{ .TotalQtyBox }}<span class="qty-b">b</span> -
+                                                    {{ .TotalQtyPcs }}<span class="qty-p">p</span>
+                                                </small>
                                             </td>
                                             <td>
-                                                <small class="unit-breakdown-text orange">{{ .SuggestBuyBreakdownDisplay }}</small>
+                                                <small class="unit-breakdown-text orange">
+                                                    <span class="qty-value">{{ .SuggestBuyCarton }}</span><span class="qty-c">c</span> -
+                                                    <span class="qty-value">{{ .SuggestBuyBox }}</span><span class="qty-b">b</span> -
+                                                    <span class="qty-value">{{ .SuggestBuyPcs }}</span><span class="qty-p">p</span>
+                                                </small>
                                             </td>
                                             <td>
-                                                <small class="unit-breakdown-text approved">{{ .ApprovedBuyBreakdownDisplay }}</small>
+                                                <small class="unit-breakdown-text approved">
+                                                    <span class="qty-value">{{ .ApprovedBuyCarton }}</span><span class="qty-c">c</span> -
+                                                    <span class="qty-value">{{ .ApprovedBuyBox }}</span><span class="qty-b">b</span> -
+                                                    <span class="qty-value">{{ .ApprovedBuyPcs }}</span><span class="qty-p">p</span>
+                                                </small>
                                             </td>
                                             <td>
                                                 <span class="status-pill {{ .StatusBadgeClass }}">{{ .StatusLabel }}</span>
@@ -1337,7 +1376,7 @@
                                         </tr>
                                         {{ else }}
                                         <tr>
-                                            <td colspan="7" class="px-5 py-12 text-center">
+                                            <td colspan="8" class="px-5 py-12 text-center">
                                                 <div class="mx-auto max-w-md">
                                                     <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 text-slate-400">
                                                         <i class="bx bx-clipboard text-3xl"></i>
