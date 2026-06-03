@@ -800,6 +800,9 @@
                                                     <input id="scan_qty_pcs" name="qty_pcs" type="number" step="1" min="0" value="{{ .ScanForm.QtyPcs }}" class="qty-field" inputmode="numeric">
                                                 </div>
                                             </div>
+                                            <center>
+                                                <p class="mt-1 text-xs font-semibold text-slate-500 sm:text-sm">1 carton = {{ .Item.PcsPerCarton }} pcs</p>
+                                            </center>
                                         </div>
                                     </section>
 

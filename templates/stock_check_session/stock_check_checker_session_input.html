@@ -1235,6 +1235,7 @@
                                         <div class="compact-item-meta">
                                             <h3 class="compact-item-title text-sm font-extrabold text-slate-800">{{ .ProductName }}</h3>
                                             <p class="mt-0.5 truncate text-[11px] font-semibold text-slate-400">PLU : {{ .ProductCode }}</p>
+                                            <p class="mt-0.5 text-[11px] font-semibold text-slate-500">1 carton = {{ .PcsPerCarton }} pcs</p>
                                         </div>
                                         <div class="flex flex-col items-end gap-2">
                                             <span class="item-status-badge px-2.5 py-1 text-[10px] {{ if eq .Status "submitted" }}item-status-badge-submitted{{ else if eq .Status "approved" }}item-status-badge-approved{{ else if eq .StatusLabel "Unknown" }}item-status-badge-unknown{{ else }}item-status-badge-default{{ end }}">{{ .StatusLabel }}</span>
@@ -1317,6 +1318,7 @@
                                             <td class="px-5 py-4">
                                                 <p class="font-extrabold text-slate-800">{{ .ProductName }}</p>
                                                 <p class="mt-1 text-xs font-semibold text-slate-400">{{ .ProductCode }} &middot; {{ .UnitName }}</p>
+                                                <p class="mt-1 text-xs font-semibold text-slate-500">1 carton = {{ .PcsPerCarton }} pcs</p>
                                             </td>
                                             <td class="px-5 py-4 font-semibold text-slate-700">{{ if .HasBarcode }}{{ .BarcodeSummary }}{{ else }}-{{ end }}</td>
                                             <td class="px-5 py-4 font-extrabold {{ if .StoreChecked }}desktop-qty-checked{{ else }}text-[#153e8a]{{ end }}">
