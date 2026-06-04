@@ -427,6 +427,12 @@ type stockCheckSessionPOGroupSection struct {
 	Items       []stockCheckSessionPOItemView
 }
 
+type stockCheckSessionPOGroupFilterOption struct {
+	Value     string
+	Label     string
+	ItemCount int
+}
+
 func StockCheckSessionPODetail(c *gin.Context) {
 	sessionID, err := strconv.Atoi(c.Param("id"))
 	if err != nil || sessionID <= 0 {
@@ -434,6 +440,7 @@ func StockCheckSessionPODetail(c *gin.Context) {
 		return
 	}
 	poSortBy := sanitizeStockCheckSessionPOSortBy(c.Query("sort_by"))
+	selectedProductGroup := sanitizeStockCheckSessionPOProductGroupFilter(c.Query("product_group"))
 
 	sessionService := buildStockCheckSessionService()
 	pageData, err := sessionService.GetSessionDetailPage(sessionID, 1, 0, models.StockCheckSessionDetailFilter{})
@@ -489,12 +496,7 @@ func StockCheckSessionPODetail(c *gin.Context) {
 		buyerApproverName = "-"
 	}
 
-	items := make([]stockCheckSessionPOItemView, 0, len(pageData.Items))
-	subtotal := 0.0
-	totalQty := 0.0
-	totalCarton := 0
-	totalBox := 0
-	totalPcs := 0
+	allItems := make([]stockCheckSessionPOItemView, 0, len(pageData.Items))
 	for _, item := range pageData.Items {
 		if item.Status != "approved" && item.Status != "po_created" {
 			continue
@@ -505,13 +507,8 @@ func StockCheckSessionPODetail(c *gin.Context) {
 			unitPrice = item.ApprovedLineValue / item.ApprovedBuyQty
 		}
 		lineSubtotal := item.ApprovedLineValue
-		subtotal += lineSubtotal
-		totalQty += item.ApprovedBuyQty
-		totalCarton += item.ApprovedBuyCarton
-		totalBox += item.ApprovedBuyBox
-		totalPcs += item.ApprovedBuyPcs
 
-		items = append(items, stockCheckSessionPOItemView{
+		allItems = append(allItems, stockCheckSessionPOItemView{
 			ProductName:         item.ProductName,
 			ProductCode:         item.ProductCode,
 			UnitName:            item.UnitName,
@@ -526,6 +523,29 @@ func StockCheckSessionPODetail(c *gin.Context) {
 			GroupName:           strings.TrimSpace(item.SupplierProductGroupName),
 			GroupSortOrder:      item.SupplierProductGroupSortOrder,
 		})
+	}
+
+	groupOptions := buildStockCheckSessionPOGroupFilterOptions(allItems)
+	items := filterStockCheckSessionPOItemsByGroup(allItems, selectedProductGroup)
+	subtotal := 0.0
+	totalQty := 0.0
+	totalCarton := 0
+	totalBox := 0
+	totalPcs := 0
+	for _, item := range items {
+		totalCarton += item.QtyCarton
+		totalBox += item.QtyBox
+		totalPcs += item.QtyPcs
+	}
+	for _, item := range pageData.Items {
+		if item.Status != "approved" && item.Status != "po_created" {
+			continue
+		}
+		if !stockCheckSessionPOItemMatchesGroup(item.SupplierProductGroupID, strings.TrimSpace(item.SupplierProductGroupName), selectedProductGroup) {
+			continue
+		}
+		subtotal += item.ApprovedLineValue
+		totalQty += item.ApprovedBuyQty
 	}
 
 	poSections := buildStockCheckSessionPOSections(items, poSortBy)
@@ -547,7 +567,9 @@ func StockCheckSessionPODetail(c *gin.Context) {
 		"BuyerApproverName":       buyerApproverName,
 		"POItems":                 items,
 		"POSections":              poSections,
+		"POGroupOptions":          groupOptions,
 		"POSortBy":                poSortBy,
+		"SelectedPOProductGroup":  selectedProductGroup,
 		"POItemCount":             len(items),
 		"POTotalQtyDisplay":       formatStockCheckPOWholeNumber(totalQty),
 		"POTotalBreakdownDisplay": formatStockCheckPOBreakdown(totalCarton, totalBox, totalPcs),
@@ -671,6 +693,84 @@ func sanitizeStockCheckSessionPOSortBy(value string) string {
 	default:
 		return "name_asc"
 	}
+}
+
+func sanitizeStockCheckSessionPOProductGroupFilter(value string) string {
+	value = strings.TrimSpace(value)
+	if value == "" {
+		return ""
+	}
+	if value == "ungrouped" {
+		return value
+	}
+
+	groupID, err := strconv.Atoi(value)
+	if err != nil || groupID <= 0 {
+		return ""
+	}
+
+	return strconv.Itoa(groupID)
+}
+
+func filterStockCheckSessionPOItemsByGroup(items []stockCheckSessionPOItemView, filter string) []stockCheckSessionPOItemView {
+	filter = sanitizeStockCheckSessionPOProductGroupFilter(filter)
+	if filter == "" {
+		return items
+	}
+
+	filtered := make([]stockCheckSessionPOItemView, 0, len(items))
+	for _, item := range items {
+		if stockCheckSessionPOItemMatchesGroup(item.GroupID, item.GroupName, filter) {
+			filtered = append(filtered, item)
+		}
+	}
+
+	return filtered
+}
+
+func stockCheckSessionPOItemMatchesGroup(groupID int, groupName string, filter string) bool {
+	if filter == "" {
+		return true
+	}
+	groupName = strings.TrimSpace(groupName)
+	if filter == "ungrouped" {
+		return groupID <= 0 || groupName == ""
+	}
+
+	filterGroupID, err := strconv.Atoi(filter)
+	if err != nil || filterGroupID <= 0 {
+		return true
+	}
+
+	return groupID == filterGroupID
+}
+
+func buildStockCheckSessionPOGroupFilterOptions(items []stockCheckSessionPOItemView) []stockCheckSessionPOGroupFilterOption {
+	if len(items) == 0 {
+		return []stockCheckSessionPOGroupFilterOption{}
+	}
+
+	sections := buildStockCheckSessionPOSections(items, "name_asc")
+	options := make([]stockCheckSessionPOGroupFilterOption, 0, len(sections)+1)
+	options = append(options, stockCheckSessionPOGroupFilterOption{
+		Value:     "",
+		Label:     "Semua Group Item",
+		ItemCount: len(items),
+	})
+
+	for _, section := range sections {
+		value := strconv.Itoa(section.GroupID)
+		if section.Ungrouped {
+			value = "ungrouped"
+		}
+		options = append(options, stockCheckSessionPOGroupFilterOption{
+			Value:     value,
+			Label:     section.GroupLabel,
+			ItemCount: section.ItemCount,
+		})
+	}
+
+	return options
 }
 
 func StockCheckSessionReviewItemUpdate(c *gin.Context) {
@@ -1977,7 +2077,7 @@ func applyDefaultStockCheckCheckerCreateForm(form models.StockCheckSession, supp
 
 func sanitizeStockCheckSessionStatusFilter(value string) string {
 	switch strings.TrimSpace(value) {
-	case "draft", "in_progress", "submitted", "reviewed", "closed", "po", "cancelled":
+	case "draft", "in_progress", "submitted", "reviewed", "closed", "inprogress_reviewed", "po", "cancelled":
 		return value
 	default:
 		return ""

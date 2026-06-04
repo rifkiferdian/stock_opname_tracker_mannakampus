@@ -613,8 +613,8 @@ func (s *StockCheckSessionService) UpdateSessionStatusForPORecap(sessionID int, 
 	}
 
 	status = sanitizeStockCheckSessionStatus(status)
-	if status != "closed" && status != "po" && status != "reviewed" {
-		return errors.New("status harus reviewed, closed, atau po")
+	if status != "closed" && status != "po" && status != "reviewed" && status != "inprogress_po" && status != "inprogress_reviewed" {
+		return errors.New("status harus reviewed, closed, inprogress_reviewed, inprogress_po, atau po")
 	}
 
 	exists, err := s.Repo.ExistsByID(sessionID)
@@ -641,7 +641,7 @@ func sanitizeStockCheckSessionDate(value string) string {
 
 func sanitizeStockCheckSessionStatus(value string) string {
 	switch strings.TrimSpace(value) {
-	case "draft", "in_progress", "submitted", "reviewed", "closed", "po", "cancelled":
+	case "draft", "in_progress", "submitted", "reviewed", "closed", "inprogress_reviewed", "inprogress_po", "po", "cancelled":
 		return value
 	default:
 		return ""
@@ -733,8 +733,12 @@ func stockCheckSessionStageLabel(status string) string {
 		return "Preparing Review"
 	case "in_progress", "submitted", "reviewed":
 		return "Currently Reviewing"
+	case "inprogress_reviewed":
+		return "Review In Progress"
 	case "closed":
 		return "Finalized Session"
+	case "inprogress_po":
+		return "PO In Progress"
 	case "po":
 		return "PO Completed"
 	case "cancelled":
@@ -750,6 +754,10 @@ func stockCheckSessionDetailStatusBadgeClass(status string) string {
 		return "session-badge-success"
 	case "po":
 		return "session-badge-success"
+	case "inprogress_po":
+		return "session-badge-warm"
+	case "inprogress_reviewed":
+		return "session-badge-warm"
 	case "cancelled":
 		return "session-badge-danger"
 	case "reviewed", "submitted", "in_progress":

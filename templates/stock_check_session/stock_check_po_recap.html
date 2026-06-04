@@ -320,6 +320,14 @@
                 background: #8b5cf6;
             }
 
+            .session-status-text-inprogress-po {
+                color: #B53471;
+            }
+
+            .session-status-dot-inprogress-po {
+                background: #B53471;
+            }
+
             .session-status-text-cancelled {
                 color: #e11d48;
             }
@@ -509,8 +517,8 @@
                                                     <p class="max-w-[9rem] text-[13px] font-medium leading-6 text-slate-500">{{ $session.SupplierName }}</p>
                                                 </td>
                                                 <td>
-                                                    <span class="session-status {{ $session.StatusTextClass }}">
-                                                        <span class="session-status-dot {{ $session.StatusDotClass }}"></span>
+                                                    <span class="session-status {{ if eq $session.Status "inprogress_po" }}session-status-text-inprogress-po{{ else }}{{ $session.StatusTextClass }}{{ end }}">
+                                                        <span class="session-status-dot {{ if eq $session.Status "inprogress_po" }}session-status-dot-inprogress-po{{ else }}{{ $session.StatusDotClass }}{{ end }}"></span>
                                                         <span class="session-status-label {{ if eq $session.Status "in_progress" }}break{{ end }}">
                                                             {{ $session.StatusLabel }}
                                                         </span>

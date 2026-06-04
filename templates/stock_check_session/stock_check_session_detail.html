@@ -378,6 +378,28 @@
                 border-color: var(--line);
             }
 
+            .tool-button.review-status {
+                background: #fff7ed;
+                color: #c2410c;
+                border-color: #fed7aa;
+            }
+
+            .tool-button.review-status:hover {
+                background: #ffedd5;
+                color: #9a3412;
+            }
+
+            .tool-button.review-finish {
+                background: #ecfdf3;
+                color: #047857;
+                border-color: #a7f3d0;
+            }
+
+            .tool-button.review-finish:hover {
+                background: #d1fae5;
+                color: #065f46;
+            }
+
             .tool-button.emphasis {
                 background: linear-gradient(180deg, #153f95 0%, #0d2d79 100%);
                 color: #ffffff;
@@ -970,6 +992,12 @@
                 color: #123d8f;
             }
 
+            .summary-cta.progress {
+                margin-top: 0;
+                background: #fff7ed;
+                color: #c2410c;
+            }
+
             .summary-cta[disabled] {
                 cursor: not-allowed;
                 opacity: 0.55;
@@ -1284,6 +1312,22 @@
                             </div>
 
                             <div class="toolbar-group">
+                                <form method="post" action="/stock-checker/po-recap/{{ .Session.ID }}/status" data-session-status-form data-status-label="In Progress Review" data-status-message="Status sesi akan ditandai sedang dalam proses review agar user lain tahu sesi ini sedang dikerjakan buyer.">
+                                    <input type="hidden" name="status" value="inprogress_reviewed">
+                                    <input type="hidden" name="redirect_to" value="{{ .CurrentURL }}">
+                                    <button type="submit" class="tool-button review-status" {{ if or (eq .Session.Status "po") (eq .Session.Status "reviewed") }}disabled aria-disabled="true"{{ end }}>
+                                        <i class="bx bx-loader-circle"></i>
+                                        {{ if eq .Session.Status "inprogress_reviewed" }}Sedang Progress Review{{ else }}Tandai Progress Review{{ end }}
+                                    </button>
+                                </form>
+                                <form method="post" action="/stock-checker/po-recap/{{ .Session.ID }}/status" data-session-status-form data-status-label="Reviewed" data-status-message="Status sesi akan diubah menjadi Reviewed dan akan muncul di PO Buyer.">
+                                    <input type="hidden" name="status" value="reviewed">
+                                    <input type="hidden" name="redirect_to" value="{{ .CurrentURL }}">
+                                    <button type="submit" class="tool-button review-finish" {{ if eq .Session.Status "po" }}disabled aria-disabled="true"{{ end }}>
+                                        <i class="bx bx-check-circle"></i>
+                                        Selesai &amp; Pindah ke PO Buyer
+                                    </button>
+                                </form>
                                 <form method="post" action="/stock-check-sessions/{{ .Session.ID }}/apply-all-submitted" onsubmit="return confirm('Apply semua item submitted di sesi ini? Nilai Suggest (carton/box/pcs) akan dipindah ke Final Approve.');">
                                     <input type="hidden" name="redirect_to" value="{{ .CurrentURL }}">
                                     <button type="submit" class="tool-button emphasis">
@@ -1451,16 +1495,15 @@
                                     <strong>{{ .Session.FinalApprovedValueDisplay }}</strong>
                                 </div> -->
 
-                                <form method="post" action="/stock-checker/po-recap/{{ .Session.ID }}/status" data-close-session-form>
-                                    <input type="hidden" name="status" value="reviewed">
-                                    <input type="hidden" name="redirect_to" value="{{ .CurrentURL }}">
-                                    <button type="submit" class="summary-cta" {{ if eq .Session.Status "po" }}disabled aria-disabled="true"{{ end }}>Selesai &amp; Pindah ke PO Buyer</button>
-                                </form>
                                 <p class="summary-caption">
                                     {{ if eq .Session.Status "po" }}
                                     Status sesi sudah "PO" dan tidak bisa diubah lagi.
+                                    {{ else if eq .Session.Status "reviewed" }}
+                                    Status sesi sudah "Reviewed" dan siap diteruskan ke PO Buyer.
+                                    {{ else if eq .Session.Status "inprogress_reviewed" }}
+                                    Status sesi sedang "In Progress Review" agar user lain tahu sesi ini sedang direview.
                                     {{ else }}
-                                    Dengan mengeklik tombol ini, status sesi akan diubah menjadi "Reviewed". Pastikan semua item sudah benar sebelum melanjutkan ke tahap PO Buyer.
+                                    Gunakan tombol progress saat review masih berjalan, lalu ubah ke "Reviewed" setelah final review selesai.
                                     {{ end }}
                                 </p>
                             </article>
@@ -1534,7 +1577,7 @@
                 var overlay = document.getElementById('sidebar-overlay');
                 var toggleButtons = document.querySelectorAll('[data-sidebar-toggle]');
                 var reviewModalEl = document.getElementById('reviewItemEditModal');
-                var closeSessionForm = document.querySelector('[data-close-session-form]');
+                var sessionStatusForms = document.querySelectorAll('[data-session-status-form]');
 
                 function closeSidebar() {
                     if (!sidebar) return;
@@ -1627,15 +1670,17 @@
                 })();
                 {{ end }}
 
-                if (closeSessionForm) {
+                sessionStatusForms.forEach(function (closeSessionForm) {
                     closeSessionForm.addEventListener('submit', function (event) {
                         event.preventDefault();
+                        var statusLabel = closeSessionForm.getAttribute('data-status-label') || 'Reviewed';
+                        var statusMessage = closeSessionForm.getAttribute('data-status-message') || 'Status sesi akan diperbarui.';
                         Swal.fire({
-                            title: 'Selesai sesi ini?',
-                            text: 'Status sesi akan diubah menjadi Reviewed dan akan muncul di PO Buyer.',
+                            title: 'Ubah status jadi ' + statusLabel + '?',
+                            text: statusMessage,
                             icon: 'warning',
                             showCancelButton: true,
-                            confirmButtonText: 'Ya, Selesai sesi',
+                            confirmButtonText: 'Ya, ubah status',
                             cancelButtonText: 'Batal',
                             confirmButtonColor: '#143d8f',
                             cancelButtonColor: '#64748b'
@@ -1645,7 +1690,7 @@
                             }
                         });
                     });
-                }
+                });
             });
         </script>
     </body>

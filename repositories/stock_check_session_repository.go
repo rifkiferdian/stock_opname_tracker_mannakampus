@@ -1517,8 +1517,12 @@ func stockCheckSessionStatusMeta(value string) (string, string, string) {
 		return "Submitted", "session-status-text-submitted", "session-status-dot-submitted"
 	case "reviewed":
 		return "Reviewed", "session-status-text-reviewed", "session-status-dot-reviewed"
+	case "inprogress_reviewed":
+		return "In Progress Review", "session-status-text-in-progress", "session-status-dot-in-progress"
 	case "closed":
 		return "Closed", "session-status-text-closed", "session-status-dot-closed"
+	case "inprogress_po":
+		return "In Progress PO", "session-status-text-po", "session-status-dot-po"
 	case "po":
 		return "PO", "session-status-text-po", "session-status-dot-po"
 	case "cancelled":

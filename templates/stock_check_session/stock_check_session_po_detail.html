@@ -68,13 +68,37 @@
             }
 
             .po-sort-form {
-                display: inline-flex;
+                display: flex;
+                flex-wrap: wrap;
                 align-items: center;
                 gap: 0.55rem;
                 border: 1px solid #dbe4f3;
                 border-radius: 0.75rem;
                 background: #ffffff;
                 padding: 0.45rem 0.6rem;
+            }
+
+            .po-toolbar {
+                display: flex;
+                flex-wrap: wrap;
+                align-items: stretch;
+                justify-content: space-between;
+                gap: 0.75rem;
+            }
+
+            .po-toolbar-group {
+                display: flex;
+                flex-wrap: wrap;
+                align-items: center;
+                gap: 0.65rem;
+            }
+
+            .po-toolbar-group.filters {
+                justify-content: flex-start;
+            }
+
+            .po-toolbar-group.actions {
+                justify-content: flex-end;
             }
 
             .po-sort-label {
@@ -98,10 +122,75 @@
                 outline: none;
             }
 
-            .po-status-edit-form {
+            .po-status-summary {
+                display: flex;
+                flex-wrap: wrap;
+                align-items: center;
+                gap: 0.8rem;
+                padding: 0.95rem 1rem;
+                border: 1px solid #dbe4f3;
+                border-radius: 0.9rem;
+                background: linear-gradient(180deg, #f8fbff 0%, #f1f6ff 100%);
+            }
+
+            .po-status-summary.badge-progress {
+                border-color: #fed7aa;
+                background: linear-gradient(180deg, #fff7ed 0%, #ffedd5 100%);
+            }
+
+            .po-status-summary.badge-po {
+                border-color: #c7d2fe;
+                background: linear-gradient(180deg, #eef2ff 0%, #e0e7ff 100%);
+            }
+
+            .po-status-pill {
                 display: inline-flex;
                 align-items: center;
                 gap: 0.45rem;
+                padding: 0.5rem 0.8rem;
+                border-radius: 999px;
+                font-size: 0.78rem;
+                font-weight: 800;
+                letter-spacing: 0.04em;
+                text-transform: uppercase;
+                white-space: nowrap;
+            }
+
+            .po-status-pill.progress {
+                background: #f26419;
+                color: #ffffff;
+            }
+
+            .po-status-pill.po {
+                background: #4338ca;
+                color: #ffffff;
+            }
+
+            .po-status-pill.default {
+                background: #e2e8f0;
+                color: #334155;
+            }
+
+            .po-status-summary-copy {
+                font-size: 0.88rem;
+                line-height: 1.45;
+                font-weight: 700;
+                color: #475569;
+            }
+
+            .po-filter-button {
+                min-height: 2.2rem;
+                border: 1px solid #dbe4f3;
+                background: #f7f9fd;
+                color: #223a61;
+            }
+
+            .po-filter-button:hover {
+                background: #eef3fb;
+            }
+
+            .po-status-edit-form {
+                display: flex;
             }
 
             .po-action-button.status {
@@ -112,6 +201,16 @@
 
             .po-action-button.status:hover {
                 background: #ede9fe;
+            }
+
+            .po-action-button.progress {
+                border: 1px solid #fed7aa;
+                background: #fff7ed;
+                color: #c2410c;
+            }
+
+            .po-action-button.progress:hover {
+                background: #ffedd5;
             }
 
             .po-action-button {
@@ -251,16 +350,16 @@
                 gap: 0.8rem;
                 margin-bottom: 0.6rem;
                 padding: 0.85rem 1rem;
-                border: 1px solid #dbe4f3;
+                border: 1px solid #f7c59f;
                 border-radius: 0.85rem;
-                background: linear-gradient(180deg, #f9fbff 0%, #f3f7ff 100%);
+                background: linear-gradient(180deg, #fff7ed 0%, #ffedd5 100%);
             }
 
             .po-group-title {
                 font-size: 0.88rem;
                 line-height: 1.2;
                 font-weight: 800;
-                color: #0f2f78;
+                color: #c2410c;
             }
 
             .po-group-sub {
@@ -268,7 +367,7 @@
                 font-size: 0.75rem;
                 line-height: 1.35;
                 font-weight: 700;
-                color: #64748b;
+                color: #9a3412;
             }
 
             .po-group-count {
@@ -278,8 +377,8 @@
                 min-width: 4.25rem;
                 padding: 0.45rem 0.75rem;
                 border-radius: 999px;
-                background: #e0ebff;
-                color: #123d8d;
+                background: #f26419;
+                color: #ffffff;
                 font-size: 0.72rem;
                 line-height: 1;
                 font-weight: 800;
@@ -534,6 +633,24 @@
                 .po-signatures {
                     grid-template-columns: minmax(0, 1fr);
                 }
+
+                .po-toolbar {
+                    justify-content: stretch;
+                }
+
+                .po-toolbar-group,
+                .po-status-edit-form {
+                    width: 100%;
+                }
+
+                .po-toolbar-group.filters,
+                .po-toolbar-group.actions {
+                    justify-content: stretch;
+                }
+
+                .po-sort-form {
+                    width: 100%;
+                }
             }
         </style>
     </head>
@@ -553,32 +670,84 @@
                             </a>
                         </div>
 
-                        <section class="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+                        <section class="flex flex-col gap-4">
                             <div>
                                 <h1 class="text-xl font-extrabold leading-tight text-[#001e62] sm:text-2xl">Purchase Order Detail</h1>
                                 <p class="mt-1 text-sm font-medium text-[#566173]">Review and approve procurement document </p>
                             </div>
 
-                            <div class="flex flex-wrap items-center gap-3">
-                                <form method="get" action="/stock-check-sessions/{{ .Session.ID }}/po-detail" class="po-sort-form">
-                                    <label for="sort_by" class="po-sort-label">Order By</label>
-                                    <select id="sort_by" name="sort_by" class="po-sort-select" onchange="this.form.submit()">
-                                        <option value="name_asc" {{ if eq .POSortBy "name_asc" }}selected{{ end }}>Nama Product A-Z</option>
-                                        <option value="name_desc" {{ if eq .POSortBy "name_desc" }}selected{{ end }}>Nama Product Z-A</option>
-                                    </select>
-                                </form>
-                                <form method="post" action="/stock-checker/po-recap/{{ .Session.ID }}/status" class="po-status-edit-form" data-po-status-form>
-                                    <input type="hidden" name="redirect_to" value="{{ .CurrentDetailURL }}">
-                                    <input type="hidden" name="status" value="po">
-                                    <button type="submit" class="po-action-button status">
-                                        <i class="bx bx-save text-base"></i>
-                                        {{ if eq .Session.Status "po" }}Status Sudah PO{{ else }}Tandai Sudah PO{{ end }}
+                            <div class="po-status-summary {{ if eq .Session.Status "inprogress_po" }}badge-progress{{ else if eq .Session.Status "po" }}badge-po{{ end }}">
+                                <span class="po-status-pill {{ if eq .Session.Status "inprogress_po" }}progress{{ else if eq .Session.Status "po" }}po{{ else }}default{{ end }}">
+                                    <i class="bx {{ if eq .Session.Status "inprogress_po" }}bx-loader-circle{{ else if eq .Session.Status "po" }}bx-badge-check{{ else }}bx-info-circle{{ end }} text-base"></i>
+                                    {{ .Session.StatusLabel }}
+                                </span>
+                                <p class="po-status-summary-copy">
+                                    {{ if eq .Session.Status "inprogress_po" }}
+                                        Session SO ini sedang dalam proses pembuatan PO, sehingga user lain tahu dokumen sedang dikerjakan.
+                                    {{ else if eq .Session.Status "po" }}
+                                        Session SO ini sudah selesai dibuatkan PO.
+                                    {{ else if eq .Session.Status "reviewed" }}
+                                        Session SO ini sudah direview dan siap dilanjutkan ke proses PO.
+                                    {{ else if eq .Session.Status "closed" }}
+                                        Session SO ini sudah ditutup dan siap dilanjutkan ke proses PO jika diperlukan.
+                                    {{ else }}
+                                        Status session saat ini adalah {{ .Session.StatusLabel }}.
+                                    {{ end }}
+                                </p>
+                            </div>
+
+                            <div class="po-toolbar">
+                                <div class="po-toolbar-group filters">
+                                    <form method="get" action="/stock-check-sessions/{{ .Session.ID }}/po-detail" class="po-sort-form">
+                                        <input type="hidden" name="product_group" value="{{ .SelectedPOProductGroup }}">
+                                        <label for="sort_by" class="po-sort-label">Order By</label>
+                                        <select id="sort_by" name="sort_by" class="po-sort-select" onchange="this.form.submit()">
+                                            <option value="name_asc" {{ if eq .POSortBy "name_asc" }}selected{{ end }}>Nama Product A-Z</option>
+                                            <option value="name_desc" {{ if eq .POSortBy "name_desc" }}selected{{ end }}>Nama Product Z-A</option>
+                                        </select>
+                                    </form>
+                                    <form method="get" action="/stock-check-sessions/{{ .Session.ID }}/po-detail" class="po-sort-form">
+                                        <input type="hidden" name="sort_by" value="{{ .POSortBy }}">
+                                        <label for="product_group" class="po-sort-label">Group Item</label>
+                                        <select id="product_group" name="product_group" class="po-sort-select">
+                                            {{ range .POGroupOptions }}
+                                                <option value="{{ .Value }}" {{ if eq $.SelectedPOProductGroup .Value }}selected{{ end }}>{{ .Label }} ({{ .ItemCount }})</option>
+                                            {{ end }}
+                                        </select>
+                                        <button type="submit" class="po-action-button po-filter-button">
+                                            <i class="bx bx-filter-alt text-base"></i>
+                                            Filter
+                                        </button>
+                                        {{ if .SelectedPOProductGroup }}
+                                            <a href="/stock-check-sessions/{{ .Session.ID }}/po-detail?sort_by={{ .POSortBy }}" class="po-action-button po-filter-button">
+                                                <i class="bx bx-reset text-base"></i>
+                                                Reset
+                                            </a>
+                                        {{ end }}
+                                    </form>
+                                </div>
+                                <div class="po-toolbar-group actions">
+                                    <form method="post" action="/stock-checker/po-recap/{{ .Session.ID }}/status" class="po-status-edit-form" data-po-status-form data-status-label="In Progress PO" data-status-message="Status sesi akan ditandai sedang dalam proses PO agar user lain mengetahui sedang diproses.">
+                                        <input type="hidden" name="redirect_to" value="{{ .CurrentDetailURL }}">
+                                        <input type="hidden" name="status" value="inprogress_po">
+                                        <button type="submit" class="po-action-button progress">
+                                            <i class="bx bx-loader-circle text-base"></i>
+                                            {{ if eq .Session.Status "inprogress_po" }}Sedang Progress PO{{ else }}Tandai Progress PO{{ end }}
+                                        </button>
+                                    </form>
+                                    <form method="post" action="/stock-checker/po-recap/{{ .Session.ID }}/status" class="po-status-edit-form" data-po-status-form data-status-label="PO" data-status-message="Status sesi akan ditandai sebagai PO.">
+                                        <input type="hidden" name="redirect_to" value="{{ .CurrentDetailURL }}">
+                                        <input type="hidden" name="status" value="po">
+                                        <button type="submit" class="po-action-button status">
+                                            <i class="bx bx-save text-base"></i>
+                                            {{ if eq .Session.Status "po" }}Status Sudah PO{{ else }}Tandai Sudah PO{{ end }}
+                                        </button>
+                                    </form>
+                                    <button type="button" onclick="window.print()" class="po-action-button print">
+                                        <i class="bx bx-printer text-base"></i>
+                                        Print to PDF
                                     </button>
-                                </form>
-                                <button type="button" onclick="window.print()" class="inline-flex items-center justify-center gap-2 rounded-md border border-[#001e62] bg-white px-5 py-3 text-sm font-extrabold text-[#001e62] transition hover:bg-slate-50">
-                                    <i class="bx bx-printer text-base"></i>
-                                    Print to PDF
-                                </button>
+                                </div>
                                 <!-- <a href="{{ if .Supplier.Email }}mailto:{{ .Supplier.Email }}?subject={{ .PONumberDisplay }}&body=Berikut PO detail untuk ditinjau.{{ else }}#{{ end }}" class="inline-flex items-center justify-center gap-2 rounded-md bg-[#001e62] px-5 py-3 text-sm font-extrabold text-white shadow-md shadow-[#001e62]/20 transition hover:bg-[#002f95]">
                                     <i class="bx bx-send text-base"></i>
                                     Send to Supplier
@@ -594,6 +763,15 @@
                         {{ if .Error }}
                             <section class="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-700">
                                 {{ .Error }}
+                            </section>
+                        {{ end }}
+
+                        {{ if .SelectedPOProductGroup }}
+                            <section class="rounded-xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm font-semibold text-sky-700">
+                                Filter group item aktif:
+                                {{ range .POGroupOptions }}
+                                    {{ if eq $.SelectedPOProductGroup .Value }}{{ .Label }}{{ end }}
+                                {{ end }}
                             </section>
                         {{ end }}
 
@@ -767,13 +945,14 @@
                     overlay.addEventListener('click', closeSidebar);
                 }
 
-                var poStatusForm = document.querySelector('[data-po-status-form]');
-                if (poStatusForm) {
+                document.querySelectorAll('[data-po-status-form]').forEach(function (poStatusForm) {
                     poStatusForm.addEventListener('submit', function (event) {
                         event.preventDefault();
+                        var statusLabel = poStatusForm.getAttribute('data-status-label') || 'PO';
+                        var statusMessage = poStatusForm.getAttribute('data-status-message') || 'Status sesi akan ditandai sebagai PO.';
                         Swal.fire({
-                            title: 'Ubah status jadi PO?',
-                            text: 'Status sesi akan ditandai sebagai PO.',
+                            title: 'Ubah status jadi ' + statusLabel + '?',
+                            text: statusMessage,
                             icon: 'question',
                             showCancelButton: true,
                             confirmButtonText: 'Ya, ubah sekarang',
@@ -786,7 +965,7 @@
                             }
                         });
                     });
-                }
+                });
             });
         </script>
         <script src="/assets/vendor/sweetalert2/sweetalert2.all.min.js"></script>
