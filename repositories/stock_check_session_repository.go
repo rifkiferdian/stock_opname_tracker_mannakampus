@@ -253,6 +253,7 @@ func (r *StockCheckSessionRepository) GetReviewItems(sessionID int) ([]models.St
 			COALESCE(sel.supplier_name, sessup.supplier_name, '') AS selected_supplier_name,
 			COALESCE(si.checker_notes, '') AS checker_notes,
 			COALESCE(si.buyer_notes, '') AS buyer_notes,
+			COALESCE(si.po_item_processed, 0) AS po_item_processed,
 			si.condition_status,
 			si.status,
 			COALESCE(
@@ -293,14 +294,15 @@ func (r *StockCheckSessionRepository) GetReviewItems(sessionID int) ([]models.St
 	var items []models.StockCheckSessionReviewItem
 	for rows.Next() {
 		var (
-			item           models.StockCheckSessionReviewItem
-			qtyStore       sql.NullFloat64
-			qtyWarehouse   sql.NullFloat64
-			totalQty       sql.NullFloat64
-			systemTotalQty sql.NullFloat64
-			suggestQty     sql.NullFloat64
-			approvedQty    sql.NullFloat64
-			unitPrice      sql.NullFloat64
+			item            models.StockCheckSessionReviewItem
+			qtyStore        sql.NullFloat64
+			qtyWarehouse    sql.NullFloat64
+			totalQty        sql.NullFloat64
+			systemTotalQty  sql.NullFloat64
+			suggestQty      sql.NullFloat64
+			approvedQty     sql.NullFloat64
+			unitPrice       sql.NullFloat64
+			poItemProcessed int
 		)
 
 		if err := rows.Scan(
@@ -334,6 +336,7 @@ func (r *StockCheckSessionRepository) GetReviewItems(sessionID int) ([]models.St
 			&item.SelectedSupplierName,
 			&item.CheckerNotes,
 			&item.BuyerNotes,
+			&poItemProcessed,
 			&item.ConditionStatus,
 			&item.Status,
 			&unitPrice,
@@ -395,6 +398,7 @@ func (r *StockCheckSessionRepository) GetReviewItems(sessionID int) ([]models.St
 		item.ApprovedLineValue = item.ApprovedBuyQty * linePrice
 		item.SuggestLineValueDisplay = formatStockCheckCurrency(item.SuggestLineValue)
 		item.ApprovedLineValueDisplay = formatStockCheckCurrency(item.ApprovedLineValue)
+		item.POItemProcessed = poItemProcessed > 0
 		item.ConditionLabel, item.ConditionBadgeClass, item.BuyerNoteAccentClass = stockCheckSessionConditionMeta(item.ConditionStatus)
 		item.StatusLabel, item.StatusBadgeClass = stockCheckSessionItemStatusMeta(item.Status)
 
@@ -649,6 +653,23 @@ func (r *StockCheckSessionRepository) UpdateStatus(sessionID int, status string)
 		SET status = ?
 		WHERE id = ?
 	`, status, sessionID)
+
+	return err
+}
+
+func (r *StockCheckSessionRepository) UpdatePOItemProcessed(sessionID int, itemID int, processed bool, updatedBy int) error {
+	processedValue := 0
+	if processed {
+		processedValue = 1
+	}
+
+	_, err := r.DB.Exec(`
+		UPDATE stock_check_session_items
+		SET
+			po_item_processed = ?,
+			updated_by = ?
+		WHERE stock_check_session_id = ? AND id = ?
+	`, processedValue, updatedBy, sessionID, itemID)
 
 	return err
 }

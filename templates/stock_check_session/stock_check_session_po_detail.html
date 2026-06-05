@@ -433,6 +433,40 @@
                 font-weight: 800;
             }
 
+            .po-table tbody td.check {
+                width: 4.2rem;
+                text-align: center;
+            }
+
+            .po-check-form {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .po-check-input {
+                width: 1.2rem;
+                height: 1.2rem;
+                accent-color: #f26419;
+                cursor: pointer;
+            }
+
+            .po-focus-highlight td {
+                animation: poFocusPulse 2s ease;
+            }
+
+            @keyframes poFocusPulse {
+                0% {
+                    background: rgba(219, 234, 254, 0.95);
+                }
+                50% {
+                    background: rgba(219, 234, 254, 0.55);
+                }
+                100% {
+                    background: transparent;
+                }
+            }
+
             .po-table tbody td.qty {
                 width: 7rem;
                 text-align: left;
@@ -824,6 +858,7 @@
                                             <table class="po-table">
                                                 <thead>
                                                     <tr>
+                                                        <th style="width: 4.2rem; text-align: center;">Check</th>
                                                         <th style="width: 3rem;">No</th>
                                                         <th>Item Description</th>
                                                         <th style="width: 5rem;">Qty</th>
@@ -831,7 +866,15 @@
                                                 </thead>
                                                 <tbody>
                                                     {{ range .Items }}
-                                                        <tr>
+                                                        <tr data-po-item-row data-item-id="{{ .ItemID }}">
+                                                            <td class="check">
+                                                                <form method="POST" action="/stock-check-sessions/{{ $.Session.ID }}/po-detail/processed" class="po-check-form">
+                                                                    <input type="hidden" name="item_id" value="{{ .ItemID }}">
+                                                                    <input type="hidden" name="processed" value="{{ if .Processed }}0{{ else }}1{{ end }}">
+                                                                    <input type="hidden" name="redirect_to" value="{{ $.CurrentDetailURL }}">
+                                                                    <input type="checkbox" class="po-check-input" aria-label="Checklist item {{ .ProductName }}" {{ if .Processed }}checked{{ end }}>
+                                                                </form>
+                                                            </td>
                                                             <td class="num">{{ printf "%02d" .No }}</td>
                                                             <td>
                                                                 <p class="po-item-title">{{ .ProductName }}</p>
@@ -849,7 +892,7 @@
                                                 </tbody>
                                                 <tfoot>
                                                     <tr>
-                                                        <td colspan="2" style="padding: 0.82rem 0.64rem; font-size: 0.82rem; font-weight: 800; color: #0f2f78; border-top: 1px solid #dce5f4; background: #f7faff;">
+                                                        <td colspan="3" style="padding: 0.82rem 0.64rem; font-size: 0.82rem; font-weight: 800; color: #0f2f78; border-top: 1px solid #dce5f4; background: #f7faff;">
                                                             Total Item Group: {{ .ItemCount }}
                                                         </td>
                                                         <td class="qty" style="border-top: 1px solid #dce5f4; background: #f7faff; text-align: left; padding-left: 0;">
@@ -877,6 +920,7 @@
                                     <table class="po-table">
                                         <thead>
                                             <tr>
+                                                <th style="width: 4.2rem; text-align: center;">Check</th>
                                                 <th style="width: 3rem;">No</th>
                                                 <th>Item Description</th>
                                                 <th style="width: 5rem;">Qty</th>
@@ -884,7 +928,7 @@
                                         </thead>
                                         <tbody>
                                             <tr>
-                                                <td colspan="3" style="text-align:center; padding: 1.2rem; font-weight: 700; color: #64748b;">Belum ada item approved untuk PO ini.</td>
+                                                <td colspan="4" style="text-align:center; padding: 1.2rem; font-weight: 700; color: #64748b;">Belum ada item approved untuk PO ini.</td>
                                             </tr>
                                         </tbody>
                                     </table>
@@ -964,6 +1008,56 @@
                                 poStatusForm.submit();
                             }
                         });
+                    });
+                });
+
+                document.querySelectorAll('.po-check-form').forEach(function (form) {
+                    var checkbox = form.querySelector('.po-check-input');
+                    var processedInput = form.querySelector('input[name="processed"]');
+                    if (!checkbox || !processedInput) return;
+
+                    checkbox.addEventListener('change', function () {
+                        var nextProcessedValue = checkbox.checked ? '1' : '0';
+                        var previousChecked = !checkbox.checked;
+                        processedInput.value = nextProcessedValue;
+                        checkbox.disabled = true;
+
+                        fetch(form.action, {
+                            method: 'POST',
+                            headers: {
+                                'X-Requested-With': 'XMLHttpRequest'
+                            },
+                            body: new FormData(form)
+                        })
+                            .then(function (response) {
+                                return response.json().then(function (data) {
+                                    return {
+                                        ok: response.ok,
+                                        data: data
+                                    };
+                                });
+                            })
+                            .then(function (result) {
+                                if (!result.ok || !result.data || result.data.success !== true) {
+                                    throw new Error((result.data && result.data.error) || 'Checklist item gagal disimpan');
+                                }
+
+                                checkbox.checked = !!result.data.processed;
+                                processedInput.value = checkbox.checked ? '0' : '1';
+                            })
+                            .catch(function (error) {
+                                checkbox.checked = previousChecked;
+                                processedInput.value = previousChecked ? '0' : '1';
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Gagal menyimpan checklist',
+                                    text: error.message || 'Terjadi kesalahan saat menyimpan checklist item.',
+                                    confirmButtonColor: '#0f3b86'
+                                });
+                            })
+                            .finally(function () {
+                                checkbox.disabled = false;
+                            });
                     });
                 });
             });

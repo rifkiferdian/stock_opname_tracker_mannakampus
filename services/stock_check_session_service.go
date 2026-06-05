@@ -678,6 +678,41 @@ func (s *StockCheckSessionService) UpdateSessionStatusForPORecap(sessionID int, 
 	return s.Repo.UpdateStatus(sessionID, status)
 }
 
+func (s *StockCheckSessionService) UpdatePOItemProcessed(sessionID int, itemID int, processed bool, updatedBy int) error {
+	if sessionID <= 0 {
+		return errors.New("session id tidak valid")
+	}
+	if itemID <= 0 {
+		return errors.New("item id tidak valid")
+	}
+	if updatedBy <= 0 {
+		return errors.New("user login tidak valid")
+	}
+
+	session, err := s.Repo.GetByID(sessionID)
+	if err != nil {
+		return err
+	}
+
+	hasAccess, err := s.userCanAccessCheckerStore(updatedBy, session.StoreID)
+	if err != nil {
+		return err
+	}
+	if !hasAccess {
+		return errors.New("session tidak tersedia untuk user login")
+	}
+
+	itemExists, err := s.Repo.ExistsReviewItem(sessionID, itemID)
+	if err != nil {
+		return err
+	}
+	if !itemExists {
+		return errors.New("item session tidak ditemukan")
+	}
+
+	return s.Repo.UpdatePOItemProcessed(sessionID, itemID, processed, updatedBy)
+}
+
 func sanitizeStockCheckSessionDate(value string) string {
 	value = strings.TrimSpace(value)
 	if value == "" {

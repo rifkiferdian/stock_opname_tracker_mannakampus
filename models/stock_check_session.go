@@ -242,6 +242,7 @@ type StockCheckSessionReviewItem struct {
 	SuggestLineValueDisplay       string
 	ApprovedLineValue             float64
 	ApprovedLineValueDisplay      string
+	POItemProcessed               bool
 }
 
 type StockCheckSessionCheckerInputItem struct {

@@ -410,6 +410,7 @@ func StockCheckSessionDetail(c *gin.Context) {
 
 type stockCheckSessionPOItemView struct {
 	No                  int
+	ItemID              int
 	ProductName         string
 	ProductCode         string
 	UnitName            string
@@ -423,6 +424,7 @@ type stockCheckSessionPOItemView struct {
 	GroupID             int
 	GroupName           string
 	GroupSortOrder      int
+	Processed           bool
 }
 
 type stockCheckSessionPOGroupSection struct {
@@ -520,6 +522,7 @@ func StockCheckSessionPODetail(c *gin.Context) {
 		lineSubtotal := item.ApprovedLineValue
 
 		allItems = append(allItems, stockCheckSessionPOItemView{
+			ItemID:              item.ID,
 			ProductName:         item.ProductName,
 			ProductCode:         item.ProductCode,
 			UnitName:            item.UnitName,
@@ -533,6 +536,7 @@ func StockCheckSessionPODetail(c *gin.Context) {
 			GroupID:             item.SupplierProductGroupID,
 			GroupName:           strings.TrimSpace(item.SupplierProductGroupName),
 			GroupSortOrder:      item.SupplierProductGroupSortOrder,
+			Processed:           item.POItemProcessed,
 		})
 	}
 
@@ -599,6 +603,64 @@ func StockCheckSessionPODetail(c *gin.Context) {
 			SupplierName: c.Query("supplier_name"),
 		}, parsePositiveInt(c.Query("page"), 1)),
 	})
+}
+
+func StockCheckSessionPOItemProcessedUpdate(c *gin.Context) {
+	sessionID, err := strconv.Atoi(c.Param("id"))
+	if err != nil || sessionID <= 0 {
+		c.String(http.StatusBadRequest, "invalid stock check session id")
+		return
+	}
+
+	type poItemProcessedForm struct {
+		ItemID     int    `form:"item_id" binding:"required"`
+		Processed  string `form:"processed"`
+		RedirectTo string `form:"redirect_to"`
+	}
+
+	var form poItemProcessedForm
+	if err := c.ShouldBind(&form); err != nil {
+		if strings.EqualFold(c.GetHeader("X-Requested-With"), "XMLHttpRequest") {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"success": false,
+				"error":   "Form checklist item tidak lengkap",
+			})
+			return
+		}
+		c.Redirect(http.StatusSeeOther, appendRedirectMessage(buildStockCheckSessionPODetailFallbackURL(sessionID), "error", "Form checklist item tidak lengkap"))
+		return
+	}
+
+	redirectTo := sanitizeRedirectTarget(form.RedirectTo)
+	if redirectTo == "" {
+		redirectTo = buildStockCheckSessionPODetailFallbackURL(sessionID)
+	}
+
+	processed := strings.TrimSpace(form.Processed) == "1"
+	service := buildStockCheckSessionService()
+	if err := service.UpdatePOItemProcessed(sessionID, form.ItemID, processed, extractCurrentUserID(c)); err != nil {
+		if strings.EqualFold(c.GetHeader("X-Requested-With"), "XMLHttpRequest") {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"success":   false,
+				"error":     err.Error(),
+				"processed": !processed,
+			})
+			return
+		}
+		c.Redirect(http.StatusSeeOther, appendRedirectMessage(redirectTo, "error", err.Error()))
+		return
+	}
+
+	if strings.EqualFold(c.GetHeader("X-Requested-With"), "XMLHttpRequest") {
+		c.JSON(http.StatusOK, gin.H{
+			"success":   true,
+			"processed": processed,
+			"item_id":   form.ItemID,
+		})
+		return
+	}
+
+	c.Redirect(http.StatusSeeOther, redirectTo)
 }
 
 func buildStockCheckSessionPOSections(items []stockCheckSessionPOItemView, poSortBy string) []stockCheckSessionPOGroupSection {
@@ -1933,6 +1995,10 @@ func buildStockCheckSessionDetailPageURL(sessionID int, page int, successMessage
 		return baseURL
 	}
 	return baseURL + "?" + encoded
+}
+
+func buildStockCheckSessionPODetailFallbackURL(sessionID int) string {
+	return fmt.Sprintf("/stock-check-sessions/%d/po-detail", sessionID)
 }
 
 func buildStockCheckCheckerSessionInputPageURL(sessionID int, location string, successMessage string) string {

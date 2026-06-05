@@ -40,6 +40,7 @@ func RegisterWebRoutes(r *gin.Engine) {
 		auth.GET("/stock-check-sessions", middleware.RequirePermission("menu_stock_check_session_access"), controllers.StockCheckSessionIndex)
 		auth.GET("/stock-check-sessions/:id", middleware.RequirePermission("menu_stock_check_session_access"), controllers.StockCheckSessionDetail)
 		auth.GET("/stock-check-sessions/:id/po-detail", middleware.RequireAnyPermission("menu_stock_check_session_access", "menu_ready_for_po"), controllers.StockCheckSessionPODetail)
+		auth.POST("/stock-check-sessions/:id/po-detail/processed", middleware.RequireAnyPermission("menu_stock_check_session_access", "menu_ready_for_po"), controllers.StockCheckSessionPOItemProcessedUpdate)
 		auth.POST("/stock-check-sessions", middleware.RequireAnyPermission("menu_stock_check_session_access", "checker_so_input_access"), controllers.StockCheckSessionStore)
 		auth.POST("/stock-check-sessions/update", middleware.RequireAnyPermission("menu_stock_check_session_access", "checker_so_input_access"), controllers.StockCheckSessionUpdate)
 		auth.POST("/stock-check-sessions/:id/items/review", middleware.RequireAnyPermission("menu_stock_check_session_access", "menu_report_access"), controllers.StockCheckSessionReviewItemUpdate)
