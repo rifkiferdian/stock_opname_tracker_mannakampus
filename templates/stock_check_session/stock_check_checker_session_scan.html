@@ -442,6 +442,46 @@
                 gap: 0.75rem;
             }
 
+            .modal-stock-summary {
+                display: grid;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 0.75rem;
+                margin-bottom: 1rem;
+            }
+
+            .modal-stock-card {
+                border: 1px solid #dbeafe;
+                border-radius: 1rem;
+                background: linear-gradient(180deg, #f8fbff 0%, #eef6ff 100%);
+                padding: 0.85rem 0.95rem;
+            }
+
+            .modal-stock-card span {
+                display: block;
+                font-size: 0.68rem;
+                font-weight: 800;
+                letter-spacing: 0.08em;
+                text-transform: uppercase;
+                color: #64748b;
+            }
+
+            .modal-stock-card p {
+                margin-top: 0.28rem;
+                font-size: 0.92rem;
+                font-weight: 800;
+                color: #153e8a;
+            }
+
+            .modal-conversion-note {
+                margin-top: 0.85rem;
+                border-radius: 0.9rem;
+                background: #f8fafc;
+                padding: 0.8rem 0.9rem;
+                font-size: 0.8rem;
+                font-weight: 700;
+                color: #475569;
+            }
+
             .modal-qty-field {
                 display: flex;
                 flex-direction: column;
@@ -722,6 +762,9 @@
                                     data-suggest-carton="{{ .Item.SuggestBuyCarton }}"
                                     data-suggest-box="{{ .Item.SuggestBuyBox }}"
                                     data-suggest-pcs="{{ .Item.SuggestBuyPcs }}"
+                                    data-store-qty="{{ .Item.QtyStoreCarton }}c - {{ .Item.QtyStoreBox }}b - {{ .Item.QtyStorePcs }}p"
+                                    data-warehouse-qty="{{ .Item.QtyWarehouseCarton }}c - {{ .Item.QtyWarehouseBox }}b - {{ .Item.QtyWarehousePcs }}p"
+                                    data-carton-conversion="1 carton = {{ .Item.PcsPerCarton }} pcs"
                                     data-conversion="{{ .Item.ConversionDisplay }}"
                                 >
                                     <i class="bx bx-edit-alt"></i>
@@ -842,6 +885,16 @@
                     <input type="hidden" name="redirect_to" value="{{ .CurrentURL }}">
 
                     <div>
+                        <div class="modal-stock-summary">
+                            <div class="modal-stock-card">
+                                <span>SO Toko</span>
+                                <p id="suggestModalStoreQty">{{ .Item.QtyStoreCarton }}c - {{ .Item.QtyStoreBox }}b - {{ .Item.QtyStorePcs }}p</p>
+                            </div>
+                            <div class="modal-stock-card">
+                                <span>SO Gudang</span>
+                                <p id="suggestModalWarehouseQty">{{ .Item.QtyWarehouseCarton }}c - {{ .Item.QtyWarehouseBox }}b - {{ .Item.QtyWarehousePcs }}p</p>
+                            </div>
+                        </div>
                         <!-- <label>Suggest Qty</label> -->
                         <div class="modal-qty-grid">
                             <div class="modal-qty-field">
@@ -860,6 +913,7 @@
                                 <!-- <p class="modal-field-note">Isi sisa pcs satuan terkecil.</p> -->
                             </div>
                         </div>
+                        <div id="suggestModalConversion" class="modal-conversion-note">1 carton = {{ .Item.PcsPerCarton }} pcs</div>
                         <!-- <p id="suggestModalHint" class="modal-hint">{{ .Item.ConversionDisplay }}</p> -->
                         <!-- <p class="modal-hint">Breakdown saat ini: {{ .Item.SuggestBuyBreakdownDisplay }}</p> -->
                     </div>
@@ -1063,6 +1117,9 @@
                         var suggestCartonInput = suggestModalEl.querySelector('#suggest_carton');
                         var suggestBoxInput = suggestModalEl.querySelector('#suggest_box');
                         var suggestPcsInput = suggestModalEl.querySelector('#suggest_pcs');
+                        var storeQtyNode = suggestModalEl.querySelector('#suggestModalStoreQty');
+                        var warehouseQtyNode = suggestModalEl.querySelector('#suggestModalWarehouseQty');
+                        var conversionNode = suggestModalEl.querySelector('#suggestModalConversion');
                         var hintNode = suggestModalEl.querySelector('#suggestModalHint');
 
                         if (itemIdInput) itemIdInput.value = suggestOpenButton.getAttribute('data-item-id') || '';
@@ -1070,6 +1127,9 @@
                         if (suggestCartonInput) suggestCartonInput.value = suggestOpenButton.getAttribute('data-suggest-carton') || '0';
                         if (suggestBoxInput) suggestBoxInput.value = suggestOpenButton.getAttribute('data-suggest-box') || '0';
                         if (suggestPcsInput) suggestPcsInput.value = suggestOpenButton.getAttribute('data-suggest-pcs') || '0';
+                        if (storeQtyNode) storeQtyNode.textContent = suggestOpenButton.getAttribute('data-store-qty') || '-';
+                        if (warehouseQtyNode) warehouseQtyNode.textContent = suggestOpenButton.getAttribute('data-warehouse-qty') || '-';
+                        if (conversionNode) conversionNode.textContent = suggestOpenButton.getAttribute('data-carton-conversion') || '1 carton = - pcs';
                         if (hintNode) hintNode.textContent = suggestOpenButton.getAttribute('data-conversion') || '';
 
                         openModal(suggestModalEl);
