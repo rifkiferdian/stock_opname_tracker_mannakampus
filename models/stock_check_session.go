@@ -53,6 +53,7 @@ type StockCheckSessionCreateInput struct {
 
 type StockCheckSessionCheckerScanInput struct {
 	SessionID int
+	ItemID    int
 	Location  string
 	Barcode   string
 	QtyCarton int
@@ -108,6 +109,7 @@ type StockCheckSessionDetailFilter struct {
 }
 
 type StockCheckSessionCheckerScanForm struct {
+	ItemID    int
 	Location  string
 	Barcode   string
 	QtyCarton string

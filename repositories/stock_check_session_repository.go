@@ -1329,6 +1329,119 @@ func (r *StockCheckSessionRepository) UpdateCheckerItemQtyByBarcode(sessionID in
 	return itemID, nil
 }
 
+func (r *StockCheckSessionRepository) UpdateCheckerItemQtyByItemID(sessionID int, storeID int, supplierID int, itemID int, location string, qtyCarton int, qtyBox int, qtyPcs int, updatedBy int) (int, error) {
+	tx, err := r.DB.Begin()
+	if err != nil {
+		return 0, err
+	}
+	defer func() {
+		if err != nil {
+			_ = tx.Rollback()
+		}
+	}()
+
+	var (
+		foundItemID     int
+		pcsPerBox       int
+		pcsPerCarton    int
+		storeCarton     int
+		storeBox        int
+		storePcs        int
+		warehouseCarton int
+		warehouseBox    int
+		warehousePcs    int
+	)
+
+	err = tx.QueryRow(`
+		SELECT
+			si.id,
+			COALESCE(p.pcs_per_box, 0) AS pcs_per_box,
+			COALESCE(p.pcs_per_carton, 0) AS pcs_per_carton,
+			COALESCE(si.qty_store_carton, 0) AS qty_store_carton,
+			COALESCE(si.qty_store_box, 0) AS qty_store_box,
+			COALESCE(si.qty_store_pcs, 0) AS qty_store_pcs,
+			COALESCE(si.qty_warehouse_carton, 0) AS qty_warehouse_carton,
+			COALESCE(si.qty_warehouse_box, 0) AS qty_warehouse_box,
+			COALESCE(si.qty_warehouse_pcs, 0) AS qty_warehouse_pcs
+		FROM stock_check_session_items si
+		INNER JOIN products p ON p.id = si.product_id
+		INNER JOIN product_suppliers ps ON ps.product_id = p.id
+			AND ps.supplier_id = ?
+			AND ps.is_active = 1
+		WHERE si.stock_check_session_id = ?
+			AND si.id = ?
+			AND COALESCE(p.store_id, 0) = ?
+		LIMIT 1
+	`, supplierID, sessionID, itemID, storeID).Scan(
+		&foundItemID,
+		&pcsPerBox,
+		&pcsPerCarton,
+		&storeCarton,
+		&storeBox,
+		&storePcs,
+		&warehouseCarton,
+		&warehouseBox,
+		&warehousePcs,
+	)
+	if err != nil {
+		return 0, err
+	}
+
+	switch location {
+	case "warehouse":
+		warehouseCarton = qtyCarton
+		warehouseBox = qtyBox
+		warehousePcs = qtyPcs
+	default:
+		storeCarton = qtyCarton
+		storeBox = qtyBox
+		storePcs = qtyPcs
+	}
+
+	_, err = tx.Exec(`
+		UPDATE stock_check_session_items
+		SET
+			qty_store_carton = ?,
+			qty_store_box = ?,
+			qty_store_pcs = ?,
+			qty_warehouse_carton = ?,
+			qty_warehouse_box = ?,
+			qty_warehouse_pcs = ?,
+			store_checked_at = CASE WHEN ? = 'warehouse' THEN store_checked_at ELSE NOW() END,
+			store_checked_by = CASE WHEN ? = 'warehouse' THEN store_checked_by ELSE ? END,
+			warehouse_checked_at = CASE WHEN ? = 'warehouse' THEN NOW() ELSE warehouse_checked_at END,
+			warehouse_checked_by = CASE WHEN ? = 'warehouse' THEN ? ELSE warehouse_checked_by END,
+			updated_by = ?
+		WHERE stock_check_session_id = ? AND id = ?
+	`,
+		storeCarton,
+		storeBox,
+		storePcs,
+		warehouseCarton,
+		warehouseBox,
+		warehousePcs,
+		location,
+		location,
+		updatedBy,
+		location,
+		location,
+		updatedBy,
+		updatedBy,
+		sessionID,
+		foundItemID,
+	)
+	if err != nil {
+		return 0, err
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		return 0, err
+	}
+
+	return foundItemID, nil
+}
+
 func (r *StockCheckSessionRepository) UpdateCheckerItemSuggest(sessionID int, itemID int, suggestCarton int, suggestBox int, suggestPcs int, updatedBy int) error {
 	tx, err := r.DB.Begin()
 	if err != nil {

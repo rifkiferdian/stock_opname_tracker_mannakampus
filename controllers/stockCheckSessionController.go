@@ -119,7 +119,8 @@ func StockCheckCheckerSessionScanPage(c *gin.Context) {
 	}
 
 	barcode := strings.TrimSpace(c.Query("barcode"))
-	if barcode == "" {
+	itemID, _ := strconv.Atoi(strings.TrimSpace(c.Query("item_id")))
+	if barcode == "" && itemID <= 0 {
 		c.Redirect(http.StatusSeeOther, buildStockCheckCheckerSessionInputPageURL(sessionID, sanitizeStockCheckCheckerScanLocation(c.Query("location")), ""))
 		return
 	}
@@ -133,6 +134,7 @@ func StockCheckCheckerSessionScanPage(c *gin.Context) {
 		c,
 		buildStockCheckSessionService(),
 		sessionID,
+		itemID,
 		barcode,
 		sanitizeStockCheckCheckerScanLocation(c.Query("location")),
 		c.Query("success"),
@@ -227,7 +229,8 @@ func StockCheckCheckerSessionSuggest(c *gin.Context) {
 func StockCheckCheckerSessionScan(c *gin.Context) {
 	type stockCheckCheckerScanForm struct {
 		Location   string `form:"location" binding:"required"`
-		Barcode    string `form:"barcode" binding:"required"`
+		ItemID     int    `form:"item_id"`
+		Barcode    string `form:"barcode"`
 		QtyCarton  string `form:"qty_carton"`
 		QtyBox     string `form:"qty_box"`
 		QtyPcs     string `form:"qty_pcs"`
@@ -252,11 +255,13 @@ func StockCheckCheckerSessionScan(c *gin.Context) {
 				c,
 				service,
 				sessionID,
+				form.ItemID,
 				form.Barcode,
 				sanitizeStockCheckCheckerScanLocation(form.Location),
 				"",
 				message,
 				models.StockCheckSessionCheckerScanForm{
+					ItemID:    form.ItemID,
 					Location:  sanitizeStockCheckCheckerScanLocation(form.Location),
 					Barcode:   strings.TrimSpace(form.Barcode),
 					QtyCarton: strings.TrimSpace(form.QtyCarton),
@@ -280,6 +285,7 @@ func StockCheckCheckerSessionScan(c *gin.Context) {
 			return
 		}
 		renderStockCheckCheckerSessionInputPage(c, service, sessionID, "", "Form scan item tidak lengkap", models.StockCheckSessionCheckerScanForm{
+			ItemID:    form.ItemID,
 			Location:  sanitizeStockCheckCheckerScanLocation(form.Location),
 			Barcode:   strings.TrimSpace(form.Barcode),
 			QtyCarton: strings.TrimSpace(form.QtyCarton),
@@ -301,6 +307,7 @@ func StockCheckCheckerSessionScan(c *gin.Context) {
 			return
 		}
 		renderStockCheckCheckerSessionInputPage(c, service, sessionID, "", "Qty carton harus berupa angka bulat yang valid", models.StockCheckSessionCheckerScanForm{
+			ItemID:    form.ItemID,
 			Location:  sanitizeStockCheckCheckerScanLocation(form.Location),
 			Barcode:   strings.TrimSpace(form.Barcode),
 			QtyCarton: strings.TrimSpace(form.QtyCarton),
@@ -316,6 +323,7 @@ func StockCheckCheckerSessionScan(c *gin.Context) {
 			return
 		}
 		renderStockCheckCheckerSessionInputPage(c, service, sessionID, "", "Qty box harus berupa angka bulat yang valid", models.StockCheckSessionCheckerScanForm{
+			ItemID:    form.ItemID,
 			Location:  sanitizeStockCheckCheckerScanLocation(form.Location),
 			Barcode:   strings.TrimSpace(form.Barcode),
 			QtyCarton: strings.TrimSpace(form.QtyCarton),
@@ -331,6 +339,7 @@ func StockCheckCheckerSessionScan(c *gin.Context) {
 			return
 		}
 		renderStockCheckCheckerSessionInputPage(c, service, sessionID, "", "Qty pcs harus berupa angka bulat yang valid", models.StockCheckSessionCheckerScanForm{
+			ItemID:    form.ItemID,
 			Location:  sanitizeStockCheckCheckerScanLocation(form.Location),
 			Barcode:   strings.TrimSpace(form.Barcode),
 			QtyCarton: strings.TrimSpace(form.QtyCarton),
@@ -342,6 +351,7 @@ func StockCheckCheckerSessionScan(c *gin.Context) {
 
 	_, err = service.RecordCheckerScan(models.StockCheckSessionCheckerScanInput{
 		SessionID: sessionID,
+		ItemID:    form.ItemID,
 		Location:  form.Location,
 		Barcode:   form.Barcode,
 		QtyCarton: qtyCarton,
@@ -354,6 +364,7 @@ func StockCheckCheckerSessionScan(c *gin.Context) {
 			return
 		}
 		renderStockCheckCheckerSessionInputPage(c, service, sessionID, "", err.Error(), models.StockCheckSessionCheckerScanForm{
+			ItemID:    form.ItemID,
 			Location:  sanitizeStockCheckCheckerScanLocation(form.Location),
 			Barcode:   strings.TrimSpace(form.Barcode),
 			QtyCarton: strings.TrimSpace(form.QtyCarton),
@@ -1685,7 +1696,7 @@ func renderStockCheckCheckerSessionInputPage(c *gin.Context, service *services.S
 	})
 }
 
-func renderStockCheckCheckerSessionScanPage(c *gin.Context, service *services.StockCheckSessionService, sessionID int, barcode string, location string, successMessage string, errorMessage string, scanForm models.StockCheckSessionCheckerScanForm, backURL string) {
+func renderStockCheckCheckerSessionScanPage(c *gin.Context, service *services.StockCheckSessionService, sessionID int, itemID int, barcode string, location string, successMessage string, errorMessage string, scanForm models.StockCheckSessionCheckerScanForm, backURL string) {
 	barcode = strings.TrimSpace(barcode)
 	location = sanitizeStockCheckCheckerScanLocation(location)
 	if location == "" {
@@ -1694,15 +1705,25 @@ func renderStockCheckCheckerSessionScanPage(c *gin.Context, service *services.St
 	if backURL == "" {
 		backURL = buildStockCheckCheckerSessionInputPageURL(sessionID, location, "")
 	}
-	if barcode == "" {
-		c.Redirect(http.StatusSeeOther, appendRedirectMessage(backURL, "error", "Barcode wajib diisi"))
+	if barcode == "" && itemID <= 0 {
+		c.Redirect(http.StatusSeeOther, appendRedirectMessage(backURL, "error", "Item wajib dipilih"))
 		return
 	}
 
-	pageData, err := service.GetCheckerScanPage(sessionID, extractCurrentUserID(c), barcode)
+	var pageData models.StockCheckSessionCheckerScanPage
+	var err error
+	if itemID > 0 {
+		pageData, err = service.GetCheckerScanPageByItemID(sessionID, extractCurrentUserID(c), itemID)
+	} else {
+		pageData, err = service.GetCheckerScanPage(sessionID, extractCurrentUserID(c), barcode)
+	}
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			c.Redirect(http.StatusSeeOther, appendRedirectMessage(buildStockCheckCheckerSessionInputPageURL(sessionID, location, ""), "error", "Barcode Item ini tidak ada di supplier ini."))
+			notFoundMessage := "Barcode Item ini tidak ada di supplier ini."
+			if itemID > 0 {
+				notFoundMessage = "Item session tidak ditemukan."
+			}
+			c.Redirect(http.StatusSeeOther, appendRedirectMessage(buildStockCheckCheckerSessionInputPageURL(sessionID, location, ""), "error", notFoundMessage))
 			return
 		}
 		if strings.Contains(strings.ToLower(err.Error()), "tidak tersedia untuk user login") {
@@ -1717,6 +1738,10 @@ func renderStockCheckCheckerSessionScanPage(c *gin.Context, service *services.St
 	if scanForm.Location == "" {
 		scanForm.Location = location
 	}
+	if scanForm.ItemID <= 0 {
+		scanForm.ItemID = pageData.Item.ID
+	}
+	backURL = appendRedirectFocusItem(backURL, pageData.Item.ID)
 	if strings.TrimSpace(scanForm.Barcode) == "" {
 		scanForm.Barcode = barcode
 	}
@@ -1752,7 +1777,7 @@ func renderStockCheckCheckerSessionScanPage(c *gin.Context, service *services.St
 		"Error":       errorMessage,
 		"ScanForm":    scanForm,
 		"BackURL":     backURL,
-		"CurrentURL":  buildStockCheckCheckerSessionScanPageURL(sessionID, location, scanForm.Barcode, backURL),
+		"CurrentURL":  buildStockCheckCheckerSessionScanPageURL(sessionID, location, scanForm.ItemID, scanForm.Barcode, backURL),
 		"CurrentPath": c.Request.URL.Path,
 	})
 }
@@ -1928,11 +1953,14 @@ func buildStockCheckCheckerSessionInputPageURL(sessionID int, location string, s
 	return baseURL + "?" + encoded
 }
 
-func buildStockCheckCheckerSessionScanPageURL(sessionID int, location string, barcode string, backURL string) string {
+func buildStockCheckCheckerSessionScanPageURL(sessionID int, location string, itemID int, barcode string, backURL string) string {
 	values := url.Values{}
 	location = sanitizeStockCheckCheckerScanLocation(location)
 	if location != "" {
 		values.Set("location", location)
+	}
+	if itemID > 0 {
+		values.Set("item_id", strconv.Itoa(itemID))
 	}
 	barcode = strings.TrimSpace(barcode)
 	if barcode != "" {
@@ -1969,6 +1997,21 @@ func appendRedirectMessage(target string, key string, message string) string {
 	}
 	values := parsed.Query()
 	values.Set(key, message)
+	parsed.RawQuery = values.Encode()
+	return parsed.String()
+}
+
+func appendRedirectFocusItem(target string, itemID int) string {
+	if itemID <= 0 || target == "" {
+		return target
+	}
+
+	parsed, err := url.Parse(target)
+	if err != nil {
+		return target
+	}
+	values := parsed.Query()
+	values.Set("focus_item", strconv.Itoa(itemID))
 	parsed.RawQuery = values.Encode()
 	return parsed.String()
 }

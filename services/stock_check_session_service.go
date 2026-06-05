@@ -300,6 +300,36 @@ func (s *StockCheckSessionService) GetCheckerScanPage(sessionID int, userID int,
 	return models.StockCheckSessionCheckerScanPage{}, sql.ErrNoRows
 }
 
+func (s *StockCheckSessionService) GetCheckerScanPageByItemID(sessionID int, userID int, itemID int) (models.StockCheckSessionCheckerScanPage, error) {
+	if itemID <= 0 {
+		return models.StockCheckSessionCheckerScanPage{}, errors.New("item id tidak valid")
+	}
+
+	pageData, err := s.GetCheckerInputPage(sessionID, userID)
+	if err != nil {
+		return models.StockCheckSessionCheckerScanPage{}, err
+	}
+
+	for _, item := range pageData.Items {
+		if item.ID != itemID {
+			continue
+		}
+
+		history, err := s.Repo.GetCheckerItemRecentSOHistory(sessionID, item.ProductID, pageData.Session.StoreID, pageData.Session.SupplierID, 4)
+		if err != nil {
+			return models.StockCheckSessionCheckerScanPage{}, err
+		}
+		item.RecentSOHistory = history
+		return models.StockCheckSessionCheckerScanPage{
+			Session: pageData.Session,
+			Item:    item,
+			Items:   pageData.Items,
+		}, nil
+	}
+
+	return models.StockCheckSessionCheckerScanPage{}, sql.ErrNoRows
+}
+
 func (s *StockCheckSessionService) CreateSession(input models.StockCheckSessionCreateInput) (int, error) {
 	sanitizeStockCheckSessionCreateInput(&input)
 
@@ -495,8 +525,8 @@ func (s *StockCheckSessionService) RecordCheckerScan(input models.StockCheckSess
 	if input.Location == "" {
 		return 0, errors.New("lokasi input wajib dipilih")
 	}
-	if input.Barcode == "" {
-		return 0, errors.New("barcode wajib diisi")
+	if input.Barcode == "" && input.ItemID <= 0 {
+		return 0, errors.New("item wajib dipilih")
 	}
 	if input.QtyCarton < 0 || input.QtyBox < 0 || input.QtyPcs < 0 {
 		return 0, errors.New("qty tidak boleh kurang dari 0")
@@ -513,6 +543,27 @@ func (s *StockCheckSessionService) RecordCheckerScan(input models.StockCheckSess
 	}
 	if !hasAccess {
 		return 0, errors.New("session tidak tersedia untuk user login")
+	}
+
+	if input.ItemID > 0 {
+		itemID, err := s.Repo.UpdateCheckerItemQtyByItemID(
+			input.SessionID,
+			session.StoreID,
+			session.SupplierID,
+			input.ItemID,
+			input.Location,
+			input.QtyCarton,
+			input.QtyBox,
+			input.QtyPcs,
+			input.UpdatedBy,
+		)
+		if err != nil {
+			if errors.Is(err, sql.ErrNoRows) {
+				return 0, errors.New("Item session tidak ditemukan.")
+			}
+			return 0, err
+		}
+		return itemID, nil
 	}
 
 	itemID, err := s.Repo.UpdateCheckerItemQtyByBarcode(
@@ -535,7 +586,6 @@ func (s *StockCheckSessionService) RecordCheckerScan(input models.StockCheckSess
 
 	return itemID, nil
 }
-
 func (s *StockCheckSessionService) UpdateCheckerSuggest(input models.StockCheckSessionCheckerSuggestInput) error {
 	if input.SessionID <= 0 {
 		return errors.New("session id tidak valid")

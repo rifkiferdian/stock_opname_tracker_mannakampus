@@ -763,6 +763,7 @@
                                 </div>
 
                                 <form method="POST" action="/stock-checker/sessions/{{ .Session.ID }}/input" class="space-y-4">
+                                    <input type="hidden" name="item_id" value="{{ .ScanForm.ItemID }}">
                                     <input type="hidden" name="location" id="scan_location" value="{{ if eq .ScanForm.Location "warehouse" }}warehouse{{ else }}store{{ end }}">
                                     <input type="hidden" name="barcode" value="{{ .ScanForm.Barcode }}">
                                     <input type="hidden" name="redirect_to" value="{{ .CurrentURL }}">
