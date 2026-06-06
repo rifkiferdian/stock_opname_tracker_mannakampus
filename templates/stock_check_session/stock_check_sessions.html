@@ -88,7 +88,7 @@
             .toolbar-grid {
                 display: grid;
                 gap: 0.75rem;
-                grid-template-columns: minmax(0, 0.2fr) repeat(3, minmax(0, 1fr)) auto;
+                grid-template-columns: repeat(3, minmax(0, 1fr)) auto;
             }
 
             .toolbar-field {
@@ -566,19 +566,6 @@
                                                 <i class="bx bx-chevron-down text-base"></i>
                                             </button>
                                         </div>
-                                    </div>
-                                </div>
-
-                                <div class="toolbar-field">
-                                    <label class="toolbar-label">Store Location</label>
-                                    <div class="toolbar-input-wrap">
-                                        <select name="store_id" class="toolbar-control">
-                                            <option value="">All Stores</option>
-                                            {{ range .Stores }}
-                                                <option value="{{ .StoreID }}" {{ if eq $.Filters.StoreID .StoreID }}selected{{ end }}>{{ .StoreName }}</option>
-                                            {{ end }}
-                                        </select>
-                                        <i class="bx bx-chevron-down toolbar-trailing-icon"></i>
                                     </div>
                                 </div>
 
