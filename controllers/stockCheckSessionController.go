@@ -58,7 +58,7 @@ func StockCheckCheckerSupplierDetail(c *gin.Context) {
 			SupplierID: supplierID,
 			Status:     c.Query("status"),
 			Page:       parsePositiveInt(c.Query("page"), 1),
-			Limit:      10,
+			Limit:      50,
 		},
 		c.Query("error"),
 		c.Query("success"),
@@ -394,7 +394,7 @@ func StockCheckSessionIndex(c *gin.Context) {
 		SupplierID: supplierID,
 		Status:     c.Query("status"),
 		Page:       page,
-		Limit:      10,
+		Limit:      50,
 	})
 }
 
@@ -1408,7 +1408,7 @@ func renderStockCheckSessionPage(c *gin.Context, service *services.StockCheckSes
 		filter.Page = 1
 	}
 	if filter.Limit <= 0 {
-		filter.Limit = 10
+		filter.Limit = 50
 	}
 
 	isSuperAdmin := currentUserHasRole(c, "super-admin")
@@ -1580,7 +1580,7 @@ func renderStockCheckCheckerDetailPage(c *gin.Context, supplierService *services
 		filter.Page = 1
 	}
 	if filter.Limit <= 0 {
-		filter.Limit = 10
+		filter.Limit = 50
 	}
 
 	stores, err := sessionService.GetStoreOptionsByUserID(currentUserID)
@@ -2125,7 +2125,7 @@ func buildCheckerDetailFilterFromRedirectTarget(target string, supplierID int) m
 	filter := models.StockCheckSessionListFilter{
 		SupplierID: supplierID,
 		Page:       1,
-		Limit:      10,
+		Limit:      50,
 	}
 	if target == "" {
 		return filter
@@ -2205,7 +2205,7 @@ func buildStockCheckSessionFilter(c *gin.Context) models.StockCheckSessionListFi
 		SupplierID: supplierID,
 		Status:     c.Query("status"),
 		Page:       page,
-		Limit:      10,
+		Limit:      50,
 	}
 }
 
@@ -2252,7 +2252,7 @@ func buildStockCheckSessionPagination(filter models.StockCheckSessionListFilter,
 		pagination.CurrentPage = 1
 	}
 	if pagination.PageSize <= 0 {
-		pagination.PageSize = 10
+		pagination.PageSize = 50
 	}
 	if totalItems == 0 {
 		return pagination
@@ -2464,7 +2464,7 @@ func buildStockCheckCheckerSessionPagination(supplierID int, filter models.Stock
 		pagination.CurrentPage = 1
 	}
 	if pagination.PageSize <= 0 {
-		pagination.PageSize = 10
+		pagination.PageSize = 50
 	}
 	if totalItems == 0 {
 		return pagination

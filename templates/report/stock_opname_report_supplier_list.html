@@ -552,7 +552,6 @@
                                             <th>Supplier</th>
                                             <th>Kontak Utama</th>
                                             <th>Phone</th>
-                                            <th>Category</th>
                                             <th>Item Tertaut</th>
                                             <th>Status</th>
                                             <th>Diperbarui</th>
@@ -579,13 +578,6 @@
                                             </td>
                                             <td class="text-sm font-semibold text-slate-700">{{ if $supplier.PICName }}{{ $supplier.PICName }}{{ else }}-{{ end }}</td>
                                             <td class="text-sm font-semibold text-slate-500">{{ if $supplier.Phone }}{{ $supplier.Phone }}{{ else }}-{{ end }}</td>
-                                            <td>
-                                                {{ if $supplier.SupplierType }}
-                                                <span class="report-directory-chip">{{ $supplier.SupplierType }}</span>
-                                                {{ else }}
-                                                <span class="text-xs font-semibold text-slate-400">-</span>
-                                                {{ end }}
-                                            </td>
                                             <td class="text-sm font-extrabold text-slate-800">{{ $supplier.ProductCount }}</td>
                                             <td>
                                                 <span class="report-directory-badge {{ if $supplier.IsActive }}active{{ else }}inactive{{ end }}">
@@ -603,7 +595,7 @@
                                         </tr>
                                         {{ else }}
                                         <tr>
-                                            <td colspan="8" class="px-4 py-10 text-center">
+                                            <td colspan="7" class="px-4 py-10 text-center">
                                                 <div class="mx-auto max-w-md">
                                                     <p class="text-base font-extrabold text-slate-800">Supplier tidak ditemukan</p>
                                                     <p class="mt-2 text-sm font-medium text-slate-500">Coba ubah filter pencarian atau reset filter untuk menampilkan daftar supplier yang tersedia.</p>

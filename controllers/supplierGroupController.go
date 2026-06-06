@@ -21,7 +21,7 @@ func SupplierGroupIndex(c *gin.Context) {
 		Status: c.Query("status"),
 		Sort:   c.DefaultQuery("sort", "recent"),
 		Page:   page,
-		Limit:  10,
+		Limit:  50,
 	})
 }
 
@@ -38,7 +38,7 @@ func SupplierGroupStore(c *gin.Context) {
 	supplierGroupService := buildSupplierGroupService()
 
 	if err := c.ShouldBind(&form); err != nil {
-		renderSupplierGroupPage(c, supplierGroupService, "Form supplier group tidak lengkap", models.SupplierGroupListFilter{Sort: "recent", Page: 1, Limit: 10})
+		renderSupplierGroupPage(c, supplierGroupService, "Form supplier group tidak lengkap", models.SupplierGroupListFilter{Sort: "recent", Page: 1, Limit: 50})
 		return
 	}
 
@@ -48,7 +48,7 @@ func SupplierGroupStore(c *gin.Context) {
 		return
 	}
 	if !hasStoreAccess {
-		renderSupplierGroupPage(c, supplierGroupService, "Store tidak tersedia untuk user login", models.SupplierGroupListFilter{Sort: "recent", Page: 1, Limit: 10})
+		renderSupplierGroupPage(c, supplierGroupService, "Store tidak tersedia untuk user login", models.SupplierGroupListFilter{Sort: "recent", Page: 1, Limit: 50})
 		return
 	}
 
@@ -60,7 +60,7 @@ func SupplierGroupStore(c *gin.Context) {
 		IsActive:    form.IsActive == 1,
 	})
 	if err != nil {
-		renderSupplierGroupPage(c, supplierGroupService, err.Error(), models.SupplierGroupListFilter{Sort: "recent", Page: 1, Limit: 10})
+		renderSupplierGroupPage(c, supplierGroupService, err.Error(), models.SupplierGroupListFilter{Sort: "recent", Page: 1, Limit: 50})
 		return
 	}
 
@@ -81,7 +81,7 @@ func SupplierGroupUpdate(c *gin.Context) {
 	supplierGroupService := buildSupplierGroupService()
 
 	if err := c.ShouldBind(&form); err != nil {
-		renderSupplierGroupPage(c, supplierGroupService, "Form supplier group tidak lengkap", models.SupplierGroupListFilter{Sort: "recent", Page: 1, Limit: 10})
+		renderSupplierGroupPage(c, supplierGroupService, "Form supplier group tidak lengkap", models.SupplierGroupListFilter{Sort: "recent", Page: 1, Limit: 50})
 		return
 	}
 
@@ -91,7 +91,7 @@ func SupplierGroupUpdate(c *gin.Context) {
 		return
 	}
 	if !hasStoreAccess {
-		renderSupplierGroupPage(c, supplierGroupService, "Store tidak tersedia untuk user login", models.SupplierGroupListFilter{Sort: "recent", Page: 1, Limit: 10})
+		renderSupplierGroupPage(c, supplierGroupService, "Store tidak tersedia untuk user login", models.SupplierGroupListFilter{Sort: "recent", Page: 1, Limit: 50})
 		return
 	}
 
@@ -104,7 +104,7 @@ func SupplierGroupUpdate(c *gin.Context) {
 		IsActive:    form.IsActive == 1,
 	})
 	if err != nil {
-		renderSupplierGroupPage(c, supplierGroupService, err.Error(), models.SupplierGroupListFilter{Sort: "recent", Page: 1, Limit: 10})
+		renderSupplierGroupPage(c, supplierGroupService, err.Error(), models.SupplierGroupListFilter{Sort: "recent", Page: 1, Limit: 50})
 		return
 	}
 
@@ -137,7 +137,7 @@ func renderSupplierGroupPage(c *gin.Context, supplierGroupService *services.Supp
 		filter.Page = 1
 	}
 	if filter.Limit <= 0 {
-		filter.Limit = 10
+		filter.Limit = 50
 	}
 
 	groups, totalItems, err := supplierGroupService.GetSupplierGroups(filter)
@@ -183,7 +183,7 @@ func buildSupplierGroupPagination(filter models.SupplierGroupListFilter, totalIt
 		pagination.CurrentPage = 1
 	}
 	if pagination.PageSize <= 0 {
-		pagination.PageSize = 10
+		pagination.PageSize = 50
 	}
 	if totalItems == 0 {
 		return pagination

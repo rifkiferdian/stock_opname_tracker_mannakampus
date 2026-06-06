@@ -23,7 +23,7 @@ func ProductIndex(c *gin.Context) {
 		Status: c.Query("status"),
 		Sort:   c.DefaultQuery("sort", "recent"),
 		Page:   page,
-		Limit:  500,
+		Limit:  50,
 	})
 }
 
@@ -180,7 +180,7 @@ func ProductStore(c *gin.Context) {
 	productService := buildProductService()
 
 	if err := c.ShouldBind(&form); err != nil {
-		renderProductPage(c, productService, "Form produk tidak lengkap", models.ProductListFilter{Sort: "recent", Page: 1, Limit: 500})
+		renderProductPage(c, productService, "Form produk tidak lengkap", models.ProductListFilter{Sort: "recent", Page: 1, Limit: 50})
 		return
 	}
 
@@ -190,7 +190,7 @@ func ProductStore(c *gin.Context) {
 		return
 	}
 	if !hasStoreAccess {
-		renderProductPage(c, productService, "Store tidak tersedia untuk user login", models.ProductListFilter{Sort: "recent", Page: 1, Limit: 500})
+		renderProductPage(c, productService, "Store tidak tersedia untuk user login", models.ProductListFilter{Sort: "recent", Page: 1, Limit: 50})
 		return
 	}
 
@@ -217,7 +217,7 @@ func ProductStore(c *gin.Context) {
 		LastPrice:           form.LastPrice,
 	})
 	if err != nil {
-		renderProductPage(c, productService, err.Error(), models.ProductListFilter{Sort: "recent", Page: 1, Limit: 500})
+		renderProductPage(c, productService, err.Error(), models.ProductListFilter{Sort: "recent", Page: 1, Limit: 50})
 		return
 	}
 
@@ -254,7 +254,7 @@ func ProductUpdate(c *gin.Context) {
 	productService := buildProductService()
 
 	if err := c.ShouldBind(&form); err != nil {
-		renderProductPage(c, productService, "Form produk tidak lengkap", models.ProductListFilter{Sort: "recent", Page: 1, Limit: 500})
+		renderProductPage(c, productService, "Form produk tidak lengkap", models.ProductListFilter{Sort: "recent", Page: 1, Limit: 50})
 		return
 	}
 
@@ -264,7 +264,7 @@ func ProductUpdate(c *gin.Context) {
 		return
 	}
 	if !hasStoreAccess {
-		renderProductPage(c, productService, "Store tidak tersedia untuk user login", models.ProductListFilter{Sort: "recent", Page: 1, Limit: 500})
+		renderProductPage(c, productService, "Store tidak tersedia untuk user login", models.ProductListFilter{Sort: "recent", Page: 1, Limit: 50})
 		return
 	}
 
@@ -292,7 +292,7 @@ func ProductUpdate(c *gin.Context) {
 		LastPrice:           form.LastPrice,
 	})
 	if err != nil {
-		renderProductPage(c, productService, err.Error(), models.ProductListFilter{Sort: "recent", Page: 1, Limit: 500})
+		renderProductPage(c, productService, err.Error(), models.ProductListFilter{Sort: "recent", Page: 1, Limit: 50})
 		return
 	}
 
@@ -309,7 +309,7 @@ func ProductDelete(c *gin.Context) {
 
 	productService := buildProductService()
 	if err := productService.DeleteProduct(id); err != nil {
-		renderProductPage(c, productService, err.Error(), models.ProductListFilter{Sort: "recent", Page: 1, Limit: 500})
+		renderProductPage(c, productService, err.Error(), models.ProductListFilter{Sort: "recent", Page: 1, Limit: 50})
 		return
 	}
 
@@ -326,7 +326,7 @@ func renderProductPage(c *gin.Context, productService *services.ProductService, 
 		filter.Page = 1
 	}
 	if filter.Limit <= 0 {
-		filter.Limit = 500
+		filter.Limit = 50
 	}
 
 	products, totalItems, err := productService.GetProducts(filter)
@@ -620,7 +620,7 @@ func buildProductPagination(filter models.ProductListFilter, totalItems int) mod
 		pagination.CurrentPage = 1
 	}
 	if pagination.PageSize <= 0 {
-		pagination.PageSize = 500
+		pagination.PageSize = 50
 	}
 	if totalItems == 0 {
 		return pagination

@@ -32,7 +32,7 @@ func StockCheckPORecapIndex(c *gin.Context) {
 		SupplierName: c.Query("supplier_name"),
 		Status:       "",
 		Page:         parsePositiveInt(c.Query("page"), 1),
-		Limit:        100,
+		Limit:        50,
 	}
 	if filter.DateFrom != "" && filter.DateTo != "" && filter.DateFrom > filter.DateTo {
 		filter.DateFrom, filter.DateTo = filter.DateTo, filter.DateFrom
@@ -175,7 +175,7 @@ func buildStockCheckPORecapPagination(filter models.StockCheckSessionListFilter,
 		pagination.CurrentPage = 1
 	}
 	if pagination.PageSize <= 0 {
-		pagination.PageSize = 100
+		pagination.PageSize = 50
 	}
 	if totalItems == 0 {
 		return pagination

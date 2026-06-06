@@ -30,7 +30,7 @@ func (s *StockCheckSessionService) GetSessions(filter models.StockCheckSessionLi
 		filter.Page = 1
 	}
 	if filter.Limit <= 0 {
-		filter.Limit = 10
+		filter.Limit = 50
 	}
 
 	totalItems, err := s.Repo.CountAll(filter)

@@ -31,7 +31,7 @@ func StockOpnameReportIndex(c *gin.Context) {
 		DayOfWeek: dayOfWeek,
 		Sort:      c.DefaultQuery("sort", "name_asc"),
 		Page:      page,
-		Limit:     10,
+		Limit:     50,
 	})
 }
 
@@ -290,7 +290,7 @@ func renderStockOpnameReportSupplierPage(c *gin.Context, supplierService *servic
 		filter.Page = 1
 	}
 	if filter.Limit <= 0 {
-		filter.Limit = 10
+		filter.Limit = 50
 	}
 
 	isSuperAdmin := currentUserHasRole(c, "super-admin")
@@ -420,7 +420,7 @@ func buildStockOpnameReportPagination(filter models.SupplierListFilter, totalIte
 		pagination.CurrentPage = 1
 	}
 	if pagination.PageSize <= 0 {
-		pagination.PageSize = 10
+		pagination.PageSize = 50
 	}
 	if totalItems == 0 {
 		return pagination
