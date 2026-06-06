@@ -2186,7 +2186,7 @@ func applyDefaultStockCheckCheckerCreateForm(form models.StockCheckSession, supp
 
 func sanitizeStockCheckSessionStatusFilter(value string) string {
 	switch strings.TrimSpace(value) {
-	case "draft", "in_progress", "submitted", "reviewed", "closed", "inprogress_reviewed", "po", "cancelled":
+	case "draft", "in_progress", "submitted", "reviewed", "closed", "inprogress_reviewed", "inprogress_po", "po", "cancelled":
 		return value
 	default:
 		return ""

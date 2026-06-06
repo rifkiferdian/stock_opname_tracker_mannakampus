@@ -604,7 +604,9 @@
                                             <option value="in_progress" {{ if eq .Filters.Status "in_progress" }}selected{{ end }}>In Progress</option>
                                             <option value="submitted" {{ if eq .Filters.Status "submitted" }}selected{{ end }}>Submitted</option>
                                             <option value="reviewed" {{ if eq .Filters.Status "reviewed" }}selected{{ end }}>Reviewed</option>
+                                            <option value="inprogress_reviewed" {{ if eq .Filters.Status "inprogress_reviewed" }}selected{{ end }}>In Progress Review</option>
                                             <option value="closed" {{ if eq .Filters.Status "closed" }}selected{{ end }}>Closed</option>
+                                            <option value="inprogress_po" {{ if eq .Filters.Status "inprogress_po" }}selected{{ end }}>In Progress PO</option>
                                             <option value="po" {{ if eq .Filters.Status "po" }}selected{{ end }}>PO</option>
                                             <option value="cancelled" {{ if eq .Filters.Status "cancelled" }}selected{{ end }}>Cancelled</option>
                                         </select>
