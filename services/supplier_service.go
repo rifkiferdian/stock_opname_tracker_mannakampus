@@ -24,7 +24,7 @@ func (s *SupplierService) GetSuppliers(filter models.SupplierListFilter) ([]mode
 	}
 
 	switch filter.Sort {
-	case "recent", "name", "code", "products":
+	case "recent", "name", "name_asc", "name_desc", "code", "products":
 	default:
 		filter.Sort = "recent"
 	}

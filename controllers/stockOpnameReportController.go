@@ -22,14 +22,16 @@ import (
 func StockOpnameReportIndex(c *gin.Context) {
 	supplierService := buildSupplierService()
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
+	dayOfWeek, _ := strconv.Atoi(c.DefaultQuery("day_of_week", "0"))
 
 	renderStockOpnameReportSupplierPage(c, supplierService, "", models.SupplierListFilter{
-		Search: c.Query("search"),
-		Status: c.Query("status"),
-		Type:   c.Query("type"),
-		Sort:   c.DefaultQuery("sort", "recent"),
-		Page:   page,
-		Limit:  10,
+		Search:    c.Query("search"),
+		Status:    c.Query("status"),
+		Type:      c.Query("type"),
+		DayOfWeek: dayOfWeek,
+		Sort:      c.DefaultQuery("sort", "name_asc"),
+		Page:      page,
+		Limit:     10,
 	})
 }
 
@@ -481,10 +483,11 @@ func buildStockOpnameReportPageURL(filter models.SupplierListFilter, page int) s
 	if filter.Type != "" {
 		values.Set("type", filter.Type)
 	}
-	if filter.Sort != "" && filter.Sort != "recent" {
+	if filter.DayOfWeek > 0 {
+		values.Set("day_of_week", strconv.Itoa(filter.DayOfWeek))
+	}
+	if filter.Sort != "" && filter.Sort != "name_asc" {
 		values.Set("sort", filter.Sort)
-	} else if filter.Sort == "recent" {
-		values.Set("sort", "recent")
 	}
 	if page > 1 {
 		values.Set("page", strconv.Itoa(page))

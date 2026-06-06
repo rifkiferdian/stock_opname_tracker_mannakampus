@@ -169,8 +169,10 @@ func buildSupplierListQuery(filter models.SupplierListFilter, countOnly bool) (s
 
 func buildSupplierOrderClause(filter models.SupplierListFilter) string {
 	switch filter.Sort {
-	case "name":
+	case "name", "name_asc":
 		return " ORDER BY s.supplier_name ASC, s.id ASC"
+	case "name_desc":
+		return " ORDER BY s.supplier_name DESC, s.id DESC"
 	case "code":
 		return " ORDER BY s.supplier_code ASC, s.id ASC"
 	case "products":
