@@ -18,6 +18,7 @@ import (
 
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
+	"github.com/xuri/excelize/v2"
 )
 
 const stockCheckSessionDetailItemLimit = 0
@@ -405,7 +406,134 @@ func StockCheckSessionDetail(c *gin.Context) {
 		return
 	}
 
+	if strings.EqualFold(strings.TrimSpace(c.Query("export")), "xlsx") {
+		exportStockCheckSessionDetailExcel(c, buildStockCheckSessionService(), id)
+		return
+	}
+
 	renderStockCheckSessionDetailPage(c, buildStockCheckSessionService(), id, c.Query("success"), "", models.StockCheckSessionReviewItemEditForm{})
+}
+
+func exportStockCheckSessionDetailExcel(c *gin.Context, service *services.StockCheckSessionService, id int) {
+	pageData, err := service.GetSessionDetailPage(id, 1, 0, models.StockCheckSessionDetailFilter{
+		SortBy: c.Query("sort_by"),
+		Status: c.Query("item_status"),
+	})
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			c.HTML(http.StatusNotFound, "error.html", gin.H{
+				"code_error": http.StatusNotFound,
+				"error":      "Stock check session tidak ditemukan",
+			})
+			return
+		}
+
+		c.String(http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	hasStoreAccess, err := currentUserCanAccessStockCheckStore(c, service, pageData.Session.StoreID)
+	if err != nil {
+		c.String(http.StatusInternalServerError, err.Error())
+		return
+	}
+	if !hasStoreAccess {
+		c.HTML(http.StatusForbidden, "error.html", gin.H{
+			"code_error": 3,
+			"error":      "Anda Tidak punya Akses di Halaman ini",
+		})
+		return
+	}
+
+	file := excelize.NewFile()
+	defer func() {
+		_ = file.Close()
+	}()
+
+	sheetName := "Stock Check Detail"
+	defaultSheet := file.GetSheetName(file.GetActiveSheetIndex())
+	if defaultSheet != sheetName {
+		_ = file.SetSheetName(defaultSheet, sheetName)
+	}
+
+	headers := []string{
+		"SKU",
+		"Nama Product",
+		"Gudang Qty C",
+		"Gudang Qty B",
+		"Gudang Qty P",
+		"Toko Qty C",
+		"Toko Qty B",
+		"Toko Qty P",
+		"Approve Qty C",
+		"Approve Qty B",
+		"Approve Qty P",
+		"Total Qty C",
+		"Total Qty B",
+		"Total Qty P",
+	}
+
+	headerStyle, _ := file.NewStyle(&excelize.Style{
+		Font:      &excelize.Font{Bold: true, Color: "FFFFFF"},
+		Fill:      excelize.Fill{Type: "pattern", Color: []string{"143D8F"}, Pattern: 1},
+		Alignment: &excelize.Alignment{Horizontal: "center", Vertical: "center"},
+	})
+
+	for index, header := range headers {
+		cell, _ := excelize.CoordinatesToCellName(index+1, 1)
+		_ = file.SetCellValue(sheetName, cell, header)
+	}
+	_ = file.SetCellStyle(sheetName, "A1", "N1", headerStyle)
+
+	for index, item := range pageData.Items {
+		row := index + 2
+		totalCarton := item.QtyWarehouseCarton + item.QtyStoreCarton + item.ApprovedBuyCarton
+		totalBox := item.QtyWarehouseBox + item.QtyStoreBox + item.ApprovedBuyBox
+		totalPcs := item.QtyWarehousePcs + item.QtyStorePcs + item.ApprovedBuyPcs
+		values := []interface{}{
+			item.ProductCode,
+			item.ProductName,
+			item.QtyWarehouseCarton,
+			item.QtyWarehouseBox,
+			item.QtyWarehousePcs,
+			item.QtyStoreCarton,
+			item.QtyStoreBox,
+			item.QtyStorePcs,
+			item.ApprovedBuyCarton,
+			item.ApprovedBuyBox,
+			item.ApprovedBuyPcs,
+			totalCarton,
+			totalBox,
+			totalPcs,
+		}
+
+		for colIndex, value := range values {
+			cell, _ := excelize.CoordinatesToCellName(colIndex+1, row)
+			_ = file.SetCellValue(sheetName, cell, value)
+		}
+	}
+
+	_ = file.SetColWidth(sheetName, "A", "A", 18)
+	_ = file.SetColWidth(sheetName, "B", "B", 36)
+	_ = file.SetColWidth(sheetName, "C", "N", 14)
+	_ = file.SetPanes(sheetName, &excelize.Panes{
+		Freeze:      true,
+		Split:       false,
+		XSplit:      0,
+		YSplit:      1,
+		TopLeftCell: "A2",
+		ActivePane:  "bottomLeft",
+	})
+
+	filename := fmt.Sprintf("stock-check-session-%s.xlsx", sanitizeExcelFilenameSegment(pageData.Session.SessionNumber))
+	c.Header("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+	c.Header("Content-Disposition", fmt.Sprintf("attachment; filename=%q", filename))
+	c.Header("Content-Transfer-Encoding", "binary")
+
+	if err := file.Write(c.Writer); err != nil {
+		c.String(http.StatusInternalServerError, err.Error())
+		return
+	}
 }
 
 type stockCheckSessionPOItemView struct {
@@ -1889,6 +2017,7 @@ func renderStockCheckSessionDetailPage(c *gin.Context, service *services.StockCh
 		"Success":     successMessage,
 		"Error":       errorMessage,
 		"ReviewForm":  reviewForm,
+		"ExportURL":   buildStockCheckSessionDetailExportURL(c, id),
 		"CurrentPath": c.Request.URL.Path,
 		"CurrentURL":  c.Request.URL.RequestURI(),
 	})
@@ -1995,6 +2124,68 @@ func buildStockCheckSessionDetailPageURL(sessionID int, page int, successMessage
 		return baseURL
 	}
 	return baseURL + "?" + encoded
+}
+
+func buildStockCheckSessionDetailExportURL(c *gin.Context, sessionID int) string {
+	values := url.Values{}
+	sortBy := sanitizeStockCheckSessionDetailExportSortBy(c.Query("sort_by"))
+	itemStatus := sanitizeStockCheckSessionDetailExportStatus(c.Query("item_status"))
+
+	if sortBy != "" && sortBy != "name_asc" {
+		values.Set("sort_by", sortBy)
+	}
+	if itemStatus != "" {
+		values.Set("item_status", itemStatus)
+	}
+	values.Set("export", "xlsx")
+
+	baseURL := fmt.Sprintf("/stock-check-sessions/%d", sessionID)
+	return baseURL + "?" + values.Encode()
+}
+
+func sanitizeStockCheckSessionDetailExportSortBy(value string) string {
+	switch strings.ToLower(strings.TrimSpace(value)) {
+	case "name_desc":
+		return "name_desc"
+	default:
+		return "name_asc"
+	}
+}
+
+func sanitizeStockCheckSessionDetailExportStatus(value string) string {
+	switch strings.ToLower(strings.TrimSpace(value)) {
+	case "draft", "submitted", "reviewed", "approved", "po_created", "rejected":
+		return strings.ToLower(strings.TrimSpace(value))
+	default:
+		return ""
+	}
+}
+
+func sanitizeExcelFilenameSegment(value string) string {
+	value = strings.TrimSpace(value)
+	if value == "" {
+		return "detail"
+	}
+
+	replacer := strings.NewReplacer(
+		"\\", "-",
+		"/", "-",
+		":", "-",
+		"*", "-",
+		"?", "",
+		"\"", "",
+		"<", "",
+		">", "",
+		"|", "-",
+		" ", "-",
+	)
+	value = replacer.Replace(value)
+	value = strings.Trim(value, "-.")
+	if value == "" {
+		return "detail"
+	}
+
+	return value
 }
 
 func buildStockCheckSessionPODetailFallbackURL(sessionID int) string {

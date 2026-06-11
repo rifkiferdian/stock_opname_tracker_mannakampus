@@ -1312,6 +1312,10 @@
                             </div>
 
                             <div class="toolbar-group">
+                                <a href="{{ .ExportURL }}" class="tool-button primary">
+                                    <i class="bx bx-export"></i>
+                                    Export Excel
+                                </a>
                                 <form method="post" action="/stock-checker/po-recap/{{ .Session.ID }}/status" data-session-status-form data-status-label="In Progress Review" data-status-message="Status sesi akan ditandai sedang dalam proses review agar user lain tahu sesi ini sedang dikerjakan buyer.">
                                     <input type="hidden" name="status" value="inprogress_reviewed">
                                     <input type="hidden" name="redirect_to" value="{{ .CurrentURL }}">
@@ -1344,9 +1348,9 @@
                                     <thead>
                                         <tr>
                                             <th>No</th>
-                                            <th>Item Details</th>
-                                            <th>Shop Qty</th>
-                                            <th>Warehouse Qty</th>
+                                            <th>Produk Details</th>
+                                            <th>Gudang Qty</th>
+                                            <th>Toko Qty</th>
                                             <th>Total Qty</th>
                                             <th>Suggested</th>
                                             <th>Final Approve</th>
@@ -1381,19 +1385,20 @@
                                             </td>
                                             <td>
                                                 <small class="unit-breakdown-text">
-                                                    {{ .QtyStoreCarton }}<span class="qty-c">c</span> -
-                                                    {{ .QtyStoreBox }}<span class="qty-b">b</span> -
-                                                    {{ .QtyStorePcs }}<span class="qty-p">p</span>
-                                                </small>
-                                            </td>
-                                            <td>
-                                                <small class="unit-breakdown-text">
                                                     {{ .QtyWarehouseCarton }}<span class="qty-c">c</span> -
                                                     {{ .QtyWarehouseBox }}<span class="qty-b">b</span> -
                                                     {{ .QtyWarehousePcs }}<span class="qty-p">p</span>
                                                 </small>
                                             </td>
                                             <td>
+                                                <small class="unit-breakdown-text">
+                                                    {{ .QtyStoreCarton }}<span class="qty-c">c</span> -
+                                                    {{ .QtyStoreBox }}<span class="qty-b">b</span> -
+                                                    {{ .QtyStorePcs }}<span class="qty-p">p</span>
+                                                </small>
+                                            </td>
+                                            
+                                            <td style="    background-color: gainsboro;">
                                                 <small class="unit-breakdown-text">
                                                     {{ .TotalQtyCarton }}<span class="qty-c">c</span> -
                                                     {{ .TotalQtyBox }}<span class="qty-b">b</span> -
