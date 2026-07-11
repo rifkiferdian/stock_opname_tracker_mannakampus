@@ -15,6 +15,8 @@ type StockCheckSessionService struct {
 	Repo *repositories.StockCheckSessionRepository
 }
 
+const checkerRecentSOHistoryLimit = 10
+
 func (s *StockCheckSessionService) GetSessions(filter models.StockCheckSessionListFilter) ([]models.StockCheckSession, int, error) {
 	filter.DateFrom = sanitizeStockCheckSessionDate(filter.DateFrom)
 	filter.DateTo = sanitizeStockCheckSessionDate(filter.DateTo)
@@ -255,7 +257,7 @@ func (s *StockCheckSessionService) GetCheckerInputPage(sessionID int, userID int
 	}
 
 	for index := range items {
-		history, err := s.Repo.GetCheckerItemRecentSOHistory(sessionID, items[index].ProductID, session.StoreID, session.SupplierID, 4)
+		history, err := s.Repo.GetCheckerItemRecentSOHistory(sessionID, items[index].ProductID, session.StoreID, session.SupplierID, checkerRecentSOHistoryLimit)
 		if err != nil {
 			return models.StockCheckSessionCheckerInputPage{}, err
 		}
@@ -284,7 +286,7 @@ func (s *StockCheckSessionService) GetCheckerScanPage(sessionID int, userID int,
 		if strings.ToLower(strings.TrimSpace(item.Barcode)) == normalizedBarcode ||
 			strings.ToLower(strings.TrimSpace(item.BarcodeBox)) == normalizedBarcode ||
 			strings.ToLower(strings.TrimSpace(item.BarcodeCarton)) == normalizedBarcode {
-			history, err := s.Repo.GetCheckerItemRecentSOHistory(sessionID, item.ProductID, pageData.Session.StoreID, pageData.Session.SupplierID, 4)
+			history, err := s.Repo.GetCheckerItemRecentSOHistory(sessionID, item.ProductID, pageData.Session.StoreID, pageData.Session.SupplierID, checkerRecentSOHistoryLimit)
 			if err != nil {
 				return models.StockCheckSessionCheckerScanPage{}, err
 			}
@@ -315,7 +317,7 @@ func (s *StockCheckSessionService) GetCheckerScanPageByItemID(sessionID int, use
 			continue
 		}
 
-		history, err := s.Repo.GetCheckerItemRecentSOHistory(sessionID, item.ProductID, pageData.Session.StoreID, pageData.Session.SupplierID, 4)
+		history, err := s.Repo.GetCheckerItemRecentSOHistory(sessionID, item.ProductID, pageData.Session.StoreID, pageData.Session.SupplierID, checkerRecentSOHistoryLimit)
 		if err != nil {
 			return models.StockCheckSessionCheckerScanPage{}, err
 		}

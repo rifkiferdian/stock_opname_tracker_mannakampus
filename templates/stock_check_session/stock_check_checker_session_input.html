@@ -527,6 +527,8 @@
             .modal-card {
                 width: 100%;
                 max-width: 28rem;
+                max-height: calc(100vh - 2rem);
+                overflow-y: auto;
                 border-radius: 1.2rem;
                 background: #fff;
                 padding: 1.1rem;
@@ -654,7 +656,8 @@
             }
 
             .modal-history-wrap {
-                overflow-x: auto;
+                max-height: 14rem;
+                overflow: auto;
                 border: 1px solid #e2e8f0;
                 border-radius: 0.9rem;
                 background: #f8fafc;
@@ -662,7 +665,7 @@
 
             .modal-history-table {
                 width: 100%;
-                min-width: 0;
+                min-width: 34rem;
                 border-collapse: collapse;
                 table-layout: fixed;
             }
@@ -689,12 +692,7 @@
 
             .modal-history-table th:first-child,
             .modal-history-table td:first-child {
-                width: 58%;
-            }
-
-            .modal-history-table th:last-child,
-            .modal-history-table td:last-child {
-                width: 42%;
+                width: 31%;
             }
 
             .modal-history-date {
@@ -703,18 +701,101 @@
                 color: #0f172a;
             }
 
-            .modal-history-session {
-                margin-top: 0.18rem;
-                font-size: 0.68rem;
-                font-weight: 700;
-                color: #64748b;
-            }
-
             .modal-history-breakdown {
                 font-size: 0.74rem;
                 font-weight: 800;
                 color: #334155;
                 white-space: normal;
+            }
+
+            @media (max-width: 480px) {
+                .modal-history-wrap {
+                    max-height: 11rem;
+                    overflow-y: auto;
+                    overflow-x: hidden;
+                    border: 1px solid #e2e8f0;
+                    border-radius: 0.85rem;
+                    background: #f8fafc;
+                    padding: 0.45rem;
+                }
+
+                .modal-history-table {
+                    min-width: 0;
+                }
+
+                .modal-history-table,
+                .modal-history-table tbody,
+                .modal-history-table tr,
+                .modal-history-table td {
+                    display: block;
+                    width: 100%;
+                }
+
+                .modal-history-table thead {
+                    display: none;
+                }
+
+                .modal-history-table tbody {
+                    display: grid;
+                    gap: 0.45rem;
+                }
+
+                .modal-history-table tbody tr {
+                    display: grid;
+                    grid-template-columns: repeat(3, minmax(0, 1fr));
+                    gap: 0.35rem;
+                    border: 1px solid #e2e8f0;
+                    border-radius: 0.72rem;
+                    background: #fff;
+                    padding: 0.5rem;
+                }
+
+                .modal-history-table tbody tr + tr {
+                    border-top: 1px solid #e2e8f0;
+                }
+
+                .modal-history-table td {
+                    display: block;
+                    border-radius: 0.55rem;
+                    background: #f1f5f9;
+                    padding: 0.36rem 0.28rem;
+                    text-align: center;
+                }
+
+                .modal-history-table td::before {
+                    content: attr(data-label);
+                    display: block;
+                    margin-bottom: 0.12rem;
+                    font-size: 0.62rem;
+                    font-weight: 800;
+                    letter-spacing: 0.04em;
+                    text-transform: uppercase;
+                    color: #64748b;
+                }
+
+                .modal-history-table td:first-child {
+                    grid-column: 1 / -1;
+                    width: 100%;
+                    border-radius: 0;
+                    border-bottom: 1px solid #e2e8f0;
+                    background: transparent;
+                    padding: 0 0 0.38rem;
+                    text-align: left;
+                }
+
+                .modal-history-table td:first-child::before {
+                    display: none;
+                }
+
+                .modal-history-date {
+                    font-size: 0.74rem;
+                }
+
+                .modal-history-breakdown {
+                    font-size: 0.66rem;
+                    line-height: 1.25;
+                    text-align: center;
+                }
             }
 
             .modal-history-empty {
@@ -1471,17 +1552,20 @@
                                         <thead>
                                             <tr>
                                                 <th>Tanggal SO</th>
-                                                <th>Total SO</th>
+                                                <th>SO Toko</th>
+                                                <th>SO Gudang</th>
+                                                <th>Approve</th>
                                             </tr>
                                         </thead>
                                         <tbody>
                                             {{ range .RecentSOHistory }}
                                             <tr>
-                                                <td>
+                                                <td data-label="Tanggal">
                                                     <p class="modal-history-date">{{ .SessionDateDisplay }}</p>
-                                                    <p class="modal-history-session">{{ .SessionNumber }}</p>
                                                 </td>
-                                                <td><p class="modal-history-breakdown">{{ .GrandTotalBreakdownDisplay }}</p></td>
+                                                <td data-label="Toko"><p class="modal-history-breakdown">{{ .QtyStoreBreakdownDisplay }}</p></td>
+                                                <td data-label="Gudang"><p class="modal-history-breakdown">{{ .QtyWarehouseBreakdownDisplay }}</p></td>
+                                                <td data-label="Approve"><p class="modal-history-breakdown">{{ .ApprovedBuyBreakdownDisplay }}</p></td>
                                             </tr>
                                             {{ end }}
                                         </tbody>
@@ -1547,7 +1631,7 @@
                     </div>
 
                     <div class="modal-history-section">
-                        <p class="modal-history-title">4 SO Terakhir</p>
+                        <p class="modal-history-title">10 SO Terakhir</p>
                         <div id="suggestModalHistoryContent">
                             <div class="modal-history-empty">Belum ada histori SO sebelumnya untuk item ini.</div>
                         </div>

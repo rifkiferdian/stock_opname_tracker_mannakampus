@@ -646,7 +646,10 @@
                                                     <p class="max-w-[9rem] text-[13px] font-bold leading-6 text-slate-700">{{ $session.StoreName }}</p>
                                                 </td>
                                                 <td>
-                                                    <p class="max-w-[9rem] text-[13px] font-medium leading-6 text-slate-500">{{ $session.SupplierName }}</p>
+                                                    <a href="/reports/stock-opname/{{ $session.SupplierID }}" class="inline-flex max-w-[9rem] items-center gap-1.5 text-[13px] font-semibold leading-6 text-[#214a98] transition hover:text-[#153e8a] hover:underline">
+                                                        <span class="break-words">{{ $session.SupplierName }}</span>
+                                                        <i class="bx bx-link-external text-sm"></i>
+                                                    </a>
                                                 </td>
                                                 <td>
                                                     <span class="session-status {{ $session.StatusTextClass }}">
