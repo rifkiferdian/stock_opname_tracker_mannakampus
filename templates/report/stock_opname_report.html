@@ -546,6 +546,24 @@
                 color: #111827;
             }
 
+            .report-buyer-note {
+                display: block;
+                max-width: 10rem;
+                margin: 0.38rem auto 0;
+                font-size: 0.66rem;
+                line-height: 1.35;
+                font-weight: 700;
+                color: #64748b;
+                white-space: pre-line;
+                overflow-wrap: anywhere;
+                text-align: left;
+            }
+
+            .report-buyer-note b {
+                color: #204184;
+                font-weight: 800;
+            }
+
             .po-trend-cell {
                 min-width: 11rem;
             }
@@ -1047,6 +1065,9 @@
                                                         <span class="history-pill-caption-number">{{ .CurrentApproveBox }}</span> box
                                                         <span class="history-pill-caption-number">{{ .CurrentApprovePcs }}</span> pcs
                                                     </small>
+                                                    {{ if .CurrentBuyerNotes }}
+                                                        <small class="report-buyer-note"><b>Note:</b> {{ .CurrentBuyerNotes }}</small>
+                                                    {{ end }}
                                                 </center>
                                             </td>
                                             <td>

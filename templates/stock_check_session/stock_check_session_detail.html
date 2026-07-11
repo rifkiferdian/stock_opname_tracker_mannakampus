@@ -445,7 +445,7 @@
 
             .review-table {
                 width: 100%;
-                min-width: 1120px;
+                min-width: 1240px;
                 border-collapse: separate;
                 border-spacing: 0;
             }
@@ -582,6 +582,19 @@
 
             .unit-breakdown-text .qty-p {
                 color: #f26419;
+            }
+
+            .review-item-note {
+                max-width: 13rem;
+                font-size: 0.74rem;
+                line-height: 1.35;
+                font-weight: 700;
+                color: #64748b;
+                white-space: pre-line;
+            }
+
+            .review-item-note.empty {
+                color: #cbd5e1;
             }
 
             .qty-hint {
@@ -1355,6 +1368,7 @@
                                             <th>Suggested</th>
                                             <th>Final Approve</th>
                                             <th>Status</th>
+                                            <th>Note</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -1422,10 +1436,17 @@
                                             <td>
                                                 <span class="status-pill {{ .StatusBadgeClass }}">{{ .StatusLabel }}</span>
                                             </td>
+                                            <td>
+                                                {{ if .BuyerNotes }}
+                                                    <p class="review-item-note">{{ .BuyerNotes }}</p>
+                                                {{ else }}
+                                                    <span class="review-item-note empty">-</span>
+                                                {{ end }}
+                                            </td>
                                         </tr>
                                         {{ else }}
                                         <tr>
-                                            <td colspan="8" class="px-5 py-12 text-center">
+                                            <td colspan="9" class="px-5 py-12 text-center">
                                                 <div class="mx-auto max-w-md">
                                                     <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 text-slate-400">
                                                         <i class="bx bx-clipboard text-3xl"></i>

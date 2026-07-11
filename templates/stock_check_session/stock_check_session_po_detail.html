@@ -413,6 +413,10 @@
                 text-align: right;
             }
 
+            .po-table thead th.po-note-head {
+                text-align: left;
+            }
+
             .po-table tbody td {
                 padding: 0.9rem 0.64rem;
                 border-bottom: 1px solid #edf1f8;
@@ -542,6 +546,19 @@
             }
 
             .po-item-sub b {
+                color: #0f2f78;
+                font-weight: 800;
+            }
+
+            .po-item-note {
+                font-size: 0.76rem;
+                line-height: 1.35;
+                font-weight: 700;
+                color: #64748b;
+                white-space: pre-line;
+            }
+
+            .po-item-note b {
                 color: #0f2f78;
                 font-weight: 800;
             }
@@ -862,6 +879,7 @@
                                                         <th style="width: 3rem;">No</th>
                                                         <th>Item Description</th>
                                                         <th style="width: 5rem;">Qty</th>
+                                                        <th class="po-note-head" style="width: 12rem;">Note</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
@@ -887,6 +905,13 @@
                                                                     {{ .QtyPcs }}<span class="qty-p">p</span>
                                                                 </span>
                                                             </td>
+                                                            <td>
+                                                                {{ if .BuyerNotes }}
+                                                                    <p class="po-item-note">{{ .BuyerNotes }}</p>
+                                                                {{ else }}
+                                                                    <span class="text-slate-300">-</span>
+                                                                {{ end }}
+                                                            </td>
                                                         </tr>
                                                     {{ end }}
                                                 </tbody>
@@ -902,6 +927,7 @@
                                                                 {{ .TotalPcs }}<span class="qty-p">p</span>
                                                             </span>
                                                         </td>
+                                                        <td style="border-top: 1px solid #dce5f4; background: #f7faff;"></td>
                                                     </tr>
                                                 </tfoot>
                                             </table>
@@ -924,11 +950,12 @@
                                                 <th style="width: 3rem;">No</th>
                                                 <th>Item Description</th>
                                                 <th style="width: 5rem;">Qty</th>
+                                                <th class="po-note-head" style="width: 12rem;">Note</th>
                                             </tr>
                                         </thead>
                                         <tbody>
                                             <tr>
-                                                <td colspan="4" style="text-align:center; padding: 1.2rem; font-weight: 700; color: #64748b;">Belum ada item approved untuk PO ini.</td>
+                                                <td colspan="5" style="text-align:center; padding: 1.2rem; font-weight: 700; color: #64748b;">Belum ada item approved untuk PO ini.</td>
                                             </tr>
                                         </tbody>
                                     </table>

@@ -542,6 +542,7 @@ type stockCheckSessionPOItemView struct {
 	ProductName         string
 	ProductCode         string
 	UnitName            string
+	BuyerNotes          string
 	QtyDisplay          string
 	QtyBreakdownDisplay string
 	QtyCarton           int
@@ -654,6 +655,7 @@ func StockCheckSessionPODetail(c *gin.Context) {
 			ProductName:         item.ProductName,
 			ProductCode:         item.ProductCode,
 			UnitName:            item.UnitName,
+			BuyerNotes:          strings.TrimSpace(item.BuyerNotes),
 			QtyDisplay:          formatStockCheckPOWholeNumber(item.ApprovedBuyQty),
 			QtyBreakdownDisplay: formatStockCheckPOBreakdown(item.ApprovedBuyCarton, item.ApprovedBuyBox, item.ApprovedBuyPcs),
 			QtyCarton:           item.ApprovedBuyCarton,
